@@ -4,37 +4,35 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\ScreeningRequest;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $customer = Customer::with('agreement', 'screeningRequests')->findOrFail(session('client_customer_id', 1));
+        $customerId = session('client_customer_id', 1);
+        $customer = Customer::with('agreement')->findOrFail($customerId);
 
-        $requests = $customer->screeningRequests;
+        $requests = ScreeningRequest::where('customer_id', $customerId)->get();
 
         $stats = [
-            'new' => $requests->where('status', 'new')->count(),
-            'pending' => $requests->whereIn('status', ['new', 'in_progress'])->count(),
-            'complete' => $requests->where('status', 'complete')->count(),
+            'in_progress' => $requests->whereIn('status', ['new', 'in_progress'])->count(),
+            'cleared' => $requests->where('status', 'complete')->count(),
+            'needs_review' => $requests->where('status', 'flagged')->count(),
             'total' => $requests->count(),
         ];
 
-        $recentRequests = $customer->screeningRequests()
+        $recentRequests = ScreeningRequest::where('customer_id', $customerId)
             ->withCount('candidates')
             ->latest()
-            ->limit(5)
+            ->limit(8)
             ->get();
 
         return view('client.dashboard.index', [
+            'userName' => session('client_user_name', 'User'),
+            'companyName' => $customer->name,
             'stats' => $stats,
-            'balance' => $customer->balance,
-            'lastTopup' => $customer->transactions()
-                ->where('type', 'topup')
-                ->latest()
-                ->value('created_at')
-                ?->format('d M Y') ?? '—',
-            'agreementExpiry' => $customer->agreement?->expiry_date->format('d M Y') ?? '—',
+            'agreementExpiry' => $customer->agreement?->expiry_date?->format('d M Y') ?? '—',
             'agreementDaysLeft' => $customer->agreement?->days_left ?? 0,
             'recentRequests' => $recentRequests,
         ]);

@@ -352,52 +352,55 @@
 
         {{-- ── Left panel ── --}}
         <aside class="auth-left">
+            @if ($leftPanel ?? false)
+                {{ $leftPanel }}
+            @else
+                {{-- Decorative seal SVG --}}
+                <svg class="auth-seal" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="60" cy="60" r="58" stroke="#D4AF37" stroke-width="1" opacity="0.6"/>
+                    <circle cx="60" cy="60" r="48" stroke="#D4AF37" stroke-width="0.5" opacity="0.5"/>
+                    <path d="M60 22 L84 34 V58 Q84 80 60 94 Q36 80 36 58 V34 Z" stroke="#D4AF37" stroke-width="1.2" fill="none"/>
+                    <path d="M50 60 l7 7 l14 -16" stroke="#D4AF37" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <text x="60" y="110" fill="#D4AF37" font-family="Fraunces, serif" font-size="6" text-anchor="middle" letter-spacing="2">EST · MMXIX</text>
+                </svg>
 
-            {{-- Decorative seal SVG --}}
-            <svg class="auth-seal" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="60" cy="60" r="58" stroke="#D4AF37" stroke-width="1" opacity="0.6"/>
-                <circle cx="60" cy="60" r="48" stroke="#D4AF37" stroke-width="0.5" opacity="0.5"/>
-                <path d="M60 22 L84 34 V58 Q84 80 60 94 Q36 80 36 58 V34 Z" stroke="#D4AF37" stroke-width="1.2" fill="none"/>
-                <path d="M50 60 l7 7 l14 -16" stroke="#D4AF37" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                <text x="60" y="110" fill="#D4AF37" font-family="Fraunces, serif" font-size="6" text-anchor="middle" letter-spacing="2">EST · MMXIX</text>
-            </svg>
+                {{-- Brand --}}
+                <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:2;">
+                    <div class="brand-mark" style="width:36px;height:36px;"><span>N</span></div>
+                    <div style="font-family:var(--font-display);font-weight:600;font-size:17px;color:#f5ecd1;letter-spacing:0.01em;">
+                        NRH <em style="color:var(--gold-400);font-style:italic;">Intelligence</em>
+                    </div>
+                </div>
 
-            {{-- Brand --}}
-            <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:2;">
-                <div class="brand-mark" style="width:36px;height:36px;"><span>N</span></div>
-                <div style="font-family:var(--font-display);font-weight:600;font-size:17px;color:#f5ecd1;letter-spacing:0.01em;">
-                    NRH <em style="color:var(--gold-400);font-style:italic;">Intelligence</em>
+                {{-- Hero --}}
+                <div style="position:relative;z-index:2;max-width:440px;">
+                    <div style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.22em;color:var(--gold-400);margin-bottom:20px;">
+                        ◆ &nbsp;Fiduciary-grade screening
+                    </div>
+                    <h2 style="font-family:var(--font-display);font-weight:400;font-size:44px;line-height:1.1;letter-spacing:-0.015em;color:#f5ecd1;margin:0 0 20px;">
+                        The world's most <em style="font-style:italic;color:var(--gold-400);">trusted</em> names verify here.
+                    </h2>
+                    <p style="font-size:14px;line-height:1.6;color:rgba(245,236,209,0.65);margin:0;">
+                        1.2M candidates screened across 184 jurisdictions. SOC 2 Type II, FCRA-certified, and PBSA-accredited since 2021.
+                    </p>
                 </div>
-            </div>
 
-            {{-- Hero --}}
-            <div style="position:relative;z-index:2;max-width:440px;">
-                <div style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.22em;color:var(--gold-400);margin-bottom:20px;">
-                    ◆ &nbsp;Fiduciary-grade screening
+                {{-- Stats --}}
+                <div style="position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding-top:28px;border-top:1px solid rgba(212,175,55,0.2);">
+                    <div>
+                        <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">1.2<span style="color:var(--gold-400);font-size:18px;">M</span></div>
+                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">Screenings</div>
+                    </div>
+                    <div>
+                        <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">184</div>
+                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">Jurisdictions</div>
+                    </div>
+                    <div>
+                        <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">99.4<span style="color:var(--gold-400);font-size:18px;">%</span></div>
+                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">On-time SLA</div>
+                    </div>
                 </div>
-                <h2 style="font-family:var(--font-display);font-weight:400;font-size:44px;line-height:1.1;letter-spacing:-0.015em;color:#f5ecd1;margin:0 0 20px;">
-                    The world's most <em style="font-style:italic;color:var(--gold-400);">trusted</em> names verify here.
-                </h2>
-                <p style="font-size:14px;line-height:1.6;color:rgba(245,236,209,0.65);margin:0;">
-                    1.2M candidates screened across 184 jurisdictions. SOC 2 Type II, FCRA-certified, and PBSA-accredited since 2021.
-                </p>
-            </div>
-
-            {{-- Stats --}}
-            <div style="position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding-top:28px;border-top:1px solid rgba(212,175,55,0.2);">
-                <div>
-                    <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">1.2<span style="color:var(--gold-400);font-size:18px;">M</span></div>
-                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">Screenings</div>
-                </div>
-                <div>
-                    <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">184</div>
-                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">Jurisdictions</div>
-                </div>
-                <div>
-                    <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">99.4<span style="color:var(--gold-400);font-size:18px;">%</span></div>
-                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">On-time SLA</div>
-                </div>
-            </div>
+            @endif
         </aside>
 
         {{-- ── Right panel ── --}}
@@ -411,7 +414,7 @@
                 <div>
                     <div class="auth-kicker">
                         <span class="step"><span class="sdot"></span>STEP {{ $step }}</span>
-                        <span>{{ $stepLabel }}</span>
+                        <span>{!! $stepLabel !!}</span>
                     </div>
                     <h1 class="auth-title">{!! $authTitle !!}</h1>
                     @if($authSub)
@@ -434,5 +437,6 @@
 
     </div>
 
+@stack('scripts')
 </body>
 </html>
