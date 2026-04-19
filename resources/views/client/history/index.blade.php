@@ -1,57 +1,61 @@
-<x-client.layouts.app pageTitle="Request History">
+<x-client.layouts.app pageTitle="Reports">
 
-    <div class="flex items-center justify-between mb-6">
-        <p class="text-sm text-slate-500">Completed background check requests</p>
-        <div class="relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
-            </svg>
-            <input type="text" placeholder="Search..." class="rounded-lg border border-slate-200 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors w-48"/>
+    <div class="page-head">
+        <div>
+            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+                <em style="font-style:italic;color:var(--emerald-700);">Completed</em> Reports
+            </h1>
+            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Finalized background check requests</p>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+    <div class="nrh-card">
+        <div class="card-head">
+            <h3>Report History</h3>
+            <div style="position:relative;width:200px;">
+                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-400);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+                <input type="text" placeholder="Search…"
+                    style="width:100%;padding:7px 10px 7px 30px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);"
+                    onfocus="this.style.borderColor='var(--emerald-600)';this.style.boxShadow='0 0 0 3px rgba(5,150,105,0.1)'"
+                    onblur="this.style.borderColor='var(--line)';this.style.boxShadow=''"
+                />
+            </div>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="nrh-table">
                 <thead>
-                    <tr class="border-b border-slate-100 bg-slate-50/60">
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Request ID</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Candidates</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Submitted</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Completed</th>
-                        <th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Candidates</th>
+                        <th style="width:160px;">Submitted</th>
+                        <th style="width:160px;">Completed</th>
+                        <th style="width:80px;"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody>
                     @forelse ($requests as $req)
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-5 py-3.5 font-mono text-xs font-medium text-slate-700">{{ $req['reference'] }}</td>
-                            <td class="px-5 py-3.5">
-                                <span class="inline-flex items-center gap-1.5 text-sm text-slate-700">
-                                    <svg class="size-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
-                                    </svg>
-                                    {{ $req['candidates_count'] }}
+                        <tr onclick="location.href='{{ route('client.history.details', $req->id) }}'">
+                            <td>
+                                <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--emerald-700);">{{ $req->reference }}</span>
+                            </td>
+                            <td style="color:var(--ink-700);">{{ $req->candidates_count }}</td>
+                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $req->created_at->format('d M Y') }}</td>
+                            <td>
+                                <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--emerald-700);font-family:var(--font-mono);">
+                                    <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                    {{ $req->updated_at->format('d M Y') }}
                                 </span>
                             </td>
-                            <td class="px-5 py-3.5 text-sm text-slate-500">{{ $req['created_at'] }}</td>
-                            <td class="px-5 py-3.5">
-                                <span class="inline-flex items-center gap-1.5 text-sm text-emerald-700">
-                                    <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
-                                    {{ $req['completed_at'] }}
-                                </span>
-                            </td>
-                            <td class="px-5 py-3.5 text-right">
-                                <a href="{{ route('client.history.details', $req['id']) }}"
-                                   class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors">
-                                    View
-                                </a>
+                            <td style="text-align:right;">
+                                <a href="{{ route('client.history.details', $req->id) }}"
+                                   class="btn-ghost" style="padding:5px 12px;font-size:12px;"
+                                   onclick="event.stopPropagation()">View</a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-5 py-16 text-center">
-                                <p class="text-sm text-slate-400">No completed requests yet.</p>
+                            <td colspan="5" style="padding:60px 20px;text-align:center;">
+                                <p style="font-size:13px;color:var(--ink-400);margin:0;">No completed requests yet.</p>
                             </td>
                         </tr>
                     @endforelse

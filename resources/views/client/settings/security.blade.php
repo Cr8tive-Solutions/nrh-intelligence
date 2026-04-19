@@ -1,66 +1,73 @@
 <x-client.layouts.app pageTitle="Security">
 
-    <div class="max-w-md space-y-5">
+    @php
+        $inputStyle = "width:100%;padding:10px 42px 10px 14px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:14px;color:var(--ink-900);outline:none;font-family:var(--font-ui);transition:border-color 120ms,box-shadow 120ms;";
+        $labelStyle = "display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;";
+    @endphp
 
-        <div class="bg-white rounded-xl border border-slate-200 p-6" x-data="{ show: { current: false, new: false, confirm: false } }">
-            <h3 class="text-sm font-semibold text-slate-900 mb-5">Change Password</h3>
-
-            @if (session('success'))
-                <div class="mb-4 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
-                    <svg class="size-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-                    <p class="text-sm text-emerald-700 font-medium">{{ session('success') }}</p>
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('client.settings.security') }}" class="space-y-4">
-                @csrf
-
-                @foreach ([
-                    ['current_password', 'Current Password', 'current'],
-                    ['password',         'New Password',     'new'],
-                    ['password_confirmation', 'Confirm New Password', 'confirm'],
-                ] as [$name, $label, $ref])
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1.5">{{ $label }}</label>
-                        <div class="relative">
-                            <input
-                                :type="show.{{ $ref }} ? 'text' : 'password'"
-                                name="{{ $name }}"
-                                class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 pr-10 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors @error($name) border-red-400 @enderror"
-                                placeholder="••••••••"
-                            />
-                            <button type="button" @click="show.{{ $ref }} = !show.{{ $ref }}" class="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-slate-600">
-                                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178Z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                                </svg>
-                            </button>
-                        </div>
-                        @error($name)
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                @endforeach
-
-                <div class="flex justify-end pt-2">
-                    <button type="submit" class="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">
-                        Update Password
-                    </button>
-                </div>
-            </form>
+    <div class="page-head">
+        <div>
+            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+                <em style="font-style:italic;color:var(--emerald-700);">Security</em> Settings
+            </h1>
+            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Manage your password and access</p>
         </div>
+    </div>
 
-        {{-- 2FA info --}}
-        <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="text-sm font-semibold text-slate-900">Two-Factor Authentication</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">A verification code is emailed on every login.</p>
-                </div>
-                <span class="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-medium text-emerald-700">Enabled</span>
+    <div style="max-width:480px;">
+        <div class="nrh-card">
+            <div class="card-head">
+                <h3>Change Password</h3>
+            </div>
+            <div style="padding:24px;" x-data="{ show: { current: false, new: false, confirm: false } }">
+
+                @if (session('success'))
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--emerald-50);border:1px solid rgba(5,150,105,0.2);border-radius:var(--radius);margin-bottom:20px;">
+                        <svg style="width:15px;height:15px;color:var(--emerald-700);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                        <p style="font-size:13px;color:var(--emerald-800);font-weight:500;margin:0;">{{ session('success') }}</p>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('client.settings.security') }}" style="display:flex;flex-direction:column;gap:18px;">
+                    @csrf
+
+                    @foreach ([
+                        ['current_password', 'Current Password', 'current'],
+                        ['password',         'New Password',     'new'],
+                        ['password_confirmation', 'Confirm New Password', 'confirm'],
+                    ] as [$name, $label, $ref])
+                        <div>
+                            <label style="{{ $labelStyle }}">{{ $label }}</label>
+                            <div style="position:relative;">
+                                <input
+                                    :type="show.{{ $ref }} ? 'text' : 'password'"
+                                    name="{{ $name }}"
+                                    placeholder="••••••••"
+                                    style="{{ $inputStyle }} {{ $errors->has($name) ? 'border-color:#c4453a;' : '' }}"
+                                    onfocus="this.style.borderColor='var(--emerald-600)';this.style.boxShadow='0 0 0 3px rgba(5,150,105,0.12)'"
+                                    onblur="this.style.borderColor='var(--line)';this.style.boxShadow=''"
+                                />
+                                <button type="button" @click="show.{{ $ref }} = !show.{{ $ref }}"
+                                    style="position:absolute;right:0;top:0;bottom:0;padding:0 12px;background:none;border:none;cursor:pointer;color:var(--ink-400);"
+                                    onmouseover="this.style.color='var(--ink-700)'" onmouseout="this.style.color='var(--ink-400)'">
+                                    <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178Z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            @error($name)
+                                <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @endforeach
+
+                    <div style="display:flex;justify-content:flex-end;padding-top:4px;">
+                        <button type="submit" class="btn-primary">Update Password</button>
+                    </div>
+                </form>
             </div>
         </div>
-
     </div>
 
 </x-client.layouts.app>

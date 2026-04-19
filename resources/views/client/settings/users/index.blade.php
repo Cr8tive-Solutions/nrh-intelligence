@@ -1,57 +1,56 @@
-<x-client.layouts.app pageTitle="User Management">
+<x-client.layouts.app pageTitle="Users">
 
-    <div class="flex items-center justify-between mb-6">
-        <p class="text-sm text-slate-500">Team members with access to this portal</p>
-        <button
-            x-data
-            @click="$dispatch('open-create-user')"
-            class="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">
-            <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-            </svg>
+    <div class="page-head">
+        <div>
+            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+                Team <em style="font-style:italic;color:var(--emerald-700);">Users</em>
+            </h1>
+            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Team members with portal access</p>
+        </div>
+        <button x-data @click="$dispatch('open-create-user')" class="btn-primary">
+            <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>
             Add User
         </button>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+    <div class="nrh-card">
+        <div style="overflow-x:auto;">
+            <table class="nrh-table">
                 <thead>
-                    <tr class="border-b border-slate-100 bg-slate-50/60">
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">User</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Role</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Created</th>
-                        <th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
+                    <tr>
+                        <th>User</th>
+                        <th style="width:120px;">Role</th>
+                        <th style="width:120px;">Status</th>
+                        <th style="width:160px;">Created</th>
+                        <th style="width:80px;"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody>
                     @foreach ($users as $user)
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-5 py-3.5">
-                                <div class="flex items-center gap-3">
-                                    <div class="size-8 rounded-full bg-brand-100 flex items-center justify-center text-xs font-semibold text-brand-700 shrink-0">
-                                        {{ strtoupper(substr($user['name'], 0, 2)) }}
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    <div style="width:32px;height:32px;border-radius:50%;background:var(--emerald-700);color:var(--gold-400);display:grid;place-items:center;font-size:11px;font-weight:600;font-family:var(--font-mono);box-shadow:inset 0 0 0 1px rgba(212,175,55,0.4);flex-shrink:0;">
+                                        {{ strtoupper(substr($user->name, 0, 2)) }}
                                     </div>
                                     <div>
-                                        <p class="font-medium text-slate-900">{{ $user['name'] }}</p>
-                                        <p class="text-xs text-slate-400">{{ $user['email'] }}</p>
+                                        <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;">{{ $user->name }}</p>
+                                        <p style="font-size:11px;color:var(--ink-400);margin:2px 0 0;">{{ $user->email }}</p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-5 py-3.5">
-                                <span class="rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600">{{ $user['role'] }}</span>
+                            <td>
+                                <span class="pill pill-pending"><span class="dot"></span>{{ ucfirst($user->role) }}</span>
                             </td>
-                            <td class="px-5 py-3.5">
-                                <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium
-                                    {{ $user['status'] === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200' }}">
-                                    <span class="size-1.5 rounded-full {{ $user['status'] === 'Active' ? 'bg-emerald-500' : 'bg-slate-400' }}"></span>
-                                    {{ $user['status'] }}
+                            <td>
+                                <span class="pill {{ $user->status === 'active' ? 'pill-clear' : 'pill-pending' }}">
+                                    <span class="dot"></span>
+                                    {{ ucfirst($user->status) }}
                                 </span>
                             </td>
-                            <td class="px-5 py-3.5 text-sm text-slate-500">{{ $user['created_at'] }}</td>
-                            <td class="px-5 py-3.5 text-right">
-                                <button class="text-xs font-medium text-brand-600 hover:text-brand-700 transition-colors">Edit</button>
+                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $user->created_at->format('d M Y') }}</td>
+                            <td style="text-align:right;">
+                                <button class="btn-ghost" style="padding:5px 12px;font-size:12px;">Edit</button>
                             </td>
                         </tr>
                     @endforeach
@@ -65,7 +64,7 @@
         x-data="{ open: false }"
         @open-create-user.window="open = true"
         x-show="open"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        style="position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;"
         x-transition:enter="transition duration-200"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
@@ -73,41 +72,38 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
     >
-        <div class="absolute inset-0 bg-black/40" @click="open = false"></div>
-        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6"
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.4);" @click="open = false"></div>
+        <div style="position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:100%;max-width:420px;padding:24px;"
              x-transition:enter="transition duration-200"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100">
-            <div class="flex items-center justify-between mb-5">
-                <h3 class="font-semibold text-slate-900">Add New User</h3>
-                <button @click="open = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                    <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                <h3 style="font-family:var(--font-display);font-size:18px;font-weight:500;color:var(--ink-900);margin:0;">Add New User</h3>
+                <button @click="open = false" style="background:none;border:none;cursor:pointer;color:var(--ink-400);padding:4px;" onmouseover="this.style.color='var(--ink-900)'" onmouseout="this.style.color='var(--ink-400)'">
+                    <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M6 18 18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <form class="space-y-4">
+            @php $inp = "width:100%;padding:10px 14px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);box-sizing:border-box;"; @endphp
+            <form style="display:flex;flex-direction:column;gap:16px;">
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1.5">Full Name</label>
-                    <input type="text" placeholder="Ahmad bin Ali"
-                        class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors"/>
+                    <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Full Name</label>
+                    <input type="text" placeholder="Ahmad bin Ali" style="{{ $inp }}" onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'"/>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1.5">Email Address</label>
-                    <input type="email" placeholder="ahmad@company.com"
-                        class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors"/>
+                    <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Email Address</label>
+                    <input type="email" placeholder="ahmad@company.com" style="{{ $inp }}" onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'"/>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1.5">Role</label>
-                    <select class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 bg-white focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors">
+                    <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Role</label>
+                    <select style="{{ $inp }}" onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'">
                         <option>User</option>
                         <option>Admin</option>
                     </select>
                 </div>
-                <p class="text-xs text-slate-400">A temporary password will be sent to the user's email.</p>
-                <div class="flex gap-3 pt-1">
-                    <button type="button" @click="open = false"
-                        class="flex-1 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">Cancel</button>
-                    <button type="submit"
-                        class="flex-1 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">Create User</button>
+                <p style="font-size:11px;color:var(--ink-400);margin:0;">A temporary password will be sent to the user's email.</p>
+                <div style="display:flex;gap:10px;padding-top:4px;">
+                    <button type="button" @click="open = false" class="btn-ghost" style="flex:1;justify-content:center;">Cancel</button>
+                    <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">Create User</button>
                 </div>
             </form>
         </div>

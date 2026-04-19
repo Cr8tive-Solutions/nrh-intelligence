@@ -1,88 +1,87 @@
 <x-client.layouts.app pageTitle="Track Request">
 
-    {{-- Search --}}
-    <div class="max-w-2xl mx-auto">
-        <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6">
-            <h3 class="text-sm font-semibold text-slate-900 mb-1">Search by Candidate</h3>
-            <p class="text-xs text-slate-500 mb-4">Enter a candidate name or identity number to track their verification status.</p>
-            <form method="POST" action="{{ route('client.requests.track.search') }}" class="flex gap-3">
+    <div style="max-width:680px;">
+
+        {{-- Search card --}}
+        <div class="nrh-card" style="padding:24px;margin-bottom:16px;">
+            <h3 style="font-size:14px;font-weight:600;color:var(--ink-900);margin:0 0 4px;">Search by Candidate</h3>
+            <p style="font-size:12px;color:var(--ink-500);margin:0 0 16px;">Enter a candidate name or identity number to track their verification status.</p>
+            <form method="POST" action="{{ route('client.requests.track.search') }}" style="display:flex;gap:10px;">
                 @csrf
-                <div class="relative flex-1">
-                    <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                <div style="position:relative;flex:1;">
+                    <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-400);pointer-events:none;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
                     </svg>
-                    <input
-                        type="text"
-                        name="q"
-                        value="{{ $query }}"
-                        placeholder="Name or identity number..."
-                        class="w-full rounded-lg border border-slate-300 pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors"
-                        autofocus
-                    />
+                    <input type="text" name="q" value="{{ $query }}" placeholder="Name or identity number..."
+                        style="width:100%;padding:10px 14px 10px 38px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);box-sizing:border-box;"
+                        onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'"
+                        autofocus />
                 </div>
-                <button type="submit" class="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">
-                    Search
-                </button>
+                <button type="submit" class="btn-primary">Search</button>
             </form>
         </div>
 
         {{-- Results --}}
         @if ($results !== null)
             @if ($results->isEmpty())
-                <div class="bg-white rounded-xl border border-slate-200 py-16 text-center">
-                    <svg class="mx-auto size-10 text-slate-300 mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <div class="nrh-card" style="padding:60px 20px;text-align:center;">
+                    <svg style="width:40px;height:40px;color:var(--ink-200);margin:0 auto 12px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
                     </svg>
-                    <p class="text-sm text-slate-400">No candidates found for <span class="font-medium text-slate-600">"{{ $query }}"</span></p>
+                    <p style="font-size:13px;color:var(--ink-400);margin:0;">No candidates found for <strong style="color:var(--ink-600);">"{{ $query }}"</strong></p>
                 </div>
             @else
-                <div class="space-y-4">
+                <div style="display:flex;flex-direction:column;gap:12px;">
                     @foreach ($results as $result)
-                        <div class="bg-white rounded-xl border border-slate-200 p-5">
-                            {{-- Candidate header --}}
-                            <div class="flex items-start justify-between mb-4">
+                        @php
+                            $stepMap = ['new' => 1, 'in_progress' => 2, 'flagged' => 2, 'complete' => 3];
+                            $currentStep = $stepMap[$result->status] ?? 1;
+                        @endphp
+                        <div class="nrh-card" style="padding:20px 24px;">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
                                 <div>
-                                    <p class="font-semibold text-slate-900">{{ $result['candidate_name'] }}</p>
-                                    <p class="text-xs text-slate-400 font-mono mt-0.5">{{ $result['identity_number'] }}</p>
+                                    <p style="font-size:14px;font-weight:600;color:var(--ink-900);margin:0;">{{ $result->name }}</p>
+                                    <p style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);margin:3px 0 0;">{{ $result->identity_number }}</p>
                                 </div>
-                                <a href="{{ route('client.requests.details', $result['request_id']) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700 transition-colors">
-                                    {{ $result['request_reference'] }} →
+                                <a href="{{ route('client.requests.details', $result->screeningRequest->id) }}"
+                                   style="font-size:12px;font-weight:600;color:var(--emerald-700);text-decoration:none;"
+                                   onmouseover="this.style.color='var(--emerald-900)'" onmouseout="this.style.color='var(--emerald-700)'">
+                                    {{ $result->screeningRequest->reference }} →
                                 </a>
                             </div>
 
-                            {{-- Status steps --}}
-                            <div class="flex items-center gap-0 mb-4">
+                            {{-- Step tracker --}}
+                            <div style="display:flex;align-items:center;margin-bottom:16px;">
                                 @php
                                     $trackSteps = [1 => 'Received', 2 => 'Processing', 3 => 'Complete'];
-                                    $currentStep = $result['status_id'];
                                 @endphp
                                 @foreach ($trackSteps as $stepNum => $stepLabel)
-                                    <div class="flex items-center {{ $stepNum < count($trackSteps) ? 'flex-1' : '' }}">
-                                        <div class="flex flex-col items-center gap-1">
-                                            <div class="size-7 rounded-full flex items-center justify-center text-xs font-semibold
-                                                {{ $stepNum < $currentStep ? 'bg-emerald-500 text-white' : ($stepNum === $currentStep ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-400') }}">
+                                    <div style="display:flex;align-items:center;{{ $stepNum < count($trackSteps) ? 'flex:1;' : '' }}">
+                                        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                                            <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+                                                {{ $stepNum <= $currentStep ? 'background:var(--emerald-700);color:white;' : 'background:var(--line);color:var(--ink-400);' }}">
                                                 @if ($stepNum < $currentStep)
-                                                    <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                                    <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                                                 @else
                                                     {{ $stepNum }}
                                                 @endif
                                             </div>
-                                            <span class="text-xs {{ $stepNum <= $currentStep ? 'text-slate-700 font-medium' : 'text-slate-400' }}">{{ $stepLabel }}</span>
+                                            <span style="font-size:11px;{{ $stepNum <= $currentStep ? 'color:var(--ink-700);font-weight:600;' : 'color:var(--ink-400);' }}">{{ $stepLabel }}</span>
                                         </div>
                                         @if ($stepNum < count($trackSteps))
-                                            <div class="flex-1 h-px mx-2 mb-4 {{ $stepNum < $currentStep ? 'bg-emerald-400' : 'bg-slate-200' }}"></div>
+                                            <div style="flex:1;height:1px;margin:0 8px 16px;{{ $stepNum < $currentStep ? 'background:var(--emerald-400);' : 'background:var(--line);' }}"></div>
                                         @endif
                                     </div>
                                 @endforeach
                             </div>
 
                             {{-- Scopes --}}
-                            <div class="flex flex-wrap gap-1.5">
-                                @foreach ($result['scopes'] as $scope)
-                                    <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-600">{{ $scope }}</span>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                                @foreach ($result->scopeTypes as $scope)
+                                    <span class="pill pill-pending">{{ $scope->name }}</span>
                                 @endforeach
                             </div>
-                            <p class="text-xs text-slate-400 mt-2">Last updated: {{ $result['updated_at'] }}</p>
+                            <p style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);margin:10px 0 0;">Last updated: {{ $result->updated_at->format('d M Y') }}</p>
                         </div>
                     @endforeach
                 </div>

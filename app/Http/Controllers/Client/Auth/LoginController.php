@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Client\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\CustomerUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
@@ -14,15 +16,31 @@ class LoginController extends Controller
 
     public function submit(Request $request)
     {
-        session([
-            'client_user_id' => 1,
-            'client_customer_id' => 1,
-            'client_user_name' => 'Demo User',
-            'client_company' => 'NRH Intelligence',
-            'client_balance' => 1250.00,
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
 
-        return redirect()->route('client.dashboard');
+        $user = CustomerUser::with('customer')
+            ->where('email', $validated['email'])
+            ->where('status', 'active')
+            ->first();
+
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => 'Invalid email address or password.']);
+        }
+
+        session([
+            'client_user_id' => $user->id,
+            'client_customer_id' => $user->customer_id,
+            'client_user_name' => $user->name,
+            'client_company' => $user->customer->name,
+            'client_last_login' => now()->format('d M Y, H:i'),
+        ]);
+
+        return redirect()->intended(route('client.dashboard'));
     }
 
     public function verification()

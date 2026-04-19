@@ -10,12 +10,12 @@
 <div
     x-data="newRequest()"
     x-init="init()"
-    class="max-w-6xl mx-auto"
+    style="max-width:1100px;"
 >
 
     {{-- Step indicator --}}
-    <div class="mb-8">
-        <div class="flex items-center gap-0">
+    <div style="margin-bottom:32px;">
+        <div style="display:flex;align-items:center;">
             @php
                 $steps = [
                     ['num' => 1, 'label' => 'Select Scopes'],
@@ -25,18 +25,14 @@
                 ];
             @endphp
             @foreach ($steps as $i => $s)
-                <div class="flex items-center {{ $i < count($steps) - 1 ? 'flex-1' : '' }}">
-                    <div class="flex items-center gap-2 shrink-0">
+                <div style="display:flex;align-items:center;{{ $i < count($steps) - 1 ? 'flex:1;' : '' }}">
+                    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
                         <div
-                            class="size-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors"
-                            :class="{
-                                'bg-brand-600 text-white': step === {{ $s['num'] }},
-                                'bg-brand-600 text-white': step > {{ $s['num'] }},
-                                'bg-slate-100 text-slate-400': step < {{ $s['num'] }}
-                            }"
+                            style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;transition:background 200ms,color 200ms;"
+                            :style="step >= {{ $s['num'] }} ? 'background:var(--emerald-700);color:white;' : 'background:var(--line);color:var(--ink-400);'"
                         >
                             <template x-if="step > {{ $s['num'] }}">
-                                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
                                 </svg>
                             </template>
@@ -45,13 +41,14 @@
                             </template>
                         </div>
                         <span
-                            class="hidden sm:block text-sm font-medium transition-colors"
-                            :class="step >= {{ $s['num'] }} ? 'text-slate-900' : 'text-slate-400'"
+                            style="font-size:13px;font-weight:500;transition:color 200ms;"
+                            :style="step >= {{ $s['num'] }} ? 'color:var(--ink-900);' : 'color:var(--ink-400);'"
                         >{{ $s['label'] }}</span>
                     </div>
                     @if ($i < count($steps) - 1)
-                        <div class="flex-1 mx-3 h-px bg-slate-200">
-                            <div class="h-px bg-brand-600 transition-all duration-500" :style="step > {{ $s['num'] }} ? 'width:100%' : 'width:0%'"></div>
+                        <div style="flex:1;height:1px;background:var(--line);margin:0 12px;position:relative;overflow:hidden;">
+                            <div style="position:absolute;left:0;top:0;bottom:0;background:var(--emerald-600);transition:width 400ms ease;"
+                                :style="step > {{ $s['num'] }} ? 'width:100%' : 'width:0%'"></div>
                         </div>
                     @endif
                 </div>
@@ -61,22 +58,22 @@
 
     {{-- ── STEP 1: Select Scopes ── --}}
     <div x-show="step === 1" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;">
 
             {{-- Left: Scope browser --}}
-            <div class="lg:col-span-2 space-y-4">
+            <div style="display:flex;flex-direction:column;gap:16px;">
 
                 {{-- Country tabs --}}
-                <div class="bg-white rounded-xl border border-slate-200 p-4">
-                    <h3 class="text-sm font-semibold text-slate-900 mb-3">Select Country</h3>
-                    <div class="flex flex-wrap gap-2">
+                <div class="nrh-card" style="padding:18px 20px;">
+                    <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 12px;">Select Country</h3>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;">
                         @foreach ($countries as $country)
                             <button
                                 @click="selectedCountry = {{ $country['id'] }}"
-                                :class="selectedCountry === {{ $country['id'] }}
-                                    ? 'bg-brand-600 text-white border-brand-600'
-                                    : 'bg-white text-slate-700 border-slate-200 hover:border-brand-300 hover:text-brand-600'"
-                                class="flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+                                style="display:flex;align-items:center;gap:8px;border-radius:var(--radius);border:1px solid var(--line);padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:background 120ms,border-color 120ms,color 120ms;font-family:var(--font-ui);"
+                                :style="selectedCountry === {{ $country['id'] }}
+                                    ? 'background:var(--emerald-700);color:white;border-color:var(--emerald-700);'
+                                    : 'background:var(--card);color:var(--ink-700);'"
                             >
                                 <span>{{ $country['flag'] }}</span>
                                 <span>{{ $country['name'] }}</span>
@@ -85,43 +82,43 @@
                     </div>
                 </div>
 
-                {{-- Tabs: Scopes / Packages / My Favourites --}}
-                <div class="bg-white rounded-xl border border-slate-200">
-                    <div class="flex border-b border-slate-200 px-4">
+                {{-- Tabs: Scopes / Packages / Favourites --}}
+                <div class="nrh-card">
+                    <div style="display:flex;border-bottom:1px solid var(--line);padding:0 4px;">
                         @foreach (['scopes' => 'Verification Scopes', 'packages' => 'Packages', 'favourites' => 'My Favourites'] as $tab => $label)
                             <button
                                 @click="scopeTab = '{{ $tab }}'"
-                                :class="scopeTab === '{{ $tab }}' ? 'border-b-2 border-brand-600 text-brand-600' : 'text-slate-500 hover:text-slate-700'"
-                                class="px-4 py-3 text-sm font-medium -mb-px transition-colors"
+                                style="padding:12px 14px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 120ms,border-color 120ms;font-family:var(--font-ui);"
+                                :style="scopeTab === '{{ $tab }}' ? 'border-bottom-color:var(--emerald-600);color:var(--emerald-700);' : 'color:var(--ink-500);'"
                             >{{ $label }}</button>
                         @endforeach
                     </div>
 
-                    <div class="p-4">
+                    <div style="padding:16px;">
 
                         {{-- Scopes tab --}}
                         <div x-show="scopeTab === 'scopes'">
-                            <div class="space-y-2">
+                            <div style="display:flex;flex-direction:column;gap:8px;">
                                 <template x-for="scope in filteredScopes" :key="scope.id">
                                     <div
-                                        :class="isInCart(scope.id) ? 'border-brand-300 bg-brand-50' : 'border-slate-200 hover:border-slate-300'"
-                                        class="flex items-center justify-between rounded-lg border p-3.5 transition-colors"
+                                        style="display:flex;align-items:center;justify-content:space-between;border-radius:var(--radius);border:1px solid var(--line);padding:12px 14px;transition:border-color 120ms,background 120ms;cursor:default;"
+                                        :style="isInCart(scope.id) ? 'border-color:rgba(5,150,105,0.4);background:rgba(5,150,105,0.04);' : ''"
                                     >
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-slate-900" x-text="scope.name"></p>
-                                            <div class="flex items-center gap-3 mt-1">
-                                                <span class="text-xs text-slate-400 flex items-center gap-1">
-                                                    <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-                                                    <span x-text="scope.turnaround"></span>
-                                                </span>
-                                            </div>
+                                        <div style="flex:1;min-width:0;">
+                                            <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;" x-text="scope.name"></p>
+                                            <span style="font-size:11px;color:var(--ink-400);display:flex;align-items:center;gap:4px;margin-top:3px;">
+                                                <svg style="width:11px;height:11px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                                                <span x-text="scope.turnaround"></span>
+                                            </span>
                                         </div>
-                                        <div class="flex items-center gap-3 ml-3 shrink-0">
-                                            <span class="text-sm font-semibold text-slate-900">MYR <span x-text="scope.price.toFixed(2)"></span></span>
+                                        <div style="display:flex;align-items:center;gap:12px;margin-left:12px;flex-shrink:0;">
+                                            <span style="font-size:13px;font-weight:600;color:var(--ink-900);font-family:var(--font-mono);">MYR <span x-text="scope.price.toFixed(2)"></span></span>
                                             <button
                                                 @click="toggleScope(scope)"
-                                                :class="isInCart(scope.id) ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-brand-600 text-white hover:bg-brand-700'"
-                                                class="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors"
+                                                style="border-radius:var(--radius);border:1px solid;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;transition:background 120ms,color 120ms;font-family:var(--font-ui);"
+                                                :style="isInCart(scope.id)
+                                                    ? 'background:rgba(196,69,58,0.06);color:var(--danger);border-color:rgba(196,69,58,0.25);'
+                                                    : 'background:var(--emerald-700);color:white;border-color:var(--emerald-700);'"
                                             >
                                                 <span x-text="isInCart(scope.id) ? 'Remove' : 'Add'"></span>
                                             </button>
@@ -129,42 +126,39 @@
                                     </div>
                                 </template>
                                 <template x-if="filteredScopes.length === 0">
-                                    <p class="py-8 text-center text-sm text-slate-400">No scopes available for this country.</p>
+                                    <p style="padding:32px 0;text-align:center;font-size:13px;color:var(--ink-400);">No scopes available for this country.</p>
                                 </template>
                             </div>
                         </div>
 
                         {{-- Packages tab --}}
                         <div x-show="scopeTab === 'packages'">
-                            <div class="space-y-2">
+                            <div style="display:flex;flex-direction:column;gap:8px;">
                                 <template x-for="pkg in filteredPackages" :key="pkg.id">
-                                    <div class="flex items-start justify-between rounded-lg border border-slate-200 hover:border-slate-300 p-3.5 transition-colors">
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-slate-900" x-text="pkg.name"></p>
-                                            <p class="text-xs text-slate-500 mt-1">
+                                    <div style="display:flex;align-items:flex-start;justify-content:space-between;border-radius:var(--radius);border:1px solid var(--line);padding:12px 14px;">
+                                        <div style="flex:1;min-width:0;">
+                                            <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;" x-text="pkg.name"></p>
+                                            <p style="font-size:12px;color:var(--ink-500);margin:3px 0 0;">
                                                 <span x-text="pkg.scope_ids.length"></span> scopes included
                                             </p>
                                         </div>
-                                        <div class="flex items-center gap-3 ml-3 shrink-0">
-                                            <span class="text-sm font-semibold text-slate-900">MYR <span x-text="pkg.price.toFixed(2)"></span></span>
-                                            <button
-                                                @click="addPackage(pkg)"
-                                                class="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 transition-colors"
-                                            >Add All</button>
+                                        <div style="display:flex;align-items:center;gap:12px;margin-left:12px;flex-shrink:0;">
+                                            <span style="font-size:13px;font-weight:600;color:var(--ink-900);font-family:var(--font-mono);">MYR <span x-text="pkg.price.toFixed(2)"></span></span>
+                                            <button @click="addPackage(pkg)" class="btn-primary" style="font-size:11px;padding:6px 12px;">Add All</button>
                                         </div>
                                     </div>
                                 </template>
                                 <template x-if="filteredPackages.length === 0">
-                                    <p class="py-8 text-center text-sm text-slate-400">No packages available for this country.</p>
+                                    <p style="padding:32px 0;text-align:center;font-size:13px;color:var(--ink-400);">No packages available for this country.</p>
                                 </template>
                             </div>
                         </div>
 
                         {{-- Favourites tab --}}
                         <div x-show="scopeTab === 'favourites'">
-                            <p class="py-8 text-center text-sm text-slate-400">
+                            <p style="padding:32px 0;text-align:center;font-size:13px;color:var(--ink-400);">
                                 No saved favourites yet.
-                                <a href="{{ route('client.settings.packages') }}" class="text-brand-600 hover:text-brand-700 font-medium">Create one in Settings →</a>
+                                <a href="{{ route('client.settings.packages') }}" style="color:var(--emerald-700);font-weight:600;text-decoration:none;">Create one in Settings →</a>
                             </p>
                         </div>
                     </div>
@@ -172,25 +166,27 @@
             </div>
 
             {{-- Right: Cart --}}
-            <div class="space-y-4">
-                <div class="bg-white rounded-xl border border-slate-200 sticky top-20">
-                    <div class="flex items-center justify-between px-4 py-3.5 border-b border-slate-100">
-                        <h3 class="text-sm font-semibold text-slate-900">Selected Scopes</h3>
-                        <span class="rounded-full bg-brand-100 text-brand-700 text-xs font-semibold px-2 py-0.5" x-text="cart.length"></span>
+            <div>
+                <div class="nrh-card" style="position:sticky;top:80px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);">
+                        <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;">Selected Scopes</h3>
+                        <span style="border-radius:999px;background:rgba(5,150,105,0.1);color:var(--emerald-700);font-size:11px;font-weight:700;padding:2px 8px;font-family:var(--font-mono);" x-text="cart.length"></span>
                     </div>
-                    <div class="p-4">
+                    <div style="padding:14px 18px;">
                         <template x-if="cart.length === 0">
-                            <p class="py-6 text-center text-sm text-slate-400">No scopes selected yet.</p>
+                            <p style="padding:24px 0;text-align:center;font-size:12px;color:var(--ink-400);">No scopes selected yet.</p>
                         </template>
-                        <div class="space-y-2">
+                        <div style="display:flex;flex-direction:column;gap:8px;">
                             <template x-for="item in cart" :key="item.id">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-xs font-medium text-slate-800 leading-snug" x-text="item.name"></p>
-                                        <p class="text-xs text-slate-400 mt-0.5">MYR <span x-text="item.price.toFixed(2)"></span></p>
+                                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                                    <div style="flex:1;min-width:0;">
+                                        <p style="font-size:12px;font-weight:600;color:var(--ink-800);line-height:1.4;margin:0;" x-text="item.name"></p>
+                                        <p style="font-size:11px;color:var(--ink-400);margin:2px 0 0;font-family:var(--font-mono);">MYR <span x-text="item.price.toFixed(2)"></span></p>
                                     </div>
-                                    <button @click="removeFromCart(item.id)" class="text-slate-300 hover:text-red-500 transition-colors shrink-0 mt-0.5">
-                                        <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                    <button @click="removeFromCart(item.id)"
+                                        style="color:var(--ink-300);background:none;border:none;cursor:pointer;flex-shrink:0;margin-top:2px;padding:0;"
+                                        onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--ink-300)'">
+                                        <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
                                         </svg>
                                     </button>
@@ -199,25 +195,27 @@
                         </div>
 
                         <template x-if="cart.length > 0">
-                            <div class="mt-4 pt-3 border-t border-slate-100">
-                                <div class="flex justify-between text-xs text-slate-500 mb-1">
+                            <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">
+                                <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);margin-bottom:4px;">
                                     <span>Per candidate</span>
-                                    <span>MYR <span x-text="cartTotal.toFixed(2)"></span></span>
+                                    <span style="font-family:var(--font-mono);">MYR <span x-text="cartTotal.toFixed(2)"></span></span>
                                 </div>
-                                <button @click="clearCart()" class="mt-2 text-xs text-slate-400 hover:text-red-500 transition-colors">Clear all</button>
+                                <button @click="clearCart()" style="font-size:11px;color:var(--ink-400);background:none;border:none;cursor:pointer;padding:0;margin-top:6px;"
+                                    onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--ink-400)'">Clear all</button>
                             </div>
                         </template>
                     </div>
 
-                    <div class="px-4 pb-4">
+                    <div style="padding:0 18px 18px;">
                         <button
                             @click="nextStep()"
                             :disabled="cart.length === 0"
-                            :class="cart.length === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-brand-700'"
-                            class="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors"
+                            class="btn-primary"
+                            style="width:100%;justify-content:center;"
+                            :style="cart.length === 0 ? 'opacity:0.4;cursor:not-allowed;' : ''"
                         >
                             Continue
-                            <svg class="inline-block ml-1 size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
                             </svg>
                         </button>
@@ -229,22 +227,25 @@
 
     {{-- ── STEP 2: Add Candidates ── --}}
     <div x-show="step === 2" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        @php
+            $inp2 = "width:100%;padding:10px 14px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);box-sizing:border-box;";
+        @endphp
+        <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;">
 
-            {{-- Add candidate form --}}
-            <div class="lg:col-span-2 space-y-4">
-                <div class="bg-white rounded-xl border border-slate-200 p-5">
-                    <h3 class="text-sm font-semibold text-slate-900 mb-4">Add Candidate</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="sm:col-span-2">
-                            <label class="block text-xs font-medium text-slate-600 mb-1.5">Full Name <span class="text-red-500">*</span></label>
-                            <input x-model="newCandidate.name" type="text" placeholder="As per identity document"
-                                class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors"/>
+            {{-- Add candidate form + table --}}
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <div class="nrh-card" style="padding:20px 24px;">
+                    <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 16px;">Add Candidate</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                        <div style="grid-column:span 2;">
+                            <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Full Name <span style="color:var(--danger)">*</span></label>
+                            <input x-model="newCandidate.name" type="text" placeholder="As per identity document" style="{{ $inp2 }}"
+                                onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'" />
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1.5">Identity Type <span class="text-red-500">*</span></label>
-                            <select x-model="newCandidate.identity_type_id"
-                                class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors bg-white">
+                            <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Identity Type <span style="color:var(--danger)">*</span></label>
+                            <select x-model="newCandidate.identity_type_id" style="{{ $inp2 }}"
+                                onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'">
                                 <option value="">Select type</option>
                                 @foreach ($identityTypes as $type)
                                     <option value="{{ $type['id'] }}">{{ $type['name'] }}</option>
@@ -252,64 +253,62 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1.5">Identity Number <span class="text-red-500">*</span></label>
-                            <input x-model="newCandidate.identity_number" type="text" placeholder="e.g. 900101-14-5678"
-                                class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors"/>
+                            <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Identity Number <span style="color:var(--danger)">*</span></label>
+                            <input x-model="newCandidate.identity_number" type="text" placeholder="e.g. 900101-14-5678" style="{{ $inp2 }}"
+                                onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'" />
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1.5">Mobile Number</label>
-                            <input x-model="newCandidate.mobile" type="tel" placeholder="+60 12 345 6789"
-                                class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors"/>
+                            <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Mobile Number</label>
+                            <input x-model="newCandidate.mobile" type="tel" placeholder="+60 12 345 6789" style="{{ $inp2 }}"
+                                onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'" />
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1.5">Remarks</label>
-                            <input x-model="newCandidate.remarks" type="text" placeholder="Optional"
-                                class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors"/>
+                            <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Remarks</label>
+                            <input x-model="newCandidate.remarks" type="text" placeholder="Optional" style="{{ $inp2 }}"
+                                onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'" />
                         </div>
                     </div>
-                    <div class="mt-4 flex items-center justify-between">
-                        <p x-show="candidateError" class="text-sm text-red-600" x-text="candidateError"></p>
-                        <div class="ml-auto">
-                            <button @click="addCandidate()"
-                                class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">
-                                Add Candidate
-                            </button>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;">
+                        <p x-show="candidateError" style="font-size:12px;color:var(--danger);margin:0;" x-text="candidateError"></p>
+                        <div style="margin-left:auto;">
+                            <button @click="addCandidate()" class="btn-primary">Add Candidate</button>
                         </div>
                     </div>
                 </div>
 
                 {{-- Candidates table --}}
-                <div class="bg-white rounded-xl border border-slate-200">
-                    <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
-                        <h3 class="text-sm font-semibold text-slate-900">
+                <div class="nrh-card">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);">
+                        <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;">
                             Candidates
-                            <span class="ml-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-0.5" x-text="candidates.length"></span>
+                            <span style="margin-left:6px;border-radius:999px;background:var(--paper);border:1px solid var(--line);font-size:11px;font-weight:700;padding:1px 7px;color:var(--ink-500);font-family:var(--font-mono);" x-text="candidates.length"></span>
                         </h3>
                     </div>
                     <template x-if="candidates.length === 0">
-                        <p class="py-10 text-center text-sm text-slate-400">No candidates added yet.</p>
+                        <p style="padding:40px 0;text-align:center;font-size:13px;color:var(--ink-400);">No candidates added yet.</p>
                     </template>
                     <template x-if="candidates.length > 0">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
+                        <div style="overflow-x:auto;">
+                            <table class="nrh-table">
                                 <thead>
-                                    <tr class="border-b border-slate-100">
-                                        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">#</th>
-                                        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Name</th>
-                                        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Identity</th>
-                                        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Mobile</th>
-                                        <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wide">Action</th>
+                                    <tr>
+                                        <th style="width:40px;">#</th>
+                                        <th>Name</th>
+                                        <th>Identity</th>
+                                        <th>Mobile</th>
+                                        <th style="width:80px;text-align:right;"></th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-100">
+                                <tbody>
                                     <template x-for="(c, i) in candidates" :key="c._id">
-                                        <tr class="hover:bg-slate-50 transition-colors">
-                                            <td class="px-5 py-3 text-slate-400 text-xs" x-text="i + 1"></td>
-                                            <td class="px-5 py-3 font-medium text-slate-900" x-text="c.name"></td>
-                                            <td class="px-5 py-3 text-slate-500 text-xs font-mono" x-text="c.identity_number"></td>
-                                            <td class="px-5 py-3 text-slate-500 text-xs" x-text="c.mobile || '—'"></td>
-                                            <td class="px-5 py-3 text-right">
-                                                <button @click="removeCandidate(c._id)" class="text-xs font-medium text-red-500 hover:text-red-700 transition-colors">Remove</button>
+                                        <tr>
+                                            <td style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);" x-text="i + 1"></td>
+                                            <td style="font-weight:600;color:var(--ink-900);" x-text="c.name"></td>
+                                            <td style="font-family:var(--font-mono);font-size:12px;color:var(--ink-500);" x-text="c.identity_number"></td>
+                                            <td style="font-size:12px;color:var(--ink-500);" x-text="c.mobile || '—'"></td>
+                                            <td style="text-align:right;">
+                                                <button @click="removeCandidate(c._id)" style="font-size:12px;font-weight:600;color:var(--danger);background:none;border:none;cursor:pointer;font-family:var(--font-ui);"
+                                                    onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Remove</button>
                                             </td>
                                         </tr>
                                     </template>
@@ -322,50 +321,45 @@
 
             {{-- Scope summary sidebar --}}
             <div>
-                <div class="bg-white rounded-xl border border-slate-200 sticky top-20 p-4">
-                    <h3 class="text-sm font-semibold text-slate-900 mb-3">Scope Summary</h3>
-                    <div class="space-y-1.5 mb-4">
+                <div class="nrh-card" style="padding:18px;position:sticky;top:80px;">
+                    <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 12px;">Scope Summary</h3>
+                    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
                         <template x-for="item in cart" :key="item.id">
-                            <div class="flex justify-between text-xs">
-                                <span class="text-slate-600 leading-snug" x-text="item.name"></span>
-                                <span class="text-slate-500 shrink-0 ml-2">MYR <span x-text="item.price.toFixed(2)"></span></span>
+                            <div style="display:flex;justify-content:space-between;font-size:12px;">
+                                <span style="color:var(--ink-600);line-height:1.4;" x-text="item.name"></span>
+                                <span style="color:var(--ink-500);flex-shrink:0;margin-left:8px;font-family:var(--font-mono);">MYR <span x-text="item.price.toFixed(2)"></span></span>
                             </div>
                         </template>
                     </div>
-                    <div class="border-t border-slate-100 pt-3 space-y-1 text-xs">
-                        <div class="flex justify-between text-slate-600">
+                    <div style="border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px;">
+                        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
                             <span>Per candidate</span>
-                            <span class="font-medium">MYR <span x-text="cartTotal.toFixed(2)"></span></span>
+                            <span style="font-weight:600;font-family:var(--font-mono);">MYR <span x-text="cartTotal.toFixed(2)"></span></span>
                         </div>
-                        <div class="flex justify-between text-slate-600">
+                        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
                             <span>Candidates</span>
-                            <span class="font-medium" x-text="candidates.length"></span>
+                            <span style="font-weight:600;" x-text="candidates.length"></span>
                         </div>
-                        <div class="flex justify-between font-semibold text-slate-900 text-sm pt-1 border-t border-slate-100 mt-1">
+                        <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:var(--ink-900);border-top:1px solid var(--line);padding-top:10px;margin-top:4px;">
                             <span>Est. Total</span>
-                            <span>MYR <span x-text="(cartTotal * candidates.length).toFixed(2)"></span></span>
+                            <span style="font-family:var(--font-mono);">MYR <span x-text="(cartTotal * candidates.length).toFixed(2)"></span></span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Navigation --}}
-        <div class="mt-6 flex items-center justify-between">
-            <button @click="prevStep()" class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;">
+            <button @click="prevStep()" class="btn-ghost">
+                <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
                 </svg>
                 Back
             </button>
-            <button
-                @click="nextStep()"
-                :disabled="candidates.length === 0"
-                :class="candidates.length === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-brand-700'"
-                class="flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors"
-            >
+            <button @click="nextStep()" :disabled="candidates.length === 0" class="btn-primary"
+                :style="candidates.length === 0 ? 'opacity:0.4;cursor:not-allowed;' : ''">
                 Continue
-                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
                 </svg>
             </button>
@@ -374,64 +368,66 @@
 
     {{-- ── STEP 3: Upload Documents ── --}}
     <div x-show="step === 3" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0">
-        <div class="space-y-4">
+        <div style="display:flex;flex-direction:column;gap:16px;">
 
-            <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3">
-                <svg class="size-5 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.25);border-radius:var(--radius);">
+                <svg style="width:16px;height:16px;color:var(--gold-600);flex-shrink:0;margin-top:1px;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
                 </svg>
-                <div class="text-sm text-amber-800">
-                    <p class="font-medium">Documents required</p>
-                    <p class="mt-0.5 text-xs text-amber-700">Upload the required documents for each candidate. Accepted formats: PDF, DOC, DOCX, JPG, PNG (max 5MB each).</p>
+                <div>
+                    <p style="font-size:13px;font-weight:600;color:var(--ink-800);margin:0;">Documents required</p>
+                    <p style="font-size:12px;color:var(--ink-600);margin:3px 0 0;">Upload the required documents for each candidate. Accepted: PDF, DOC, DOCX, JPG, PNG (max 5MB each).</p>
                 </div>
             </div>
 
             <template x-for="(candidate, ci) in candidates" :key="candidate._id">
-                <div class="bg-white rounded-xl border border-slate-200">
-                    <div class="flex items-center gap-3 px-5 py-3.5 border-b border-slate-100">
-                        <div class="size-7 rounded-full bg-brand-100 flex items-center justify-center text-xs font-semibold text-brand-700" x-text="ci + 1"></div>
+                <div class="nrh-card">
+                    <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);">
+                        <div style="width:26px;height:26px;border-radius:50%;background:rgba(5,150,105,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--emerald-700);" x-text="ci + 1"></div>
                         <div>
-                            <p class="text-sm font-semibold text-slate-900" x-text="candidate.name"></p>
-                            <p class="text-xs text-slate-400 font-mono" x-text="candidate.identity_number"></p>
+                            <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;" x-text="candidate.name"></p>
+                            <p style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);margin:2px 0 0;" x-text="candidate.identity_number"></p>
                         </div>
-                        <div class="ml-auto">
-                            <span x-show="candidateDocsComplete(candidate._id)" class="flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-                                <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
-                                Complete
+                        <div style="margin-left:auto;">
+                            <span x-show="candidateDocsComplete(candidate._id)" class="pill pill-clear">
+                                <span class="dot"></span>Complete
                             </span>
                         </div>
                     </div>
-                    <div class="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div style="padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
                         <template x-for="docType in requiredDocTypes" :key="docType.id">
                             <div
-                                class="relative rounded-xl border-2 border-dashed p-4 text-center transition-colors cursor-pointer"
-                                :class="getUploadedFile(candidate._id, docType.id) ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 hover:border-brand-300 hover:bg-brand-50'"
+                                style="position:relative;border-radius:var(--radius);border:2px dashed var(--line);padding:20px 16px;text-align:center;transition:border-color 120ms,background 120ms;cursor:pointer;"
+                                :style="getUploadedFile(candidate._id, docType.id) ? 'border-color:rgba(5,150,105,0.4);background:rgba(5,150,105,0.04);' : ''"
                                 @click="$refs['file_' + candidate._id + '_' + docType.id].click()"
+                                onmouseover="if(!this.style.borderColor.includes('150')) { this.style.borderColor='var(--emerald-400)'; }"
+                                onmouseout="if(!this.style.borderColor.includes('150')) { this.style.borderColor='var(--line)'; }"
                             >
                                 <input
                                     type="file"
-                                    class="hidden"
+                                    style="display:none;"
                                     :ref="'file_' + candidate._id + '_' + docType.id"
                                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                     @change="handleFileUpload($event, candidate._id, docType.id)"
                                 />
                                 <template x-if="!getUploadedFile(candidate._id, docType.id)">
                                     <div>
-                                        <svg class="mx-auto size-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <svg style="width:28px;height:28px;color:var(--ink-200);margin:0 auto 8px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
                                         </svg>
-                                        <p class="text-xs font-medium text-slate-700" x-text="docType.label"></p>
-                                        <p class="text-xs text-slate-400 mt-0.5">Click to upload</p>
-                                        <span x-show="docType.required" class="mt-1 inline-block rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-xs text-red-600">Required</span>
+                                        <p style="font-size:12px;font-weight:600;color:var(--ink-700);margin:0;" x-text="docType.label"></p>
+                                        <p style="font-size:11px;color:var(--ink-400);margin:3px 0 0;">Click to upload</p>
+                                        <span x-show="docType.required" class="pill pill-review" style="display:inline-flex;margin-top:6px;font-size:10px;">Required</span>
                                     </div>
                                 </template>
                                 <template x-if="getUploadedFile(candidate._id, docType.id)">
                                     <div>
-                                        <svg class="mx-auto size-8 text-emerald-500 mb-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <svg style="width:28px;height:28px;color:var(--emerald-600);margin:0 auto 8px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                         </svg>
-                                        <p class="text-xs font-medium text-emerald-700 truncate" x-text="getUploadedFile(candidate._id, docType.id).name"></p>
-                                        <button @click.stop="removeFile(candidate._id, docType.id)" class="mt-1 text-xs text-slate-400 hover:text-red-500 transition-colors">Remove</button>
+                                        <p style="font-size:12px;font-weight:600;color:var(--emerald-700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;" x-text="getUploadedFile(candidate._id, docType.id).name"></p>
+                                        <button @click.stop="removeFile(candidate._id, docType.id)" style="font-size:11px;color:var(--ink-400);background:none;border:none;cursor:pointer;margin-top:4px;font-family:var(--font-ui);"
+                                            onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--ink-400)'">Remove</button>
                                     </div>
                                 </template>
                             </div>
@@ -441,16 +437,16 @@
             </template>
         </div>
 
-        <div class="mt-6 flex items-center justify-between">
-            <button @click="prevStep()" class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;">
+            <button @click="prevStep()" class="btn-ghost">
+                <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
                 </svg>
                 Back
             </button>
-            <button @click="nextStep()" class="flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">
+            <button @click="nextStep()" class="btn-primary">
                 Continue
-                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
                 </svg>
             </button>
@@ -459,79 +455,78 @@
 
     {{-- ── STEP 4: Review & Submit ── --}}
     <div x-show="step === 4" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-x-2" x-transition:enter-end="opacity-100 translate-x-0">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;">
 
-            <div class="lg:col-span-2 space-y-4">
+            <div style="display:flex;flex-direction:column;gap:16px;">
 
                 {{-- Scopes --}}
-                <div class="bg-white rounded-xl border border-slate-200">
-                    <div class="px-5 py-3.5 border-b border-slate-100">
-                        <h3 class="text-sm font-semibold text-slate-900">Selected Scopes</h3>
+                <div class="nrh-card">
+                    <div class="card-head">
+                        <h3>Selected Scopes</h3>
                     </div>
-                    <div class="divide-y divide-slate-100">
+                    <div>
                         <template x-for="item in cart" :key="item.id">
-                            <div class="flex items-center justify-between px-5 py-3">
-                                <p class="text-sm text-slate-800" x-text="item.name"></p>
-                                <p class="text-sm font-medium text-slate-900">MYR <span x-text="item.price.toFixed(2)"></span></p>
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid var(--line);">
+                                <p style="font-size:13px;color:var(--ink-800);margin:0;" x-text="item.name"></p>
+                                <p style="font-size:13px;font-weight:600;color:var(--ink-900);font-family:var(--font-mono);margin:0;">MYR <span x-text="item.price.toFixed(2)"></span></p>
                             </div>
                         </template>
                     </div>
                 </div>
 
                 {{-- Candidates --}}
-                <div class="bg-white rounded-xl border border-slate-200">
-                    <div class="px-5 py-3.5 border-b border-slate-100">
-                        <h3 class="text-sm font-semibold text-slate-900">
-                            Candidates
-                            <span class="ml-1.5 text-slate-400 font-normal" x-text="'(' + candidates.length + ')'"></span>
-                        </h3>
+                <div class="nrh-card">
+                    <div class="card-head">
+                        <h3>Candidates <span style="color:var(--ink-400);font-weight:400;" x-text="'(' + candidates.length + ')'"></span></h3>
                     </div>
-                    <div class="divide-y divide-slate-100">
+                    <div>
                         <template x-for="(c, i) in candidates" :key="c._id">
-                            <div class="flex items-center gap-4 px-5 py-3">
-                                <div class="size-6 rounded-full bg-brand-100 flex items-center justify-center text-xs font-semibold text-brand-700 shrink-0" x-text="i + 1"></div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-slate-900" x-text="c.name"></p>
-                                    <p class="text-xs text-slate-400 font-mono" x-text="c.identity_number"></p>
+                            <div style="display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid var(--line);">
+                                <div style="width:24px;height:24px;border-radius:50%;background:rgba(5,150,105,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--emerald-700);flex-shrink:0;" x-text="i + 1"></div>
+                                <div style="flex:1;min-width:0;">
+                                    <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;" x-text="c.name"></p>
+                                    <p style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);margin:2px 0 0;" x-text="c.identity_number"></p>
                                 </div>
-                                <span x-show="candidateDocsComplete(c._id)" class="text-xs text-emerald-600 font-medium">✓ Docs ready</span>
+                                <span x-show="candidateDocsComplete(c._id)" style="font-size:12px;font-weight:600;color:var(--emerald-700);">✓ Docs ready</span>
                             </div>
                         </template>
                     </div>
                 </div>
             </div>
 
-            {{-- Cost breakdown --}}
+            {{-- Cost breakdown + submit --}}
             <div>
-                <div class="bg-white rounded-xl border border-slate-200 p-5 sticky top-20">
-                    <h3 class="text-sm font-semibold text-slate-900 mb-4">Cost Breakdown</h3>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between text-slate-600">
+                <div class="nrh-card" style="padding:20px;position:sticky;top:80px;">
+                    <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 16px;">Cost Breakdown</h3>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--ink-500);">
                             <span>Scopes per candidate</span>
-                            <span>MYR <span x-text="cartTotal.toFixed(2)"></span></span>
+                            <span style="font-family:var(--font-mono);">MYR <span x-text="cartTotal.toFixed(2)"></span></span>
                         </div>
-                        <div class="flex justify-between text-slate-600">
+                        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--ink-500);">
                             <span>No. of candidates</span>
                             <span x-text="candidates.length"></span>
                         </div>
-                        <div class="border-t border-slate-100 pt-3 mt-2 flex justify-between font-bold text-slate-900 text-base">
+                        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:var(--ink-900);border-top:1px solid var(--line);padding-top:12px;margin-top:4px;">
                             <span>Total</span>
-                            <span>MYR <span x-text="(cartTotal * candidates.length).toFixed(2)"></span></span>
+                            <span style="font-family:var(--font-mono);">MYR <span x-text="(cartTotal * candidates.length).toFixed(2)"></span></span>
                         </div>
                     </div>
 
-                    <div class="mt-4 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs text-slate-500">
+                    <div style="margin-top:14px;padding:10px 12px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);font-size:11px;color:var(--ink-500);">
                         Payment via monthly billing or direct bank transfer. Invoice will be issued at end of month.
                     </div>
 
-                    <form method="POST" action="{{ route('client.request.submit') }}" @submit.prevent="submitForm($event)">
+                    <form method="POST" action="{{ route('client.request.submit') }}" @submit.prevent="submitForm($event)" style="margin-top:16px;">
                         @csrf
                         <input type="hidden" name="cart_data" :value="JSON.stringify(cart)">
                         <input type="hidden" name="candidates_data" :value="JSON.stringify(candidates)">
                         <button
                             type="submit"
                             :disabled="submitting"
-                            class="mt-4 w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 focus:outline-none focus:ring-3 focus:ring-brand-500/30 transition-colors disabled:opacity-50"
+                            class="btn-primary"
+                            style="width:100%;justify-content:center;"
+                            :style="submitting ? 'opacity:0.5;cursor:not-allowed;' : ''"
                         >
                             <span x-show="!submitting">Submit Request</span>
                             <span x-show="submitting">Submitting...</span>
@@ -541,9 +536,9 @@
             </div>
         </div>
 
-        <div class="mt-6">
-            <button @click="prevStep()" class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <div style="margin-top:20px;">
+            <button @click="prevStep()" class="btn-ghost">
+                <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
                 </svg>
                 Back

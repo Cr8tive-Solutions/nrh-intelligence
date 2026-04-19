@@ -1,88 +1,80 @@
 <x-client.layouts.app pageTitle="Active Requests">
 
-    {{-- Header --}}
-    <div class="flex items-center justify-between mb-6">
+    {{-- Page header --}}
+    <div class="page-head">
         <div>
-            <p class="text-sm text-slate-500 mt-0.5">Requests currently being processed</p>
+            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+                Active <em style="font-style:italic;color:var(--emerald-700);">Requests</em>
+            </h1>
+            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Screenings currently being processed</p>
         </div>
-        <a href="{{ route('client.request.new') }}"
-           class="flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">
-            <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-            </svg>
-            New Request
+        <a href="{{ route('client.request.new') }}" class="btn-primary">
+            <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            New screening
         </a>
     </div>
 
-    {{-- Status filter --}}
-    <div class="flex items-center gap-2 mb-4" x-data="{ filter: 'all' }">
-        @foreach (['all' => 'All', '1' => 'New', '2' => 'In Progress'] as $val => $label)
-            <button
-                @click="filter = '{{ $val }}'"
-                :class="filter === '{{ $val }}' ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'"
-                class="rounded-lg border px-3.5 py-1.5 text-sm font-medium transition-colors"
-            >{{ $label }}</button>
-        @endforeach
+    {{-- Table card --}}
+    <div class="nrh-card" x-data="{ filter: 'all', search: '' }">
+        <div class="card-head">
+            {{-- Filter chips --}}
+            <div style="display:flex;align-items:center;gap:6px;">
+                @foreach (['all' => 'All', 'new' => 'New', 'in_progress' => 'In Progress', 'complete' => 'Completed'] as $val => $label)
+                    <button
+                        @click="filter = '{{ $val }}'"
+                        :style="filter === '{{ $val }}' ? 'background:var(--emerald-50);color:var(--emerald-800);border-color:rgba(4,108,78,0.2);' : 'background:transparent;color:var(--ink-500);border-color:var(--line);'"
+                        style="padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid;cursor:pointer;transition:all 120ms;font-family:var(--font-ui);"
+                    >{{ $label }}</button>
+                @endforeach
+            </div>
 
-        <div class="ml-auto relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
-            </svg>
-            <input type="text" placeholder="Search requests..." class="rounded-lg border border-slate-200 bg-white pl-9 pr-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors w-56"/>
+            {{-- Search --}}
+            <div style="position:relative;width:240px;">
+                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-400);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+                <input x-model="search" type="text" placeholder="Search requests…"
+                    style="width:100%;padding:8px 10px 8px 32px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);transition:border-color 120ms,box-shadow 120ms;"
+                    onfocus="this.style.borderColor='var(--emerald-600)';this.style.boxShadow='0 0 0 3px rgba(5,150,105,0.1)'"
+                    onblur="this.style.borderColor='var(--line)';this.style.boxShadow=''"
+                />
+            </div>
         </div>
-    </div>
 
-    {{-- Table --}}
-    <div class="bg-white rounded-xl border border-slate-200">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+        <div style="overflow-x:auto;">
+            <table class="nrh-table">
                 <thead>
-                    <tr class="border-b border-slate-100 bg-slate-50/60">
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Request ID</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Candidates</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Submitted</th>
-                        <th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Candidates</th>
+                        <th style="width:140px;">Status</th>
+                        <th style="width:160px;">Submitted</th>
+                        <th style="width:80px;"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody>
                     @forelse ($requests as $req)
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-5 py-3.5">
-                                <span class="font-mono text-xs font-medium text-slate-700">{{ $req['reference'] }}</span>
+                        <tr onclick="location.href='{{ route('client.requests.details', $req->id) }}'">
+                            <td>
+                                <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--emerald-700);">{{ $req->reference }}</span>
                             </td>
-                            <td class="px-5 py-3.5">
-                                <span class="inline-flex items-center gap-1.5 text-sm text-slate-700">
-                                    <svg class="size-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
-                                    </svg>
-                                    {{ $req['candidates_count'] }}
-                                </span>
+                            <td style="color:var(--ink-700);">{{ $req->candidates_count }}</td>
+                            <td>
+                                @include('client.partials._status-badge', ['status' => $req->status])
                             </td>
-                            <td class="px-5 py-3.5">
-                                @php $sid = $req['status_id']; @endphp
-                                <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium
-                                    {{ $sid === 1 ? 'bg-blue-50 text-blue-700 border-blue-200' : ($sid === 2 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200') }}">
-                                    <span class="size-1.5 rounded-full {{ $sid === 1 ? 'bg-blue-500' : ($sid === 2 ? 'bg-amber-500' : 'bg-emerald-500') }}"></span>
-                                    {{ $req['status'] }}
-                                </span>
-                            </td>
-                            <td class="px-5 py-3.5 text-sm text-slate-500">{{ $req['created_at'] }}</td>
-                            <td class="px-5 py-3.5 text-right">
-                                <a href="{{ route('client.requests.details', $req['id']) }}"
-                                   class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors">
-                                    View
-                                </a>
+                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $req->created_at->format('d M Y') }}</td>
+                            <td style="text-align:right;">
+                                <a href="{{ route('client.requests.details', $req->id) }}"
+                                   class="btn-ghost" style="padding:5px 12px;font-size:12px;"
+                                   onclick="event.stopPropagation()">View</a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-5 py-16 text-center">
-                                <svg class="mx-auto size-10 text-slate-300 mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <td colspan="5" style="padding:60px 20px;text-align:center;">
+                                <svg style="width:40px;height:40px;color:var(--ink-200);margin:0 auto 12px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
                                 </svg>
-                                <p class="text-sm text-slate-400">No active requests.</p>
-                                <a href="{{ route('client.request.new') }}" class="mt-2 inline-block text-sm font-medium text-brand-600 hover:text-brand-700">Submit your first request →</a>
+                                <p style="font-size:13px;color:var(--ink-400);margin:0;">No active requests.</p>
+                                <a href="{{ route('client.request.new') }}" style="font-size:13px;font-weight:600;color:var(--emerald-700);text-decoration:none;display:inline-block;margin-top:8px;">Submit your first request →</a>
                             </td>
                         </tr>
                     @endforelse

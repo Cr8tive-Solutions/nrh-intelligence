@@ -1,49 +1,50 @@
 <x-client.layouts.app pageTitle="Completed Request">
 
-    <div class="flex items-center gap-2 text-sm text-slate-500 mb-6">
-        <a href="{{ route('client.history.index') }}" class="hover:text-brand-600 transition-colors">History</a>
-        <svg class="size-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
-        <span class="text-slate-900 font-medium font-mono">{{ $request['reference'] }}</span>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-500);margin-bottom:24px;">
+        <a href="{{ route('client.history.index') }}" style="color:var(--ink-500);text-decoration:none;" onmouseover="this.style.color='var(--emerald-700)'" onmouseout="this.style.color='var(--ink-500)'">History</a>
+        <svg style="width:12px;height:12px;color:var(--ink-300);" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+        <span style="color:var(--ink-900);font-weight:600;font-family:var(--font-mono);">{{ $request->reference }}</span>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    @php
+        $scopes = $request->candidates->flatMap(fn($c) => $c->scopeTypes)->unique('id')->pluck('name');
+    @endphp
 
-        <div class="lg:col-span-2 space-y-5">
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;">
+
+        <div style="display:flex;flex-direction:column;gap:16px;">
 
             {{-- Completed banner --}}
-            <div class="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                <svg class="size-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(5,150,105,0.06);border:1px solid rgba(5,150,105,0.2);border-radius:var(--radius);">
+                <svg style="width:16px;height:16px;color:var(--emerald-700);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                 </svg>
-                <p class="text-sm font-medium text-emerald-700">All verifications completed on {{ $request['completed_at'] }}</p>
+                <p style="font-size:13px;font-weight:500;color:var(--emerald-800);margin:0;">All verifications completed on {{ $request->updated_at->format('d M Y') }}</p>
             </div>
 
             {{-- Candidates --}}
-            <div class="bg-white rounded-xl border border-slate-200">
-                <div class="px-5 py-4 border-b border-slate-100">
-                    <h3 class="text-sm font-semibold text-slate-900">Candidates</h3>
+            <div class="nrh-card">
+                <div class="card-head">
+                    <h3>Candidates</h3>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
+                <div style="overflow-x:auto;">
+                    <table class="nrh-table">
                         <thead>
-                            <tr class="border-b border-slate-100 bg-slate-50/60">
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">#</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Identity No.</th>
-                                <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+                            <tr>
+                                <th style="width:40px;">#</th>
+                                <th>Name</th>
+                                <th>Identity No.</th>
+                                <th style="width:120px;">Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            @foreach ($request['candidates'] as $i => $candidate)
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-5 py-3.5 text-xs text-slate-400">{{ $i + 1 }}</td>
-                                    <td class="px-5 py-3.5 font-medium text-slate-900">{{ $candidate['name'] }}</td>
-                                    <td class="px-5 py-3.5 font-mono text-xs text-slate-500">{{ $candidate['identity_number'] }}</td>
-                                    <td class="px-5 py-3.5">
-                                        <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-                                            <span class="size-1.5 rounded-full bg-emerald-500"></span>
-                                            Complete
-                                        </span>
+                        <tbody>
+                            @foreach ($request->candidates as $i => $candidate)
+                                <tr>
+                                    <td style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);">{{ $i + 1 }}</td>
+                                    <td style="font-weight:600;color:var(--ink-900);">{{ $candidate->name }}</td>
+                                    <td style="font-family:var(--font-mono);font-size:12px;color:var(--ink-500);">{{ $candidate->identity_number }}</td>
+                                    <td>
+                                        <span class="pill pill-clear"><span class="dot"></span>Complete</span>
                                     </td>
                                 </tr>
                             @endforeach
@@ -53,36 +54,35 @@
             </div>
 
             {{-- Scopes --}}
-            <div class="bg-white rounded-xl border border-slate-200 p-5">
-                <h3 class="text-sm font-semibold text-slate-900 mb-3">Verification Scopes</h3>
-                <div class="flex flex-wrap gap-2">
-                    @foreach ($request['scopes'] as $scope)
-                        <span class="rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700">{{ $scope }}</span>
+            <div class="nrh-card" style="padding:20px 24px;">
+                <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 12px;">Verification Scopes</h3>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                    @foreach ($scopes as $scope)
+                        <span class="pill pill-pending">{{ $scope }}</span>
                     @endforeach
                 </div>
             </div>
         </div>
 
-        <div class="space-y-4">
-            <div class="bg-white rounded-xl border border-slate-200 p-5">
-                <h3 class="text-sm font-semibold text-slate-900 mb-4">Request Info</h3>
-                <dl class="space-y-3">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="nrh-card" style="padding:20px 24px;">
+                <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 16px;">Request Info</h3>
+                <dl style="display:flex;flex-direction:column;gap:12px;">
                     @foreach ([
-                        ['Reference',    $request['reference'],    'mono'],
-                        ['Submitted By', $request['submitted_by'], ''],
-                        ['Submitted',    $request['created_at'],   ''],
-                        ['Completed',    $request['completed_at'], ''],
-                    ] as [$label, $value, $extra])
+                        ['Reference',    $request->reference,                        true],
+                        ['Submitted By', $request->submittedBy?->name ?? '—',       false],
+                        ['Submitted',    $request->created_at->format('d M Y'),     false],
+                        ['Completed',    $request->updated_at->format('d M Y'),     false],
+                    ] as [$label, $value, $mono])
                         <div>
-                            <dt class="text-xs font-medium text-slate-500">{{ $label }}</dt>
-                            <dd class="mt-0.5 text-sm font-medium text-slate-900 {{ $extra === 'mono' ? 'font-mono' : '' }}">{{ $value }}</dd>
+                            <dt style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-400);">{{ $label }}</dt>
+                            <dd style="font-size:13px;font-weight:600;color:var(--ink-900);margin:3px 0 0;{{ $mono ? 'font-family:var(--font-mono);' : '' }}">{{ $value }}</dd>
                         </div>
                     @endforeach
                 </dl>
             </div>
-            <a href="{{ route('client.history.index') }}"
-               class="flex items-center justify-center gap-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <a href="{{ route('client.history.index') }}" class="btn-ghost" style="justify-content:center;">
+                <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
                 </svg>
                 Back to History

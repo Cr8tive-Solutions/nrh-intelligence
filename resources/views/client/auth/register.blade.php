@@ -1,85 +1,78 @@
-<x-client.layouts.auth title="Register">
-
-    <div class="mb-6">
-        <h2 class="text-xl font-bold text-slate-900">Create an account</h2>
-        <p class="mt-1 text-sm text-slate-500">Fill in your company details to get started</p>
-    </div>
+<x-client.layouts.auth
+    title="Register"
+    authTitle='Create an <em>account.</em>'
+    authSub='Fill in your company details to request portal access.'
+    step="—"
+    stepLabel="INSTITUTIONAL ACCESS"
+    footerText="Already registered?"
+    footerLink="Sign in →"
+    :footerHref="route('client.login')"
+>
 
     @if ($errors->any())
-        <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 space-y-1">
+        <div style="display:flex;flex-direction:column;gap:4px;padding:12px 14px;background:rgba(196,69,58,0.06);border:1px solid rgba(196,69,58,0.2);border-radius:var(--radius);margin-bottom:16px;">
             @foreach ($errors->all() as $error)
-                <p class="text-sm text-red-700">{{ $error }}</p>
+                <p style="font-size:12px;color:var(--danger);margin:0;">{{ $error }}</p>
             @endforeach
         </div>
     @endif
 
-    <form method="POST" action="{{ route('client.register.submit') }}" class="space-y-4">
+    <form method="POST" action="{{ route('client.register.submit') }}" style="display:flex;flex-direction:column;gap:14px;">
         @csrf
 
-        {{-- Company Info --}}
-        <div>
-            <label for="company_name" class="block text-sm font-medium text-slate-700 mb-1.5">Company name <span class="text-red-500">*</span></label>
-            <input id="company_name" name="company_name" type="text" value="{{ old('company_name') }}" required
-                class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 shadow-xs focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors @error('company_name') border-red-400 @enderror"
-                placeholder="ACME Sdn. Bhd."/>
+        <div class="field">
+            <label class="field-label">Company name <span style="color:var(--danger)">*</span></label>
+            <input type="text" name="company_name" value="{{ old('company_name') }}" class="auth-input" placeholder="ACME Sdn. Bhd."
+                onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'" />
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-            <div>
-                <label for="first_name" class="block text-sm font-medium text-slate-700 mb-1.5">First name <span class="text-red-500">*</span></label>
-                <input id="first_name" name="first_name" type="text" value="{{ old('first_name') }}" required
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 shadow-xs focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors @error('first_name') border-red-400 @enderror"
-                    placeholder="Ahmad"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="field">
+                <label class="field-label">First name <span style="color:var(--danger)">*</span></label>
+                <input type="text" name="first_name" value="{{ old('first_name') }}" class="auth-input" placeholder="Ahmad"
+                    onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'" />
             </div>
-            <div>
-                <label for="last_name" class="block text-sm font-medium text-slate-700 mb-1.5">Last name <span class="text-red-500">*</span></label>
-                <input id="last_name" name="last_name" type="text" value="{{ old('last_name') }}" required
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 shadow-xs focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors @error('last_name') border-red-400 @enderror"
-                    placeholder="Razali"/>
+            <div class="field">
+                <label class="field-label">Last name <span style="color:var(--danger)">*</span></label>
+                <input type="text" name="last_name" value="{{ old('last_name') }}" class="auth-input" placeholder="Razali"
+                    onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'" />
             </div>
         </div>
 
-        <div>
-            <label for="email" class="block text-sm font-medium text-slate-700 mb-1.5">Work email <span class="text-red-500">*</span></label>
-            <input id="email" name="email" type="email" value="{{ old('email') }}" required
-                class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 shadow-xs focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors @error('email') border-red-400 @enderror"
-                placeholder="you@company.com"/>
+        <div class="field">
+            <label class="field-label">Work email <span style="color:var(--danger)">*</span></label>
+            <div class="input-wrap">
+                <svg class="lead" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/>
+                </svg>
+                <input type="email" name="email" value="{{ old('email') }}" class="auth-input" placeholder="you@company.com"
+                    onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'" />
+            </div>
         </div>
 
-        <div>
-            <label for="phone" class="block text-sm font-medium text-slate-700 mb-1.5">Phone number <span class="text-red-500">*</span></label>
-            <input id="phone" name="phone" type="tel" value="{{ old('phone') }}" required
-                class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 shadow-xs focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors @error('phone') border-red-400 @enderror"
-                placeholder="+60 12 345 6789"/>
+        <div class="field">
+            <label class="field-label">Phone number <span style="color:var(--danger)">*</span></label>
+            <input type="tel" name="phone" value="{{ old('phone') }}" class="auth-input" placeholder="+60 12 345 6789"
+                onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'" />
         </div>
 
-        <div>
-            <label for="address" class="block text-sm font-medium text-slate-700 mb-1.5">Company address</label>
-            <textarea id="address" name="address" rows="2"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 shadow-xs focus:border-brand-500 focus:outline-none focus:ring-3 focus:ring-brand-500/20 transition-colors resize-none"
-                placeholder="No. 1, Jalan...">{{ old('address') }}</textarea>
+        <div class="field">
+            <label class="field-label">Company address</label>
+            <textarea name="address" rows="2" class="auth-input" placeholder="No. 1, Jalan..."
+                style="resize:none;" onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'">{{ old('address') }}</textarea>
         </div>
 
-        <div class="flex items-start gap-2 pt-1">
-            <input id="agree" name="agree" type="checkbox" required class="mt-0.5 size-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
-            <label for="agree" class="text-sm text-slate-600">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" name="agree" required style="width:14px;height:14px;margin-top:2px;accent-color:var(--emerald-700);flex-shrink:0;">
+            <span style="font-size:13px;color:var(--ink-600);">
                 I agree to the
-                <a href="#" class="text-brand-600 hover:text-brand-700 font-medium">Terms of Service</a>
+                <a href="#" style="color:var(--emerald-700);font-weight:600;text-decoration:none;">Terms of Service</a>
                 and
-                <a href="#" class="text-brand-600 hover:text-brand-700 font-medium">Privacy Policy</a>
-            </label>
-        </div>
+                <a href="#" style="color:var(--emerald-700);font-weight:600;text-decoration:none;">Privacy Policy</a>
+            </span>
+        </label>
 
-        <button type="submit" class="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-brand-700 focus:outline-none focus:ring-3 focus:ring-brand-500/30 transition-colors">
-            Submit registration
-        </button>
+        <button type="submit" class="btn-auth">Submit registration</button>
     </form>
-
-    <p class="mt-6 text-center text-sm text-slate-500">
-        Already have an account?
-        <a href="{{ route('client.login') }}" class="font-medium text-brand-600 hover:text-brand-700 transition-colors">
-            Sign in
-        </a>
-    </p>
 
 </x-client.layouts.auth>

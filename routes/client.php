@@ -5,6 +5,7 @@ use App\Http\Controllers\Client\Auth\RegistrationController;
 use App\Http\Controllers\Client\Billing\InvoiceController;
 use App\Http\Controllers\Client\Billing\TransactionController;
 use App\Http\Controllers\Client\DashboardController;
+use App\Http\Controllers\Client\NotificationController;
 use App\Http\Controllers\Client\Request\CreateRequestController;
 use App\Http\Controllers\Client\Request\OldRequestController;
 use App\Http\Controllers\Client\Request\TrackRequestController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Client\Scope\MapsController;
 use App\Http\Controllers\Client\Settings\AccountController;
 use App\Http\Controllers\Client\Settings\AgreementController;
 use App\Http\Controllers\Client\Settings\PackageController;
+use App\Http\Controllers\Client\Settings\ProfileController;
 use App\Http\Controllers\Client\Settings\SecurityController;
 use App\Http\Controllers\Client\Settings\UserController;
 use Illuminate\Support\Facades\Route;
@@ -37,7 +39,7 @@ Route::name('client.')->group(function () {
     Route::get('/register/success', [RegistrationController::class, 'success'])->name('register.success');
 
     // Authenticated routes
-    Route::group([], function () {
+    Route::middleware('client.auth')->group(function () {
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -77,14 +79,19 @@ Route::name('client.')->group(function () {
         Route::get('/maps', [MapsController::class, 'index'])->name('maps');
         Route::get('/maps/{countryId}', [MapsController::class, 'countries'])->name('maps.country');
 
+        // Notifications
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+
         // Settings
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/account', [AccountController::class, 'index'])->name('account');
-            Route::post('/account', [AccountController::class, 'index'])->name('account.update');
+            Route::post('/account', [AccountController::class, 'update'])->name('account.update');
+            Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+            Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
             Route::get('/users', [UserController::class, 'index'])->name('users');
             Route::get('/packages', [PackageController::class, 'index'])->name('packages');
             Route::get('/security', [SecurityController::class, 'index'])->name('security');
-            Route::post('/security', [SecurityController::class, 'index'])->name('security.update');
+            Route::post('/security', [SecurityController::class, 'update'])->name('security.update');
             Route::get('/agreement', [AgreementController::class, 'index'])->name('agreement');
         });
     });

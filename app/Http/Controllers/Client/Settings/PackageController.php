@@ -3,25 +3,21 @@
 namespace App\Http\Controllers\Client\Settings;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Package;
+use App\Models\ScopeType;
 
 class PackageController extends Controller
 {
     public function index()
     {
-        $packages = collect([
-            ['id' => 1, 'name' => 'Standard Screening', 'country' => 'Malaysia', 'scopes' => ['Criminal Record Check', 'Employment Verification'], 'created_at' => '2026-02-01'],
-            ['id' => 2, 'name' => 'Full Background',    'country' => 'Malaysia', 'scopes' => ['Criminal Record Check', 'Employment Verification', 'Education Verification', 'Credit Check'], 'created_at' => '2026-03-15'],
-        ]);
+        $customerId = session('client_customer_id', 1);
 
-        $allScopes = collect([
-            ['id' => 1, 'name' => 'Criminal Record Check'],
-            ['id' => 2, 'name' => 'Employment Verification'],
-            ['id' => 3, 'name' => 'Education Verification'],
-            ['id' => 4, 'name' => 'Credit Check'],
-            ['id' => 5, 'name' => 'Reference Check'],
-            ['id' => 6, 'name' => 'Social Media Screening'],
-        ]);
+        $packages = Package::with(['country', 'scopeTypes'])
+            ->where('customer_id', $customerId)
+            ->latest()
+            ->get();
+
+        $allScopes = ScopeType::with('country')->get();
 
         return view('client.settings.packages.index', compact('packages', 'allScopes'));
     }

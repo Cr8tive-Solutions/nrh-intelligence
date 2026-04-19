@@ -1,178 +1,167 @@
 <x-client.layouts.app pageTitle="Dashboard">
 
-    {{-- Stats row --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    {{-- Page header --}}
+    <div class="page-head">
+        <div>
+            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+                Good morning, <em style="font-style:italic;color:var(--emerald-700);">{{ session('client_user_name', 'Recruiter') }}.</em>
+            </h1>
+            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">
+                <b style="color:var(--ink-900);">{{ $stats['pending'] ?? 0 }}</b> screenings in progress · <b style="color:var(--ink-900);">{{ $stats['complete'] ?? 0 }}</b> cleared this period
+            </p>
+        </div>
+        <a href="{{ route('client.request.new') }}" class="btn-primary">
+            <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            New screening
+        </a>
+    </div>
 
+    {{-- Stat strip --}}
+    <div class="nrh-card" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;">
         @php
-            $stats = [
-                ['label' => 'New Requests', 'value' => $stats['new'] ?? 0, 'color' => 'blue', 'icon' => 'M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z'],
-                ['label' => 'In Progress', 'value' => $stats['pending'] ?? 0, 'color' => 'amber', 'icon' => 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z'],
-                ['label' => 'Completed', 'value' => $stats['complete'] ?? 0, 'color' => 'emerald', 'icon' => 'M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
-                ['label' => 'Total Requests', 'value' => $stats['total'] ?? 0, 'color' => 'slate', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
-            ];
-            $colorMap = [
-                'blue'    => 'bg-blue-50 text-blue-600 border-blue-100',
-                'amber'   => 'bg-amber-50 text-amber-600 border-amber-100',
-                'emerald' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                'slate'   => 'bg-slate-100 text-slate-600 border-slate-200',
+            $statsStrip = [
+                ['label' => 'New',         'value' => $stats['new'] ?? 0,      'color' => 'var(--info)',        'delta' => null],
+                ['label' => 'In Progress', 'value' => $stats['pending'] ?? 0,  'color' => 'var(--emerald-600)', 'delta' => null],
+                ['label' => 'Completed',   'value' => $stats['complete'] ?? 0, 'color' => 'var(--emerald-700)', 'delta' => null],
+                ['label' => 'Total',       'value' => $stats['total'] ?? 0,    'color' => 'var(--ink-500)',     'delta' => null],
             ];
         @endphp
-
-        @foreach ($stats as $stat)
-            <div class="bg-white rounded-xl border border-slate-200 px-5 py-4">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-sm font-medium text-slate-500">{{ $stat['label'] }}</span>
-                    <div class="size-8 rounded-lg border {{ $colorMap[$stat['color']] }} flex items-center justify-center shrink-0">
-                        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $stat['icon'] }}"/>
-                        </svg>
-                    </div>
+        @foreach ($statsStrip as $i => $s)
+            <div style="padding:20px 24px;{{ $i > 0 ? 'border-left:1px solid var(--line);' : '' }}">
+                <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--ink-500);display:flex;align-items:center;gap:6px;">
+                    <span style="width:6px;height:6px;border-radius:50%;background:{{ $s['color'] }};display:inline-block;"></span>
+                    {{ $s['label'] }}
                 </div>
-                <p class="text-2xl font-bold text-slate-900">{{ number_format($stat['value']) }}</p>
+                <div style="font-family:var(--font-display);font-size:32px;font-weight:500;letter-spacing:-0.02em;color:var(--ink-900);margin-top:8px;line-height:1;">
+                    {{ number_format($s['value']) }}
+                </div>
             </div>
         @endforeach
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    {{-- Main grid --}}
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
 
-        {{-- Chart --}}
-        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
-            <div class="flex items-center justify-between mb-5">
-                <div>
-                    <h3 class="text-sm font-semibold text-slate-900">Request Activity</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Requests submitted over time</p>
+        {{-- Recent requests table --}}
+        <div class="nrh-card">
+            <div class="card-head">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h3>Recent Requests</h3>
+                    <span class="count-pill">{{ $stats['total'] ?? 0 }} TOTAL</span>
                 </div>
-                {{-- Filter tabs --}}
-                <div class="flex items-center gap-1 rounded-lg bg-slate-100 p-1" x-data="{ period: 'weekly' }">
-                    @foreach (['daily' => 'Day', 'weekly' => 'Week', 'monthly' => 'Month'] as $key => $label)
-                        <button
-                            @click="period = '{{ $key }}'"
-                            :class="period === '{{ $key }}' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-700'"
-                            class="rounded-md px-3 py-1 text-xs font-medium transition-all"
-                        >{{ $label }}</button>
-                    @endforeach
-                </div>
+                <a href="{{ route('client.requests.index') }}" style="font-size:12px;font-weight:600;color:var(--emerald-700);text-decoration:none;">View all →</a>
             </div>
-            {{-- Chart placeholder --}}
-            <div class="h-56 flex items-center justify-center rounded-lg bg-slate-50 border border-dashed border-slate-200">
-                <div class="text-center">
-                    <svg class="mx-auto size-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>
-                    </svg>
-                    <p class="text-xs text-slate-400">Chart.js renders here</p>
-                </div>
+            <div style="overflow-x:auto;">
+                <table class="nrh-table">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Candidates</th>
+                            <th style="width:140px;">Status</th>
+                            <th style="width:140px;">Submitted</th>
+                            <th style="width:80px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($recentRequests ?? [] as $request)
+                            <tr onclick="location.href='{{ route('client.requests.details', $request->id) }}'">
+                                <td>
+                                    <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--emerald-700);">{{ $request->reference }}</span>
+                                </td>
+                                <td>
+                                    <span style="color:var(--ink-700);">{{ $request->candidates_count }}</span>
+                                </td>
+                                <td>
+                                    @include('client.partials._status-badge', ['status' => $request->status])
+                                </td>
+                                <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $request->created_at->format('d M Y') }}</td>
+                                <td style="text-align:right;">
+                                    <a href="{{ route('client.requests.details', $request->id) }}"
+                                       class="btn-ghost" style="padding:5px 10px;font-size:12px;"
+                                       onclick="event.stopPropagation()">View</a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" style="padding:48px 20px;text-align:center;">
+                                    <p style="font-size:13px;color:var(--ink-400);margin:0;">No requests yet.</p>
+                                    <a href="{{ route('client.request.new') }}" style="font-size:13px;font-weight:600;color:var(--emerald-700);text-decoration:none;display:inline-block;margin-top:6px;">Submit your first request →</a>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        {{-- Account summary --}}
-        <div class="space-y-4">
-            {{-- Billing summary card --}}
-            <div class="bg-brand-600 rounded-xl p-5 text-white">
-                <p class="text-xs font-medium text-brand-200">Billing Method</p>
-                <p class="mt-1 text-xl font-bold leading-tight">Monthly Billing</p>
-                <p class="mt-0.5 text-xs text-brand-300">Cash / Direct Transfer</p>
-                <div class="mt-4 flex items-center justify-between border-t border-brand-500 pt-3">
+        {{-- Side column --}}
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            {{-- Billing summary --}}
+            <div style="background:linear-gradient(170deg,var(--emerald-900),var(--emerald-800) 60%,#011d15);border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden;">
+                <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(212,175,55,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(212,175,55,0.04) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;"></div>
+                <p style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.18em;color:rgba(212,175,55,0.7);position:relative;z-index:1;">Billing Method</p>
+                <p style="font-family:var(--font-display);font-size:20px;font-weight:500;color:var(--gold-400);margin:6px 0 2px;position:relative;z-index:1;">Monthly Billing</p>
+                <p style="font-size:11px;color:rgba(233,239,235,0.6);position:relative;z-index:1;">Cash / Direct Transfer</p>
+                <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(212,175,55,0.2);display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
                     <div>
-                        <p class="text-xs text-brand-300">Next invoice</p>
-                        <p class="text-sm font-semibold">End of {{ now()->format('F Y') }}</p>
+                        <p style="font-size:10px;color:rgba(233,239,235,0.5);text-transform:uppercase;letter-spacing:0.12em;">Next invoice</p>
+                        <p style="font-size:13px;font-weight:600;color:var(--gold-300,#f0d060);margin-top:2px;">End of {{ now()->format('F Y') }}</p>
                     </div>
                     <a href="{{ route('client.billing.invoices') }}"
-                       class="rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-xs font-semibold text-white transition-colors">
+                       style="padding:7px 12px;background:var(--gold-500);border-radius:var(--radius);font-size:12px;font-weight:600;color:#023527;text-decoration:none;transition:background 120ms;"
+                       onmouseover="this.style.background='var(--gold-400)'" onmouseout="this.style.background='var(--gold-500)'">
                         View Invoices
                     </a>
                 </div>
             </div>
 
             {{-- Agreement status --}}
-            <div class="bg-white rounded-xl border border-slate-200 px-5 py-4">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-semibold text-slate-900">Agreement</h3>
+            <div class="nrh-card">
+                <div class="card-head" style="padding:14px 16px;">
+                    <h3 style="font-size:14px;">Agreement</h3>
                     @php $daysLeft = $agreementDaysLeft ?? 90; @endphp
                     @if ($daysLeft > 30)
-                        <span class="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-medium text-emerald-700">Active</span>
+                        <span class="pill pill-clear"><span class="dot"></span>Active</span>
                     @elseif ($daysLeft > 0)
-                        <span class="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-xs font-medium text-amber-700">Expiring</span>
+                        <span class="pill pill-review"><span class="dot"></span>Expiring</span>
                     @else
-                        <span class="rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-xs font-medium text-red-700">Expired</span>
+                        <span class="pill pill-flagged"><span class="dot"></span>Expired</span>
                     @endif
                 </div>
-                <p class="text-xs text-slate-500">Expires</p>
-                <p class="text-sm font-semibold text-slate-900 mt-0.5">{{ $agreementExpiry ?? 'N/A' }}</p>
-                <p class="text-xs text-slate-400 mt-1">{{ $daysLeft > 0 ? $daysLeft . ' days remaining' : 'Please renew' }}</p>
+                <div style="padding:14px 16px;">
+                    <p style="font-size:11px;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.1em;margin:0;">Expires</p>
+                    <p style="font-size:14px;font-weight:600;color:var(--ink-900);margin:4px 0 2px;">{{ $agreementExpiry ?? 'N/A' }}</p>
+                    <p style="font-size:12px;color:var(--ink-400);margin:0;">{{ $daysLeft > 0 ? $daysLeft . ' days remaining' : 'Please renew' }}</p>
+                </div>
             </div>
 
             {{-- Quick actions --}}
-            <div class="bg-white rounded-xl border border-slate-200 px-5 py-4">
-                <h3 class="text-sm font-semibold text-slate-900 mb-3">Quick Actions</h3>
-                <div class="space-y-1.5">
-                    <a href="{{ route('client.request.new') }}"
-                       class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                        <svg class="size-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-                        </svg>
-                        New Request
-                    </a>
-                    <a href="{{ route('client.requests.track') }}"
-                       class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                        <svg class="size-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
-                        </svg>
-                        Track Candidate
-                    </a>
-                    <a href="{{ route('client.billing.transactions') }}"
-                       class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                        <svg class="size-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4 4 4m6 0v12m0 0 4-4m-4 4-4-4"/>
-                        </svg>
-                        Transactions
-                    </a>
+            <div class="nrh-card">
+                <div class="card-head" style="padding:14px 16px;">
+                    <h3 style="font-size:14px;">Quick Actions</h3>
+                </div>
+                <div style="padding:8px 0;">
+                    @foreach ([
+                        ['route' => 'client.request.new',         'label' => 'New Request',        'icon' => 'M12 4.5v15m7.5-7.5h-15'],
+                        ['route' => 'client.requests.track',      'label' => 'Track Candidate',     'icon' => 'm21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z'],
+                        ['route' => 'client.billing.transactions', 'label' => 'Transactions',        'icon' => 'M7 16V4m0 0L3 8m4-4 4 4m6 0v12m0 0 4-4m-4 4-4-4'],
+                        ['route' => 'client.history.index',       'label' => 'View History',        'icon' => 'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'],
+                    ] as $action)
+                        <a href="{{ route($action['route']) }}"
+                           style="display:flex;align-items:center;gap:12px;padding:10px 16px;font-size:13px;font-weight:500;color:var(--ink-700);text-decoration:none;transition:background 120ms ease,color 120ms ease;"
+                           onmouseover="this.style.background='rgba(5,150,105,0.05)';this.style.color='var(--ink-900)'"
+                           onmouseout="this.style.background='';this.style.color='var(--ink-700)'">
+                            <svg style="width:15px;height:15px;color:var(--emerald-600);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $action['icon'] }}"/>
+                            </svg>
+                            {{ $action['label'] }}
+                            <svg style="width:12px;height:12px;margin-left:auto;color:var(--ink-300);" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                        </a>
+                    @endforeach
                 </div>
             </div>
-        </div>
-    </div>
 
-    {{-- Recent requests table --}}
-    <div class="mt-6 bg-white rounded-xl border border-slate-200">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-            <h3 class="text-sm font-semibold text-slate-900">Recent Requests</h3>
-            <a href="{{ route('client.requests.index') }}" class="text-xs font-medium text-brand-600 hover:text-brand-700 transition-colors">
-                View all →
-            </a>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="border-b border-slate-100">
-                        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Request ID</th>
-                        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Candidates</th>
-                        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Status</th>
-                        <th class="px-5 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Date</th>
-                        <th class="px-5 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wide">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    @forelse ($recentRequests ?? [] as $request)
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-5 py-3 font-mono text-xs text-slate-700">{{ $request->reference }}</td>
-                            <td class="px-5 py-3 text-slate-700">{{ $request->candidates_count }}</td>
-                            <td class="px-5 py-3">
-                                @include('client.partials._status-badge', ['status' => $request->status])
-                            </td>
-                            <td class="px-5 py-3 text-slate-500">{{ $request->created_at->format('d M Y') }}</td>
-                            <td class="px-5 py-3 text-right">
-                                <a href="{{ route('client.requests.details', $request->id) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">View</a>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-5 py-10 text-center text-sm text-slate-400">
-                                No requests yet.
-                                <a href="{{ route('client.request.new') }}" class="text-brand-600 hover:text-brand-700 font-medium">Submit your first request →</a>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
         </div>
     </div>
 

@@ -1,26 +1,27 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light" id="htmlRoot">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $pageTitle ?? 'Dashboard' }} — NRH INTELLIGENCE Portal</title>
+    <title>{{ $pageTitle ?? 'Dashboard' }} — NRH Intelligence</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.bunny.net/css?family=inter-tight:400,500,600,700|fraunces:400,500,600,700ital|jetbrains-mono:400,500,600&display=swap" rel="stylesheet"/>
     @stack('head')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-slate-50 antialiased" x-data="{ sidebarOpen: false }">
+<body class="app-shell" x-data="{ sidebarOpen: false }">
 
-    {{-- Sidebar overlay (mobile) --}}
+    {{-- Mobile overlay --}}
     <div
         x-show="sidebarOpen"
         @click="sidebarOpen = false"
-        class="fixed inset-0 z-30 bg-black/50 lg:hidden"
-        x-transition:enter="transition-opacity duration-300"
+        style="position:fixed;inset:0;z-index:30;background:rgba(0,0,0,0.35);"
+        class="lg:hidden"
+        x-transition:enter="transition-opacity duration-200"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
-        x-transition:leave="transition-opacity duration-300"
+        x-transition:leave="transition-opacity duration-200"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
     ></div>
@@ -28,38 +29,56 @@
     {{-- Sidebar --}}
     @include('client.layouts._sidebar')
 
-    {{-- Main Content --}}
-    <div class="lg:pl-64 flex flex-col min-h-screen">
+    {{-- Main --}}
+    <div class="nrh-main" style="padding-left: 232px;">
 
-        {{-- Navbar --}}
+        {{-- Topbar --}}
         @include('client.layouts._navbar')
 
         {{-- Page content --}}
-        <main class="flex-1 px-4 py-6 lg:px-6 lg:py-8">
+        <div class="nrh-content">
 
-            {{-- Flash messages --}}
+            {{-- Flash success --}}
             @if (session('success'))
-                <div class="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3" x-data x-init="setTimeout(() => $el.remove(), 5000)">
-                    <svg class="size-5 text-emerald-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--emerald-50);border:1px solid rgba(5,150,105,0.2);border-radius:var(--radius);"
+                     x-data x-init="setTimeout(() => $el.remove(), 5000)">
+                    <svg style="width:15px;height:15px;color:var(--emerald-700);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                     </svg>
-                    <p class="text-sm text-emerald-700 font-medium">{{ session('success') }}</p>
+                    <p style="font-size:13px;color:var(--emerald-800);font-weight:500;">{{ session('success') }}</p>
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3" x-data x-init="setTimeout(() => $el.remove(), 5000)">
-                    <svg class="size-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fbeeec;border:1px solid rgba(196,69,58,0.2);border-radius:var(--radius);"
+                     x-data x-init="setTimeout(() => $el.remove(), 5000)">
+                    <svg style="width:15px;height:15px;color:var(--danger);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/>
                     </svg>
-                    <p class="text-sm text-red-700 font-medium">{{ session('error') }}</p>
+                    <p style="font-size:13px;color:var(--danger);font-weight:500;">{{ session('error') }}</p>
                 </div>
             @endif
 
             {{ $slot }}
-        </main>
+        </div>
     </div>
 
     @stack('scripts')
+
+    <script>
+        // Theme toggle — persists to localStorage
+        (function() {
+            const saved = localStorage.getItem('nrh-theme') || 'light';
+            document.getElementById('htmlRoot').setAttribute('data-theme', saved);
+        })();
+        function toggleTheme() {
+            const root = document.getElementById('htmlRoot');
+            const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            root.setAttribute('data-theme', next);
+            localStorage.setItem('nrh-theme', next);
+            const label = document.getElementById('themeLabel');
+            if (label) label.textContent = next === 'dark' ? 'Dark mode' : 'Light mode';
+        }
+    </script>
 </body>
 </html>
