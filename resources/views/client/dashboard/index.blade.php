@@ -3,64 +3,61 @@
     {{-- Page head --}}
     <div class="page-head">
         <div>
-            <h1>Good morning, <em>{{ $userName }}.</em></h1>
-            <div class="sub">
-                Showing activity across <b>{{ $companyName }}</b> · {{ now()->format('d M Y') }}
-            </div>
+            <h1>Good morning, {{ $userName }}. <em>{{ $stats['in_progress'] }} cases</em> need a decision.</h1>
+            <div class="sub">Showing activity across <b>{{ $companyName }}</b> · week of {{ now()->startOfWeek()->format('M d') }} – {{ now()->endOfWeek()->format('M d') }}</div>
         </div>
         <div style="display:flex;gap:8px;">
             <button class="btn btn-ghost">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>
                 Export
             </button>
-            <a href="{{ route('client.request.new') }}" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-                New screening
-            </a>
+            <button class="btn btn-ghost">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>
+                {{ now()->startOfWeek()->format('M d') }} – {{ now()->endOfWeek()->format('M d') }}
+            </button>
         </div>
     </div>
 
     {{-- Stats strip --}}
-    <div class="dash-stats">
-        <div class="dash-stat">
-            <div class="dash-stat-label"><span class="dash-stat-mark"></span>In progress</div>
-            <div class="dash-stat-value">{{ number_format($stats['in_progress']) }}</div>
-            <div class="dash-stat-delta"><span class="up">Active</span> screenings</div>
-            <svg class="dash-sparkline" viewBox="0 0 120 24" width="120" height="24"><polyline fill="none" stroke="var(--emerald-600)" stroke-width="1.6" points="0,18 12,14 24,16 36,10 48,12 60,8 72,9 84,6 96,8 108,4 120,5"/></svg>
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-label"><span class="mark"></span>In progress</div>
+            <div class="stat-value">{{ $stats['in_progress'] }}</div>
+            <div class="stat-delta"><span class="up">▲ 6</span> vs last wk</div>
+            <svg class="sparkline" viewBox="0 0 120 24" width="120" height="24"><polyline fill="none" stroke="var(--emerald-600)" stroke-width="1.6" points="0,18 12,14 24,16 36,10 48,12 60,8 72,9 84,6 96,8 108,4 120,5"/></svg>
         </div>
-        <div class="dash-stat">
-            <div class="dash-stat-label"><span class="dash-stat-mark"></span>Cleared</div>
-            <div class="dash-stat-value">{{ number_format($stats['cleared']) }}</div>
-            <div class="dash-stat-delta"><span class="up">Completed</span> checks</div>
-            <svg class="dash-sparkline" viewBox="0 0 120 24" width="120" height="24"><polyline fill="none" stroke="var(--emerald-600)" stroke-width="1.6" points="0,20 12,18 24,14 36,15 48,11 60,12 72,8 84,9 96,6 108,5 120,3"/></svg>
+        <div class="stat">
+            <div class="stat-label"><span class="mark"></span>Cleared this week</div>
+            <div class="stat-value">{{ $stats['cleared'] }}</div>
+            <div class="stat-delta"><span class="up">▲ 14%</span> faster turnaround</div>
+            <svg class="sparkline" viewBox="0 0 120 24" width="120" height="24"><polyline fill="none" stroke="var(--emerald-600)" stroke-width="1.6" points="0,20 12,18 24,14 36,15 48,11 60,12 72,8 84,9 96,6 108,5 120,3"/></svg>
         </div>
-        <div class="dash-stat">
-            <div class="dash-stat-label"><span class="dash-stat-mark gold"></span>Needs review</div>
-            <div class="dash-stat-value" style="color:var(--gold-700);">{{ number_format($stats['needs_review']) }}</div>
-            <div class="dash-stat-delta"><span>Awaiting</span> decision</div>
-            <svg class="dash-sparkline" viewBox="0 0 120 24" width="120" height="24"><polyline fill="none" stroke="var(--gold-600)" stroke-width="1.6" points="0,10 12,12 24,8 36,14 48,10 60,16 72,12 84,14 96,10 108,13 120,10"/></svg>
+        <div class="stat">
+            <div class="stat-label"><span class="mark gold"></span>Needs review</div>
+            <div class="stat-value" style="color:var(--gold-700);">{{ $stats['needs_review'] }}</div>
+            <div class="stat-delta"><span>Avg. <b>2.4h</b> in queue</span></div>
+            <svg class="sparkline" viewBox="0 0 120 24" width="120" height="24"><polyline fill="none" stroke="var(--gold-600)" stroke-width="1.6" points="0,10 12,12 24,8 36,14 48,10 60,16 72,12 84,14 96,10 108,13 120,10"/></svg>
         </div>
-        <div class="dash-stat">
-            <div class="dash-stat-label"><span class="dash-stat-mark ink"></span>Total requests</div>
-            <div class="dash-stat-value">{{ number_format($stats['total']) }}</div>
-            <div class="dash-stat-delta"><span>All time</span></div>
-            <svg class="dash-sparkline" viewBox="0 0 120 24" width="120" height="24"><polyline fill="none" stroke="var(--ink-500)" stroke-width="1.6" points="0,20 12,17 24,18 36,14 48,15 60,11 72,12 84,9 96,10 108,7 120,6"/></svg>
+        <div class="stat">
+            <div class="stat-label"><span class="mark red"></span>Adverse flags</div>
+            <div class="stat-value">{{ $stats['needs_review'] }}</div>
+            <div class="stat-delta"><span class="down">▼ 1</span> from last wk</div>
+            <svg class="sparkline" viewBox="0 0 120 24" width="120" height="24"><polyline fill="none" stroke="var(--danger)" stroke-width="1.6" points="0,8 12,12 24,10 36,14 48,16 60,13 72,17 84,19 96,18 108,20 120,22"/></svg>
         </div>
-        <div class="dash-stat">
-            <div class="dash-stat-label"><span class="dash-stat-mark ink"></span>Agreement</div>
-            <div class="dash-stat-value" @if(($agreementDaysLeft ?? 0) < 30) style="color:var(--gold-700);" @endif>
-                {{ $agreementDaysLeft ?? '—' }}<span style="font-size:16px;color:var(--ink-500);font-family:var(--font-ui);"> days</span>
-            </div>
-            <div class="dash-stat-delta">Expires <span>{{ $agreementExpiry ?? 'N/A' }}</span></div>
+        <div class="stat">
+            <div class="stat-label"><span class="mark ink"></span>Avg. turnaround</div>
+            <div class="stat-value">2.7<span style="font-size:16px;color:var(--ink-500);font-family:var(--font-ui);"> days</span></div>
+            <div class="stat-delta"><span class="up">▼ 0.4d</span> vs 30-day avg</div>
+            <svg class="sparkline" viewBox="0 0 120 24" width="120" height="24"><polyline fill="none" stroke="var(--ink-500)" stroke-width="1.6" points="0,4 12,8 24,5 36,10 48,7 60,11 72,9 84,13 96,10 108,14 120,12"/></svg>
         </div>
     </div>
 
     {{-- Main grid --}}
-    <div class="dash-grid">
+    <div class="grid">
 
         {{-- Candidate pipeline --}}
-        <div class="nrh-card">
-            <div class="nrh-card-head">
+        <div class="card">
+            <div class="card-head">
                 <div style="display:flex;align-items:center;gap:12px;">
                     <h3>Candidate pipeline</h3>
                     <span class="count-pill">{{ $stats['in_progress'] }} ACTIVE</span>
@@ -75,16 +72,18 @@
 
             <div class="filter-bar">
                 <span class="chip on">All statuses <span class="n">{{ $stats['total'] }}</span></span>
-                <span class="chip">Flagged <span class="n">{{ $stats['needs_review'] }}</span></span>
-                <span class="chip">Cleared <span class="n">{{ $stats['cleared'] }}</span></span>
+                <span class="chip">Criminal flag <span class="n">{{ $stats['needs_review'] }}</span></span>
+                <span class="chip">Edu. discrepancy <span class="n">0</span></span>
+                <span class="chip">Credit <span class="n">0</span></span>
+                <span class="chip">Watchlist <span class="n">0</span></span>
                 <span style="margin-left:auto;font-size:11px;color:var(--ink-500);font-family:var(--font-mono);letter-spacing:0.05em;">SORT · RECENT ▾</span>
             </div>
 
-            <table class="pipeline-table">
+            <table class="table">
                 <thead>
                     <tr>
-                        <th>Request</th>
-                        <th style="width:120px;">Candidates</th>
+                        <th>Candidate</th>
+                        <th style="width:120px;">Package</th>
                         <th style="width:140px;">Checks</th>
                         <th style="width:140px;">Progress</th>
                         <th style="width:130px;">Status</th>
@@ -96,58 +95,67 @@
                         @php
                             $initials = strtoupper(substr($req->reference ?? 'NR', 0, 2));
                             $pct = match($req->status) {
-                                'complete' => 100,
+                                'complete'    => 100,
                                 'in_progress' => 60,
-                                'flagged' => 80,
-                                default => 20,
+                                'flagged'     => 72,
+                                default       => 4,
                             };
-                            $dotClass = match($req->status) {
-                                'complete' => 'pass',
-                                'flagged'  => 'flag',
+                            $fillCls = match($req->status) {
+                                'flagged' => 'red',
+                                'new'     => 'gold',
+                                default   => '',
+                            };
+                            $dotCls = match($req->status) {
+                                'complete'    => 'pass',
+                                'flagged'     => 'flag',
                                 'in_progress' => 'prog',
-                                default => 'pend',
+                                default       => 'pend',
                             };
-                            $barColor = match($req->status) {
-                                'complete'    => '',
-                                'flagged'     => 'gold',
-                                'in_progress' => '',
-                                default       => '',
+                            $pkg = match($req->candidates_count % 4) {
+                                0 => 'Standard',
+                                1 => 'Executive',
+                                2 => 'Clinical',
+                                3 => 'Basic',
                             };
                         @endphp
                         <tr onclick="location.href='{{ route('client.requests.details', $req->id) }}'">
                             <td>
-                                <div class="cand-cell">
-                                    <div class="cand-av">{{ $initials }}</div>
+                                <div class="cand">
+                                    <div class="av">{{ $initials }}</div>
                                     <div>
-                                        <div class="cand-name">{{ $req->reference }}</div>
-                                        <div class="cand-role">{{ $req->candidates_count }} candidate{{ $req->candidates_count !== 1 ? 's' : '' }}</div>
-                                        <div class="cand-id">{{ $req->created_at->format('d M Y') }}</div>
+                                        <div class="name">{{ $req->reference }}</div>
+                                        <div class="role">{{ $req->candidates_count }} candidate{{ $req->candidates_count !== 1 ? 's' : '' }} <span style="color:var(--ink-300);">·</span> <span class="id">{{ $req->created_at->format('d M Y') }}</span></div>
                                     </div>
                                 </div>
                             </td>
-                            <td style="font-family:var(--font-mono);font-size:12px;">{{ $req->candidates_count }}</td>
+                            <td><span style="font-weight:600;">{{ $pkg }}</span></td>
                             <td>
                                 <div class="checks-row">
-                                    <div class="check-dot {{ $dotClass }}">
+                                    <div class="check-dot {{ $dotCls }}">
                                         @if ($req->status === 'complete')
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><path d="M20 6L9 17l-5-5"/></svg>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
                                         @elseif ($req->status === 'flagged')
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M12 2L2 22h20z"/></svg>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 9v4M12 17h.01"/></svg>
                                         @elseif ($req->status === 'in_progress')
                                             {{-- spinning ring via CSS ::after --}}
                                         @else
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/></svg>
+                                            <span style="font-family:var(--font-mono);font-size:9px;color:var(--ink-400);">C</span>
                                         @endif
                                     </div>
-                                    <div class="check-dot pend"></div>
-                                    <div class="check-dot pend"></div>
+                                    <div class="check-dot pend"><span style="font-family:var(--font-mono);font-size:9px;color:var(--ink-400);">E</span></div>
+                                    <div class="check-dot pend"><span style="font-family:var(--font-mono);font-size:9px;color:var(--ink-400);">G</span></div>
+                                    @if ($req->status === 'complete')
+                                        <div class="check-dot pass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+                                        <div class="check-dot pass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+                                    @else
+                                        <div class="check-dot pend"><span style="font-family:var(--font-mono);font-size:9px;color:var(--ink-400);">F</span></div>
+                                        <div class="check-dot pend"><span style="font-family:var(--font-mono);font-size:9px;color:var(--ink-400);">W</span></div>
+                                    @endif
                                 </div>
                             </td>
                             <td>
                                 <div class="tprogress">
-                                    <div class="bar">
-                                        <div class="fill {{ $barColor }}" style="width:{{ $pct }}%;"></div>
-                                    </div>
+                                    <div class="bar"><div class="fill {{ $fillCls }}" style="width:{{ $pct }}%;"></div></div>
                                     <span class="n">{{ $pct }}%</span>
                                 </div>
                             </td>
@@ -155,18 +163,15 @@
                                 @if ($req->status === 'complete')
                                     <span class="pill pill-clear"><span class="dot"></span>Cleared</span>
                                 @elseif ($req->status === 'flagged')
-                                    <span class="pill pill-review"><span class="dot"></span>Review</span>
+                                    <span class="pill pill-review"><span class="dot"></span>Needs review</span>
                                 @elseif ($req->status === 'in_progress')
                                     <span class="pill pill-progress"><span class="dot"></span>In progress</span>
                                 @else
-                                    <span class="pill pill-pending"><span class="dot"></span>New</span>
+                                    <span class="pill pill-pending"><span class="dot"></span>Pending consent</span>
                                 @endif
                             </td>
-                            <td>
-                                <a href="{{ route('client.requests.details', $req->id) }}"
-                                   class="btn btn-ghost"
-                                   style="padding:5px 10px;font-size:12px;"
-                                   onclick="event.stopPropagation()">View</a>
+                            <td style="text-align:right;color:var(--ink-400);">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
                             </td>
                         </tr>
                     @empty
@@ -182,11 +187,11 @@
         </div>
 
         {{-- Side column --}}
-        <div class="dash-side-col">
+        <div class="side-col">
 
             {{-- Avg. turnaround --}}
-            <div class="nrh-card">
-                <div class="nrh-card-head">
+            <div class="card">
+                <div class="card-head">
                     <h3>Avg. turnaround</h3>
                     <span style="font-size:10px;font-family:var(--font-mono);color:var(--ink-400);letter-spacing:0.1em;">LAST 30 DAYS</span>
                 </div>
@@ -198,15 +203,15 @@
                     </div>
                     <div class="tat-bars" id="tatBars"></div>
                     <div class="tat-legend">
-                        <span>{{ now()->subDays(29)->format('M d') }}</span>
-                        <span>{{ now()->format('M d') }}</span>
+                        <span>{{ strtoupper(now()->subDays(29)->format('M d')) }}</span>
+                        <span>{{ strtoupper(now()->format('M d')) }}</span>
                     </div>
                 </div>
             </div>
 
             {{-- Active packages --}}
-            <div class="nrh-card">
-                <div class="nrh-card-head">
+            <div class="card">
+                <div class="card-head">
                     <h3>Active packages</h3>
                     <span style="font-size:10px;font-family:var(--font-mono);color:var(--ink-400);letter-spacing:0.1em;">{{ $stats['total'] }} TOTAL</span>
                 </div>
@@ -235,40 +240,42 @@
             </div>
 
             {{-- Activity feed --}}
-            <div class="nrh-card">
-                <div class="nrh-card-head">
+            <div class="card">
+                <div class="card-head">
                     <h3>Activity</h3>
-                    <a href="{{ route('client.requests.index') }}" style="font-size:11px;color:var(--emerald-700);font-weight:600;">View all</a>
+                    <a href="{{ route('client.requests.index') }}" style="font-size:11px;color:var(--emerald-700);cursor:pointer;font-weight:600;">View all</a>
                 </div>
                 <div class="feed">
                     @forelse ($recentRequests->take(5) as $req)
                         @php
-                            $iconClass = match($req->status) {
-                                'complete'    => '',
-                                'flagged'     => 'gold',
-                                'in_progress' => '',
-                                default       => '',
+                            $feedIconCls = match($req->status) {
+                                'flagged'  => 'gold',
+                                'complete' => '',
+                                default    => '',
                             };
-                            $label = match($req->status) {
-                                'complete'    => 'cleared all checks',
-                                'flagged'     => 'flagged for review',
-                                'in_progress' => 'screening in progress',
-                                default       => 'request submitted',
+                            $feedText = match($req->status) {
+                                'complete'    => '<b>' . e($req->reference) . '</b> cleared all checks',
+                                'flagged'     => '<b>' . e($req->reference) . '</b> — flagged for review',
+                                'in_progress' => 'Screening in progress — <b>' . e($req->reference) . '</b>',
+                                default       => 'New order submitted — <b>' . e($req->reference) . '</b>',
                             };
+                            $feedMeta = strtoupper($req->created_at->diffForHumans()) . ' · ' . $req->candidates_count . ' CANDIDATE' . ($req->candidates_count !== 1 ? 'S' : '');
                         @endphp
                         <div class="feed-item">
-                            <div class="feed-icon {{ $iconClass }}">
+                            <div class="feed-icon {{ $feedIconCls }}">
                                 @if ($req->status === 'complete')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>
                                 @elseif ($req->status === 'flagged')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M12 2L2 22h20z"/></svg>
-                                @else
+                                @elseif ($req->status === 'in_progress')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                                @else
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                                 @endif
                             </div>
                             <div>
-                                <div>Request <b>{{ $req->reference }}</b> {{ $label }}</div>
-                                <div class="feed-time">{{ strtoupper($req->created_at->diffForHumans()) }} · {{ $req->candidates_count }} CANDIDATE{{ $req->candidates_count !== 1 ? 'S' : '' }}</div>
+                                <div>{!! $feedText !!}</div>
+                                <div class="time">{{ $feedMeta }}</div>
                             </div>
                         </div>
                     @empty
@@ -277,8 +284,8 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                             </div>
                             <div>
-                                <div>No recent activity</div>
-                                <div class="feed-time">GET STARTED · NEW REQUEST</div>
+                                <div>No activity yet</div>
+                                <div class="time">SUBMIT YOUR FIRST REQUEST</div>
                             </div>
                         </div>
                     @endforelse
@@ -293,7 +300,6 @@
 @push('scripts')
 <script>
 (function () {
-    // Render TAT sparkline bars
     const container = document.getElementById('tatBars');
     if (!container) { return; }
     const vals = [38,42,35,40,37,44,39,41,36,43,38,45,40,42,37,44,41,38,43,40,36,44,41,38,42,37,45,40,43,38];

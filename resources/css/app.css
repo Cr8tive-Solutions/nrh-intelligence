@@ -664,7 +664,8 @@ body {
 .feed-icon svg { width: 12px; height: 12px; }
 .feed-icon.gold { background: var(--gold-100); color: var(--gold-700); }
 .feed-icon.red  { background: #fbeeec; color: var(--danger); }
-.feed-time { font-family: var(--font-mono); font-size: 10px; color: var(--ink-400); margin-top: 3px; }
+.feed-time,
+.feed-item .time { font-family: var(--font-mono); font-size: 10px; color: var(--ink-400); margin-top: 3px; }
 
 /* ─── Page header ────────────────────────────────────────── */
 .page-head {
@@ -710,7 +711,7 @@ body {
 .card-head h3 {
     font-family: var(--font-display);
     font-weight: 500;
-    font-size: 17px;
+    font-size: 18px;
     letter-spacing: -0.005em;
     margin: 0;
     color: var(--ink-900);
@@ -848,3 +849,123 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--ink-200); border-radius: 5px; border: 2px solid var(--paper); }
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-300); }
+
+/* ─── Design-file class aliases (exact names from NRH Intelligence.html) ─── */
+/* Stats strip */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    overflow: hidden;
+}
+.stat {
+    padding: 18px 20px;
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.stat:last-child { border-right: none; }
+.stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-500);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.stat-label .mark {
+    width: 6px; height: 6px;
+    border-radius: 1px;
+    background: var(--emerald-600);
+    flex-shrink: 0;
+}
+.stat-label .mark.gold { background: var(--gold-500); }
+.stat-label .mark.red  { background: var(--danger); }
+.stat-label .mark.ink  { background: var(--ink-500); }
+.stat-value {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-feature-settings: "tnum", "lnum";
+}
+.stat-delta {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--ink-500);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.stat-delta .up   { color: var(--emerald-700); }
+.stat-delta .down { color: var(--danger); }
+.sparkline { margin-top: 4px; }
+
+/* Main grid */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: start;
+}
+.side-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: sticky;
+    top: 76px;
+}
+
+/* Card */
+.card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+/* Table */
+.table { width: 100%; border-collapse: collapse; }
+.table thead th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-500);
+    padding: 10px 20px;
+    background: var(--paper-2);
+    border-bottom: 1px solid var(--line);
+}
+.table tbody td {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    vertical-align: middle;
+}
+.table tbody tr { transition: background 120ms ease; cursor: pointer; }
+.table tbody tr:hover { background: var(--emerald-50); }
+[data-theme="dark"] .table tbody tr:hover { background: rgba(5,150,105,0.07); }
+.table tbody tr:last-child td { border-bottom: none; }
+
+/* Candidate cell */
+.cand { display: flex; align-items: center; gap: 10px; }
+.cand .av {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--emerald-50);
+    color: var(--emerald-800);
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 600;
+    font-family: var(--font-mono);
+    flex-shrink: 0;
+}
+[data-theme="dark"] .cand .av { color: var(--emerald-500); }
+.cand .name { font-weight: 600; line-height: 1.2; }
+.cand .role { font-size: 11px; color: var(--ink-500); }
+.cand .id   { font-family: var(--font-mono); font-size: 10px; color: var(--ink-400); }
