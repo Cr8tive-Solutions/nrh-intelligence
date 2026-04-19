@@ -30,7 +30,7 @@
     @include('client.layouts._sidebar')
 
     {{-- Main --}}
-    <div class="nrh-main" style="padding-left: 232px;">
+    <div class="nrh-main">
 
         {{-- Topbar --}}
         @include('client.layouts._navbar')

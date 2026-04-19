@@ -1,7 +1,7 @@
 <aside
     id="sidebar"
-    class="nrh-sidebar fixed inset-y-0 left-0 z-40 transition-transform duration-300 lg:translate-x-0"
-    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    class="nrh-sidebar fixed inset-y-0 left-0 z-40 transition-transform duration-300 lg:sticky lg:top-0 lg:translate-x-0 lg:inset-auto"
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
 >
     {{-- Brand --}}
     <div style="display:flex;gap:10px;align-items:center;padding:6px 8px 14px;border-bottom:1px solid var(--line);">
