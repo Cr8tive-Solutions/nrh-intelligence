@@ -4,6 +4,7 @@ use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\Auth\RegistrationController;
 use App\Http\Controllers\Client\Billing\InvoiceController;
 use App\Http\Controllers\Client\Billing\TransactionController;
+use App\Http\Controllers\Client\CandidatesController;
 use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\NotificationController;
 use App\Http\Controllers\Client\Request\CreateRequestController;
@@ -43,6 +44,9 @@ Route::name('client.')->group(function () {
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        // Candidates
+        Route::get('/candidates', [CandidatesController::class, 'index'])->name('candidates');
 
         // Request — Create
         Route::prefix('request')->name('request.')->group(function () {

@@ -850,6 +850,53 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--ink-200); border-radius: 5px; border: 2px solid var(--paper); }
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-300); }
 
+/* ─── Custom checkbox ────────────────────────────────────── */
+.cbox { display: inline-flex; align-items: center; cursor: pointer; }
+.cbox input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.cbox .mark {
+    width: 16px; height: 16px;
+    border: 1.5px solid var(--ink-300);
+    border-radius: 3px;
+    background: var(--card);
+    display: grid; place-items: center;
+    transition: all 120ms ease;
+}
+.cbox .mark svg { width: 10px; height: 10px; opacity: 0; color: #fff; }
+.cbox input:checked + .mark { background: var(--emerald-700); border-color: var(--emerald-700); }
+.cbox input:checked + .mark svg { opacity: 1; }
+
+/* ─── Search input ───────────────────────────────────────── */
+.search { position: relative; }
+.search input {
+    width: 100%;
+    padding: 7px 10px 7px 30px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: var(--radius);
+    font-size: 13px;
+    color: var(--ink-900);
+    outline: none;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+    font-family: var(--font-ui);
+}
+.search input::placeholder { color: var(--ink-400); }
+.search input:focus { border-color: var(--emerald-600); box-shadow: 0 0 0 3px rgba(5,150,105,0.1); }
+.search svg {
+    position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+    width: 14px; height: 14px; color: var(--ink-400); pointer-events: none;
+}
+
+/* ─── Icon button (pagination etc.) ─────────────────────── */
+.icon-btn {
+    display: grid; place-items: center;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    color: var(--ink-700);
+}
+.icon-btn:hover { border-color: var(--line); background: var(--card); }
+
 /* ─── Design-file class aliases (exact names from NRH Intelligence.html) ─── */
 /* Stats strip */
 .stats {
