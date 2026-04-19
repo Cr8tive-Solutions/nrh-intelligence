@@ -124,69 +124,65 @@
                 </div>
             </div>
 
-            <div class="checks-list">
+            <div class="checks-list" id="checksList">
                 @if ($scopeTypes->count())
                     @foreach ($scopeTypes as $scope)
                         @php
                             $checkStatus = $scope->pivot->status;
                             $iconCls = match($checkStatus) {
-                                'complete' => '',
                                 'flagged'  => 'flag',
+                                'review'   => 'review',
                                 default    => '',
                             };
                             $pillCls = match($checkStatus) {
                                 'complete'    => 'pill-clear',
                                 'flagged'     => 'pill-flagged',
+                                'review'      => 'pill-review',
                                 'in_progress' => 'pill-progress',
                                 default       => 'pill-pending',
                             };
                             $pillTxt = match($checkStatus) {
                                 'complete'    => 'Cleared',
                                 'flagged'     => 'Flagged',
+                                'review'      => 'Needs review',
                                 'in_progress' => 'In progress',
                                 default       => 'Pending',
                             };
                         @endphp
-                        <div class="check-row" onclick="toggleCheck(this)">
+                        <div class="check-row" data-idx="{{ $loop->index }}">
                             <div class="check-icon {{ $iconCls }}">
-                                @if ($checkStatus === 'complete')
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
-                                @elseif ($checkStatus === 'flagged')
+                                @if ($checkStatus === 'flagged')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01"/><path d="M12 2L2 22h20z"/></svg>
                                 @elseif ($checkStatus === 'in_progress')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                                 @else
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
                                 @endif
                             </div>
                             <div class="check-info">
                                 <div class="t">{{ $scope->name }}</div>
                                 <div class="s">
-                                    <span class="pill {{ $pillCls }}" style="font-size:10px;padding:1px 6px;"><span class="dot"></span>{{ $pillTxt }}</span>
-                                    <span class="sep">·</span>
-                                    <span>{{ $scope->turnaround }}</span>
-                                    @if ($scope->description)
-                                        <span class="sep">·</span>
-                                        <span class="src">{{ strtoupper(Str::limit($scope->description, 40)) }}</span>
-                                    @endif
+                                    {{-- subtitle text --}}
+                                    @if ($scope->description){{ $scope->description }} · @endif<span class="src">{{ strtoupper($scope->name) }}</span>
                                 </div>
                             </div>
-                            <div class="check-time">
-                                {{ strtoupper($candidate->updated_at->format('M d · H:i')) }}
-                            </div>
-                            <div class="check-chev">
-                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+                            <span class="pill {{ $pillCls }}"><span class="dot"></span>{{ $pillTxt }}</span>
+                            <div style="display:flex;align-items:center;gap:14px;">
+                                <div class="check-time">{{ $candidate->updated_at->format('M d · H:i') }}<br>{{ $candidate->created_at->diffForHumans($candidate->updated_at, true) }}</div>
+                                <div class="check-chev">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+                                </div>
                             </div>
                         </div>
-                        <div class="check-body">
+                        <div class="check-body" data-body="{{ $loop->index }}">
                             <div class="check-body-inner">
                                 <div>
-                                    <div class="detail-label">Scope type</div>
+                                    <div class="detail-label">Check type</div>
                                     <div class="detail-value">{{ $scope->name }}</div>
                                 </div>
                                 <div>
                                     <div class="detail-label">Status</div>
-                                    <div class="detail-value">{{ ucfirst(str_replace('_', ' ', $checkStatus)) }}</div>
+                                    <div class="detail-value">{{ $pillTxt }}</div>
                                 </div>
                                 @if ($scope->description)
                                     <div style="grid-column:1/-1;">
@@ -203,64 +199,184 @@
                         </div>
                     @endforeach
                 @else
-                    {{-- Placeholder checks when no scope types linked --}}
-                    @php
-                        $placeholderChecks = [
-                            ['title' => 'Criminal records',           'icon_cls' => '',       'status' => 'complete',    'pill' => 'pill-clear',    'pill_txt' => 'Cleared',     'turnaround' => 'County + State + Federal'],
-                            ['title' => 'Education verification',     'icon_cls' => 'review', 'status' => 'flagged',     'pill' => 'pill-flagged',  'pill_txt' => 'Flagged',     'turnaround' => '2 institutions'],
-                            ['title' => 'Employment verification',    'icon_cls' => '',       'status' => 'complete',    'pill' => 'pill-clear',    'pill_txt' => 'Cleared',     'turnaround' => '3 of 3 employers confirmed'],
-                            ['title' => 'Credit report',              'icon_cls' => 'review', 'status' => 'flagged',     'pill' => 'pill-review',   'pill_txt' => 'Needs review','turnaround' => 'Required for fiduciary role'],
-                            ['title' => 'OFAC / Watchlist / Sanctions','icon_cls' => '',      'status' => 'complete',    'pill' => 'pill-clear',    'pill_txt' => 'Cleared',     'turnaround' => '53 global lists'],
-                            ['title' => 'Drug screening',             'icon_cls' => '',       'status' => 'in_progress', 'pill' => 'pill-progress', 'pill_txt' => 'In progress', 'turnaround' => '10-panel · Lab pending'],
-                            ['title' => 'Social media scan',          'icon_cls' => '',       'status' => 'new',         'pill' => 'pill-pending',  'pill_txt' => 'Pending',     'turnaround' => '5-platform AI review'],
-                        ];
-                    @endphp
-                    @foreach ($placeholderChecks as $i => $check)
-                        <div class="check-row" onclick="toggleCheck(this)">
-                            <div class="check-icon {{ $check['icon_cls'] }}">
-                                @if ($check['status'] === 'complete')
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
-                                @elseif ($check['status'] === 'flagged')
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01"/><path d="M12 2L2 22h20z"/></svg>
-                                @elseif ($check['status'] === 'in_progress')
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                                @else
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-                                @endif
-                            </div>
-                            <div class="check-info">
-                                <div class="t">{{ $check['title'] }}</div>
-                                <div class="s">
-                                    <span class="pill {{ $check['pill'] }}" style="font-size:10px;padding:1px 6px;"><span class="dot"></span>{{ $check['pill_txt'] }}</span>
-                                    <span class="sep">·</span>
-                                    <span>{{ $check['turnaround'] }}</span>
-                                </div>
-                            </div>
-                            <div class="check-time">
-                                {{ strtoupper($candidate->updated_at->format('M d · H:i')) }}
-                            </div>
-                            <div class="check-chev">
-                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
-                            </div>
+                    {{-- Placeholder checks matching design exactly --}}
+
+                    {{-- 1. Criminal records — pass --}}
+                    <div class="check-row" data-idx="0">
+                        <div class="check-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 6 .9-4.5 4.2 1 6.4L12 16.8 6.5 19.5l1-6.4L3 8.9l6-.9z"/></svg>
                         </div>
-                        <div class="check-body">
-                            <div class="check-body-inner">
-                                <div>
-                                    <div class="detail-label">Check type</div>
-                                    <div class="detail-value">{{ $check['title'] }}</div>
-                                </div>
-                                <div>
-                                    <div class="detail-label">Status</div>
-                                    <div class="detail-value">{{ $check['pill_txt'] }}</div>
-                                </div>
-                                @if ($check['status'] === 'flagged')
-                                    <div class="detail-note">
-                                        <b>Manual review required</b> — This check has been flagged and requires analyst review before the case can be closed.
-                                    </div>
-                                @endif
-                            </div>
+                        <div class="check-info">
+                            <div class="t">Criminal records</div>
+                            <div class="s">County + State + Federal · 9 jurisdictions · <span class="src">SRC: LEXIS · NCRA · PACER</span></div>
                         </div>
-                    @endforeach
+                        <span class="pill pill-clear"><span class="dot"></span>Cleared</span>
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div class="check-time">Apr 18 · 17:40<br>Returned 4h 20m</div>
+                            <div class="check-chev"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>
+                        </div>
+                    </div>
+                    <div class="check-body" data-body="0">
+                        <div class="check-body-inner">
+                            <div><div class="detail-label">Result</div><div class="detail-value">No records found across 9 county and 3 federal jurisdictions covering the last 7 years.</div></div>
+                            <div><div class="detail-label">Jurisdictions searched</div><div class="detail-value mono">Buncombe NC · Mecklenburg NC · Henderson NC · Madison NC · Hamilton TN · Cook IL · Multnomah OR · Federal 4C · Federal 9C</div></div>
+                            <div class="detail-note">Analyst note — Cross-referenced against 7 prior addresses on file. Name-variant search returned nil.</div>
+                        </div>
+                    </div>
+
+                    {{-- 2. Education verification — review --}}
+                    <div class="check-row" data-idx="1">
+                        <div class="check-icon review">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg>
+                        </div>
+                        <div class="check-info">
+                            <div class="t">Education verification</div>
+                            <div class="s">2 institutions · <span class="src">SRC: NATIONAL STUDENT CLEARINGHOUSE</span></div>
+                        </div>
+                        <span class="pill pill-review"><span class="dot"></span>Needs review</span>
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div class="check-time">Apr 19 · 09:14<br>Flagged 3h 12m ago</div>
+                            <div class="check-chev"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>
+                        </div>
+                    </div>
+                    <div class="check-body" data-body="1">
+                        <div class="check-body-inner">
+                            <div><div class="detail-label">Claimed</div><div class="detail-value mono">M.B.A · Duke Fuqua · Class of 2014</div></div>
+                            <div><div class="detail-label">Verified</div><div class="detail-value mono" style="color:var(--danger);">M.B.A · Duke Fuqua · Class of 2015</div></div>
+                            <div class="detail-note"><b>Discrepancy:</b> Graduation year differs by one year. Candidate may have completed coursework in 2014 but received degree at May 2015 ceremony — common for executive MBA programs. Recommend requesting clarification before adverse action.</div>
+                        </div>
+                    </div>
+
+                    {{-- 3. Employment verification — pass --}}
+                    <div class="check-row" data-idx="2">
+                        <div class="check-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M2 11h20"/></svg>
+                        </div>
+                        <div class="check-info">
+                            <div class="t">Employment verification</div>
+                            <div class="s">3 of 3 employers confirmed · <span class="src">SRC: THE WORK NUMBER · DIRECT HR</span></div>
+                        </div>
+                        <span class="pill pill-clear"><span class="dot"></span>Cleared</span>
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div class="check-time">Apr 18 · 15:10<br>Returned 1d 20h</div>
+                            <div class="check-chev"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>
+                        </div>
+                    </div>
+                    <div class="check-body" data-body="2">
+                        <div class="check-body-inner">
+                            <div><div class="detail-label">Verified employers</div><div class="detail-value mono">Meridian Capital (2019–present) · Northbrook Advisory (2015–2019) · Ernst &amp; Young (2012–2015)</div></div>
+                            <div><div class="detail-label">Titles match</div><div class="detail-value" style="color:var(--emerald-700);"><b>3 / 3</b> exact matches</div></div>
+                        </div>
+                    </div>
+
+                    {{-- 4. Credit report — review --}}
+                    <div class="check-row" data-idx="3">
+                        <div class="check-icon review">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l3-3 4 4 5-6"/></svg>
+                        </div>
+                        <div class="check-info">
+                            <div class="t">Credit report</div>
+                            <div class="s">Required for fiduciary role · <span class="src">SRC: EXPERIAN · EQUIFAX</span></div>
+                        </div>
+                        <span class="pill pill-review"><span class="dot"></span>Needs review</span>
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div class="check-time">Apr 19 · 08:02<br>Returned 5h ago</div>
+                            <div class="check-chev"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>
+                        </div>
+                    </div>
+                    <div class="check-body" data-body="3">
+                        <div class="check-body-inner">
+                            <div><div class="detail-label">Summary</div><div class="detail-value">Credit file active 18y. 1 derogatory item — paid collection, 2017. Outside 7-yr FCRA reporting window for adverse consideration.</div></div>
+                            <div><div class="detail-label">Action required</div><div class="detail-value" style="color:var(--emerald-700);">None · within compliance window</div></div>
+                        </div>
+                    </div>
+
+                    {{-- 5. OFAC / Watchlist / Sanctions — pass --}}
+                    <div class="check-row" data-idx="4">
+                        <div class="check-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20M12 2a15.3 15.3 0 0 0 0 20"/></svg>
+                        </div>
+                        <div class="check-info">
+                            <div class="t">OFAC / Watchlist / Sanctions</div>
+                            <div class="s">53 global lists · <span class="src">SRC: DOW JONES RISK · OFAC · UN · EU</span></div>
+                        </div>
+                        <span class="pill pill-clear"><span class="dot"></span>Cleared</span>
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div class="check-time">Apr 18 · 10:21<br>Returned 2h 40m</div>
+                            <div class="check-chev"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>
+                        </div>
+                    </div>
+                    <div class="check-body" data-body="4">
+                        <div class="check-body-inner">
+                            <div><div class="detail-label">Hits</div><div class="detail-value" style="color:var(--emerald-700);"><b>0</b> matches</div></div>
+                            <div><div class="detail-label">Lists scanned</div><div class="detail-value mono">OFAC SDN · OFAC Non-SDN · UN Sanctions · EU Consolidated · UK HMT · FBI · Interpol · PEP (+46 more)</div></div>
+                        </div>
+                    </div>
+
+                    {{-- 6. Professional license — pass --}}
+                    <div class="check-row" data-idx="5">
+                        <div class="check-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+                        </div>
+                        <div class="check-info">
+                            <div class="t">Professional license</div>
+                            <div class="s">CFA Charter · <span class="src">SRC: CFA INSTITUTE</span></div>
+                        </div>
+                        <span class="pill pill-clear"><span class="dot"></span>Cleared</span>
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div class="check-time">Apr 18 · 11:30<br>Returned 3h</div>
+                            <div class="check-chev"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>
+                        </div>
+                    </div>
+                    <div class="check-body" data-body="5">
+                        <div class="check-body-inner">
+                            <div><div class="detail-label">Credential</div><div class="detail-value mono">CFA Charter · Active · Issued 2018</div></div>
+                            <div><div class="detail-label">Member #</div><div class="detail-value mono">CFA-████-4412</div></div>
+                        </div>
+                    </div>
+
+                    {{-- 7. Drug screening — in progress --}}
+                    <div class="check-row" data-idx="6">
+                        <div class="check-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8.5 14.5a5 5 0 0 1 7-7M15.5 9.5a5 5 0 0 1-7 7"/><path d="M4 20l3-3M17 7l3-3"/></svg>
+                        </div>
+                        <div class="check-info">
+                            <div class="t">Drug screening</div>
+                            <div class="s">10-panel · Lab pending · <span class="src">SRC: LABCORP</span></div>
+                        </div>
+                        <span class="pill pill-progress"><span class="dot"></span>In progress</span>
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div class="check-time">Collected Apr 18<br>ETA Apr 20</div>
+                            <div class="check-chev"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>
+                        </div>
+                    </div>
+                    <div class="check-body" data-body="6">
+                        <div class="check-body-inner">
+                            <div><div class="detail-label">Status</div><div class="detail-value">Specimen received at lab · under analysis</div></div>
+                            <div><div class="detail-label">Chain of custody</div><div class="detail-value mono" style="color:var(--emerald-700);">Intact · seal verified</div></div>
+                        </div>
+                    </div>
+
+                    {{-- 8. Social media scan — pending --}}
+                    <div class="check-row" data-idx="7">
+                        <div class="check-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M6.3 6.3l-1.5-1.5M19.2 19.2l-1.5-1.5M6.3 17.7l-1.5 1.5M19.2 4.8l-1.5 1.5"/></svg>
+                        </div>
+                        <div class="check-info">
+                            <div class="t">Social media scan</div>
+                            <div class="s">5-platform AI review · <span class="src">SRC: FAMA</span></div>
+                        </div>
+                        <span class="pill pill-pending"><span class="dot"></span>Pending</span>
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div class="check-time">Queued<br>ETA Apr 21</div>
+                            <div class="check-chev"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>
+                        </div>
+                    </div>
+                    <div class="check-body" data-body="7">
+                        <div class="check-body-inner">
+                            <div><div class="detail-label">Scope</div><div class="detail-value">LinkedIn · X · Facebook · Instagram · Reddit · 10-year look-back for violence, drug-use, explicit, or discriminatory content.</div></div>
+                        </div>
+                    </div>
                 @endif
             </div>
         </div>
@@ -357,18 +473,27 @@
 
 @push('scripts')
 <script>
-function toggleCheck(row) {
-    const body = row.nextElementSibling;
-    const isOpen = row.classList.contains('open');
-    // close all
-    document.querySelectorAll('.check-row.open').forEach(r => {
-        r.classList.remove('open');
-        r.nextElementSibling.classList.remove('open');
+(function () {
+    const list = document.getElementById('checksList');
+    if (!list) { return; }
+
+    list.querySelectorAll('.check-row').forEach(row => {
+        row.addEventListener('click', () => {
+            const idx  = row.dataset.idx;
+            const body = list.querySelector(`[data-body="${idx}"]`);
+            const isOpen = row.classList.contains('open');
+            list.querySelectorAll('.check-row.open').forEach(r => r.classList.remove('open'));
+            list.querySelectorAll('.check-body.open').forEach(b => b.classList.remove('open'));
+            if (!isOpen) {
+                row.classList.add('open');
+                body.classList.add('open');
+            }
+        });
     });
-    if (!isOpen) {
-        row.classList.add('open');
-        body.classList.add('open');
-    }
-}
+
+    // open the first non-cleared check by default
+    const firstFlagged = list.querySelector('.check-row[data-idx="1"]');
+    if (firstFlagged) { firstFlagged.click(); }
+})();
 </script>
 @endpush
