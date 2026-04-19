@@ -128,7 +128,7 @@
                         $pkgNames = ['Standard', 'Executive', 'Clinical', 'Basic'];
                         $pkg = $pkgNames[$candidate->id % 4];
                     @endphp
-                    <tr onclick="location.href='{{ route('client.requests.details', $req->id) }}'">
+                    <tr onclick="location.href='{{ route('client.candidates.show', $candidate->id) }}'">
                         <td onclick="event.stopPropagation()">
                             <label class="cbox" style="margin:0;">
                                 <input type="checkbox">

@@ -47,6 +47,7 @@ Route::name('client.')->group(function () {
 
         // Candidates
         Route::get('/candidates', [CandidatesController::class, 'index'])->name('candidates');
+        Route::get('/candidates/{id}', [CandidatesController::class, 'show'])->name('candidates.show');
 
         // Request — Create
         Route::prefix('request')->name('request.')->group(function () {

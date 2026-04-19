@@ -4,10 +4,26 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\RequestCandidate;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class CandidatesController extends Controller
 {
-    public function index()
+    public function show(int $id): View|RedirectResponse
+    {
+        $customerId = session('client_customer_id', 1);
+
+        $candidate = RequestCandidate::whereHas(
+            'screeningRequest',
+            fn ($q) => $q->where('customer_id', $customerId)
+        )
+            ->with(['screeningRequest.submittedBy', 'scopeTypes', 'identityType'])
+            ->findOrFail($id);
+
+        return view('client.candidates.show', compact('candidate'));
+    }
+
+    public function index(): View
     {
         $customerId = session('client_customer_id', 1);
 
