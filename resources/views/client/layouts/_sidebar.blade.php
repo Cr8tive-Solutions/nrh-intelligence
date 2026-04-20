@@ -5,9 +5,7 @@
 >
     {{-- Brand --}}
     <div style="display:flex;gap:10px;align-items:center;padding:6px 8px 14px;border-bottom:1px solid var(--line);">
-        <div class="brand-mark">
-            <span>N</span>
-        </div>
+        <img src="{{ asset('nrh-logo.png') }}" alt="NRH Intelligence" style="height:36px;width:auto;flex-shrink:0;">
         <div style="display:flex;flex-direction:column;line-height:1.1;">
             <div style="font-family:var(--font-display);font-weight:600;font-size:16px;letter-spacing:0.01em;color:var(--ink-900);">
                 NRH <em style="font-style:italic;color:var(--gold-600);">Intelligence</em>
@@ -35,16 +33,67 @@
                 Candidates
             </a>
 
-            @php $active = request()->routeIs('client.request*'); @endphp
-            <a href="{{ route('client.request.new') }}" class="nav-item {{ $active ? 'active' : '' }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
-                New Request
-            </a>
+            @php $screeningsActive = request()->routeIs('client.request*'); @endphp
+            <div x-data="{ open: {{ $screeningsActive ? 'true' : 'false' }} }">
+                <button @click="open = !open"
+                    class="nav-item {{ $screeningsActive ? 'active' : '' }}"
+                    style="width:100%;background:none;border:none;cursor:pointer;font-family:var(--font-ui);display:flex;align-items:center;gap:10px;justify-content:space-between;padding:7px 10px;">
+                    <span style="display:flex;align-items:center;gap:10px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px;flex-shrink:0;"><path d="M9 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+                        Screenings
+                    </span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="width:12px;height:12px;flex-shrink:0;transition:transform 150ms;"
+                        :style="open ? 'transform:rotate(180deg)' : ''">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </button>
+
+                <div x-show="open" x-cloak style="padding:4px 0 4px 26px;display:flex;flex-direction:column;gap:1px;">
+
+                    {{-- Employment --}}
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:var(--ink-400);padding:6px 10px 4px;font-weight:600;">Employment</div>
+
+                    @php $active = request()->routeIs('client.request.malaysia*'); @endphp
+                    <a href="{{ route('client.request.malaysia') }}" class="nav-item nav-sub-item {{ $active ? 'active' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                        Malaysia Screening
+                    </a>
+
+                    @php $active = request()->routeIs('client.request.global*') || request()->routeIs('client.request.new'); @endphp
+                    <a href="{{ route('client.request.global') }}" class="nav-item nav-sub-item {{ $active ? 'active' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><circle cx="12" cy="12" r="9"/><path d="M12 3a15 15 0 0 1 0 18M3 12h18"/></svg>
+                        Global Screening
+                    </a>
+
+                    {{-- Due Diligence --}}
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:var(--ink-400);padding:10px 10px 4px;font-weight:600;">Due Diligence</div>
+
+                    @php $active = request()->routeIs('client.request.kyc*'); @endphp
+                    <a href="{{ route('client.request.kyc') }}" class="nav-item nav-sub-item {{ $active ? 'active' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+                        KYC <span style="color:var(--ink-400);">· Customer</span>
+                    </a>
+
+                    @php $active = request()->routeIs('client.request.kyb*'); @endphp
+                    <a href="{{ route('client.request.kyb') }}" class="nav-item nav-sub-item {{ $active ? 'active' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                        KYB <span style="color:var(--ink-400);">· Business</span>
+                    </a>
+
+                    @php $active = request()->routeIs('client.request.kys*'); @endphp
+                    <a href="{{ route('client.request.kys') }}" class="nav-item nav-sub-item {{ $active ? 'active' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                        KYS <span style="color:var(--ink-400);">· Supplier</span>
+                    </a>
+
+                </div>
+            </div>
 
             @php $active = request()->routeIs('client.requests*'); @endphp
             <a href="{{ route('client.requests.index') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14h6M9 18h4"/></svg>
-                Active Requests
+                Active Screenings
             </a>
 
             @php $active = request()->routeIs('client.history*'); @endphp

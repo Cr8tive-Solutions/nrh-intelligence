@@ -25,11 +25,7 @@
             <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:28px 32px;border-bottom:1px solid var(--line);">
                 <div>
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                        <div style="width:32px;height:32px;border-radius:var(--radius);background:var(--emerald-700);display:flex;align-items:center;justify-content:center;">
-                            <svg style="width:16px;height:16px;color:var(--gold-400);" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.955 11.955 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/>
-                            </svg>
-                        </div>
+                        <img src="{{ asset('nrh-logo.png') }}" alt="NRH Intelligence" style="height:32px;width:auto;">
                         <span style="font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--ink-900);">NRH INTELLIGENCE</span>
                     </div>
                     <p style="font-size:11px;color:var(--ink-400);margin:0;">Background Verification Platform</p>

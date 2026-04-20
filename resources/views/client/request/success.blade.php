@@ -34,7 +34,7 @@
 
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;">
             <a href="{{ route('client.request.new') }}" class="btn btn-ghost">New Request</a>
-            <a href="{{ route('client.requests.index') }}" class="btn btn-primary">View Active Requests →</a>
+            <a href="{{ route('client.requests.index') }}" class="btn btn-primary">View Active Screenings →</a>
         </div>
     </div>
 

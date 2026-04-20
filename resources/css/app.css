@@ -212,6 +212,9 @@ body {
     border-radius: 1px;
 }
 .nav-item svg { width: 16px; height: 16px; opacity: 0.8; flex-shrink: 0; }
+.nav-sub-item { font-size: 12px; padding: 6px 10px; }
+.nav-sub-item svg { width: 14px; height: 14px; }
+[x-cloak] { display: none !important; }
 .nav-count {
     margin-left: auto;
     font-size: 11px;

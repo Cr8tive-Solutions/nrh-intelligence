@@ -52,7 +52,13 @@ Route::name('client.')->group(function () {
         // Request — Create
         Route::prefix('request')->name('request.')->group(function () {
             Route::get('/new', [CreateRequestController::class, 'index'])->name('new');
+            Route::get('/malaysia', [CreateRequestController::class, 'malaysia'])->name('malaysia');
+            Route::get('/global', [CreateRequestController::class, 'global'])->name('global');
+            Route::get('/kyc', [CreateRequestController::class, 'kyc'])->name('kyc');
+            Route::get('/kyb', [CreateRequestController::class, 'kyb'])->name('kyb');
+            Route::get('/kys', [CreateRequestController::class, 'kys'])->name('kys');
             Route::post('/submit', [CreateRequestController::class, 'submit'])->name('submit');
+            Route::post('/due-diligence/submit', [CreateRequestController::class, 'submitDueDiligence'])->name('due-diligence.submit');
             Route::get('/success', [CreateRequestController::class, 'successful'])->name('success');
         });
 

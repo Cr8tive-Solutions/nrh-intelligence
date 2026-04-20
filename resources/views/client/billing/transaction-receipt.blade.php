@@ -25,11 +25,7 @@
             <div style="padding:28px 32px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;">
                 <div>
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                        <div style="width:32px;height:32px;border-radius:var(--radius);background:var(--emerald-700);display:flex;align-items:center;justify-content:center;">
-                            <svg style="width:16px;height:16px;color:var(--gold-400);" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4 4 4m6 0v12m0 0 4-4m-4 4-4-4"/>
-                            </svg>
-                        </div>
+                        <img src="{{ asset('nrh-logo.png') }}" alt="NRH Intelligence" style="height:32px;width:auto;">
                         <span style="font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--ink-900);">NRH INTELLIGENCE</span>
                     </div>
                     <p style="font-size:11px;color:var(--ink-400);margin:0;">Payment Receipt</p>

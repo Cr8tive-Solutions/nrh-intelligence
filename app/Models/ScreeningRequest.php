@@ -14,7 +14,12 @@ class ScreeningRequest extends Model
     /** @use HasFactory<ScreeningRequestFactory> */
     use HasFactory;
 
-    protected $fillable = ['customer_id', 'customer_user_id', 'reference', 'status'];
+    protected $fillable = ['customer_id', 'customer_user_id', 'reference', 'status', 'type', 'meta'];
+
+    protected function casts(): array
+    {
+        return ['meta' => 'array'];
+    }
 
     public function customer(): BelongsTo
     {

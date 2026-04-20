@@ -16,7 +16,7 @@
 
     {{-- Breadcrumbs --}}
     <div class="breadcrumbs">
-        <span>NRH</span>
+        <img src="{{ asset('nrh-logo.png') }}" alt="NRH" style="height:20px;width:auto;">
         <span class="sep">/</span>
         <span>Workspace</span>
         <span class="sep">/</span>

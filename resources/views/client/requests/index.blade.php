@@ -1,4 +1,4 @@
-<x-client.layouts.app pageTitle="Active Requests">
+<x-client.layouts.app pageTitle="Active Screenings">
 
     {{-- Page header --}}
     <div class="page-head">
@@ -71,7 +71,7 @@
                                 <svg style="width:40px;height:40px;color:var(--ink-200);margin:0 auto 12px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
                                 </svg>
-                                <p style="font-size:13px;color:var(--ink-400);margin:0;">No active requests.</p>
+                                <p style="font-size:13px;color:var(--ink-400);margin:0;">No active screenings.</p>
                                 <a href="{{ route('client.request.new') }}" style="font-size:13px;font-weight:600;color:var(--emerald-700);text-decoration:none;display:inline-block;margin-top:8px;">Submit your first request →</a>
                             </td>
                         </tr>
