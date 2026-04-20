@@ -91,23 +91,67 @@
                 {{-- Country picker (global only) --}}
                 @if(!$lockedCountryId)
                 <div class="card" style="padding:18px 20px;">
-                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:12px;">Select Country</div>
-                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;">
-                        @foreach ($countries as $country)
-                            <button @click="selectedCountry = {{ $country['id'] }}"
-                                x-data="{ hov: false }"
-                                @mouseenter="hov = true" @mouseleave="hov = false"
-                                style="display:flex;align-items:center;gap:10px;border-radius:var(--radius);border:1px solid var(--line);padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:all 120ms;font-family:var(--font-ui);text-align:left;width:100%;"
-                                :style="{
-                                    background:   selectedCountry === {{ $country['id'] }} ? 'var(--emerald-700)' : (hov ? 'var(--paper)' : 'var(--card)'),
-                                    color:        selectedCountry === {{ $country['id'] }} ? 'white' : 'var(--ink-700)',
-                                    borderColor:  selectedCountry === {{ $country['id'] }} ? 'var(--emerald-700)' : (hov ? 'var(--emerald-400)' : 'var(--line)'),
-                                    boxShadow:    selectedCountry === {{ $country['id'] }} ? '0 0 0 3px rgba(5,150,105,0.15)' : ''
-                                }">
-                                <span style="font-size:20px;line-height:1;flex-shrink:0;">{{ $country['flag'] }}</span>
-                                <span>{{ $country['name'] }}</span>
-                            </button>
-                        @endforeach
+                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:10px;">Select Country</div>
+
+                    {{-- Combobox --}}
+                    <div style="position:relative;" @click.outside="countryOpen = false; countrySearch = ''">
+
+                        {{-- Trigger --}}
+                        <button @click="countryOpen = !countryOpen"
+                            style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);cursor:pointer;font-family:var(--font-ui);transition:border-color 120ms,box-shadow 120ms;"
+                            :style="{
+                                borderColor: countryOpen ? 'var(--emerald-600)' : 'var(--line)',
+                                boxShadow:   countryOpen ? '0 0 0 3px rgba(5,150,105,0.1)' : ''
+                            }">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:20px;line-height:1;" x-text="selectedCountryObj?.flag ?? '🌐'"></span>
+                                <span style="font-size:13px;font-weight:500;color:var(--ink-800);" x-text="selectedCountryObj?.name ?? 'Select a country…'"></span>
+                            </div>
+                            <svg style="width:14px;height:14px;color:var(--ink-400);transition:transform 150ms;flex-shrink:0;"
+                                :style="{ transform: countryOpen ? 'rotate(180deg)' : 'rotate(0deg)' }"
+                                fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/>
+                            </svg>
+                        </button>
+
+                        {{-- Dropdown --}}
+                        <div x-show="countryOpen"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="opacity-0 translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            style="position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:50;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,0.10);overflow:hidden;">
+
+                            {{-- Search --}}
+                            <div style="padding:10px;border-bottom:1px solid var(--line);">
+                                <div style="position:relative;">
+                                    <svg style="position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--ink-400);pointer-events:none;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+                                    <input x-model="countrySearch" x-ref="countryInput"
+                                        x-init="$watch('countryOpen', v => v && $nextTick(() => $refs.countryInput?.focus()))"
+                                        type="text" placeholder="Search countries…"
+                                        style="width:100%;padding:7px 10px 7px 30px;border:1px solid var(--line);background:var(--paper);border-radius:var(--radius);font-size:12px;color:var(--ink-900);outline:none;font-family:var(--font-ui);box-sizing:border-box;"
+                                        @keydown.escape="countryOpen = false; countrySearch = ''">
+                                </div>
+                            </div>
+
+                            {{-- List --}}
+                            <div style="max-height:220px;overflow-y:auto;">
+                                <template x-for="c in filteredCountries" :key="c.id">
+                                    <button @click="selectedCountry = c.id; countryOpen = false; countrySearch = ''"
+                                        style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 14px;border:none;cursor:pointer;font-family:var(--font-ui);transition:background 80ms;text-align:left;"
+                                        :style="{
+                                            background: selectedCountry === c.id ? 'rgba(5,150,105,0.07)' : 'var(--card)',
+                                            fontWeight: selectedCountry === c.id ? '600' : '400'
+                                        }"
+                                        @mouseenter="$el.style.background = selectedCountry === c.id ? 'rgba(5,150,105,0.1)' : 'var(--paper)'"
+                                        @mouseleave="$el.style.background = selectedCountry === c.id ? 'rgba(5,150,105,0.07)' : 'var(--card)'">
+                                        <span style="font-size:18px;line-height:1;flex-shrink:0;" x-text="c.flag"></span>
+                                        <span style="font-size:13px;color:var(--ink-800);" x-text="c.name"></span>
+                                        <svg x-show="selectedCountry === c.id" style="width:13px;height:13px;color:var(--emerald-600);margin-left:auto;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                    </button>
+                                </template>
+                                <div x-show="filteredCountries.length === 0" style="padding:16px;text-align:center;font-size:12px;color:var(--ink-400);">No countries match your search.</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 @endif
@@ -755,6 +799,8 @@ function newRequest() {
     return {
         step: 1,
         selectedCountry: {{ $lockedCountryId ?? ($countries->first()['id'] ?? 1) }},
+        countryOpen: false,
+        countrySearch: '',
         scopeTab: 'scopes',
         scopeSearch: '',
         cart: [],
@@ -767,6 +813,7 @@ function newRequest() {
         bulkPreview: [],
         bulkError: '',
 
+        allCountries:  @json($countries->values()),
         allScopes:     @json($scopes),
         allPackages:   @json($packages),
         identityTypes: @json($identityTypes),
@@ -779,6 +826,14 @@ function newRequest() {
 
         init() {},
 
+        get selectedCountryObj() {
+            return this.allCountries.find(c => c.id === this.selectedCountry) ?? null;
+        },
+        get filteredCountries() {
+            const q = this.countrySearch.toLowerCase().trim();
+            if (!q) { return this.allCountries; }
+            return this.allCountries.filter(c => c.name.toLowerCase().includes(q));
+        },
         get filteredScopes() {
             const q = this.scopeSearch.toLowerCase().trim();
             return this.allScopes.filter(s => {
