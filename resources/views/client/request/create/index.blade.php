@@ -132,6 +132,18 @@
 
                         {{-- Scopes tab --}}
                         <div x-show="scopeTab === 'scopes'">
+                            <div style="position:relative;margin-bottom:12px;">
+                                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-400);pointer-events:none;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+                                <input x-model="scopeSearch" type="text" placeholder="Search scopes…"
+                                    style="width:100%;padding:8px 10px 8px 32px;border:1px solid var(--line);background:var(--paper);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);box-sizing:border-box;transition:border-color 120ms,box-shadow 120ms;"
+                                    onfocus="this.style.borderColor='var(--emerald-600)';this.style.boxShadow='0 0 0 3px rgba(5,150,105,0.1)'"
+                                    onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+                                <button x-show="scopeSearch" @click="scopeSearch = ''"
+                                    style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink-400);padding:2px;display:flex;align-items:center;"
+                                    onmouseover="this.style.color='var(--ink-900)'" onmouseout="this.style.color='var(--ink-400)'">
+                                    <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path d="M6 18 18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
                             <template x-for="scope in filteredScopes" :key="scope.id">
                                 <div style="display:flex;align-items:center;justify-content:space-between;border-radius:var(--radius);border:1px solid var(--line);padding:14px 16px;margin-bottom:8px;transition:border-color 120ms,background 120ms;"
                                     :style="isInCart(scope.id) ? 'border-color:rgba(5,150,105,0.35);background:rgba(5,150,105,0.03);' : ''">
@@ -166,7 +178,7 @@
                                 </div>
                             </template>
                             <template x-if="filteredScopes.length === 0">
-                                <p style="padding:40px 0;text-align:center;font-size:13px;color:var(--ink-400);">No scopes available for this country.</p>
+                                <p style="padding:40px 0;text-align:center;font-size:13px;color:var(--ink-400);" x-text="scopeSearch ? 'No scopes match \'' + scopeSearch + '\'.' : 'No scopes available for this country.'"></p>
                             </template>
                         </div>
 
@@ -636,6 +648,7 @@ function newRequest() {
         step: 1,
         selectedCountry: {{ $lockedCountryId ?? ($countries->first()['id'] ?? 1) }},
         scopeTab: 'scopes',
+        scopeSearch: '',
         cart: [],
         candidates: [],
         uploads: [],
@@ -654,7 +667,14 @@ function newRequest() {
 
         init() {},
 
-        get filteredScopes()   { return this.allScopes.filter(s => s.country_id === this.selectedCountry); },
+        get filteredScopes() {
+            const q = this.scopeSearch.toLowerCase().trim();
+            return this.allScopes.filter(s => {
+                if (s.country_id !== this.selectedCountry) { return false; }
+                if (!q) { return true; }
+                return s.name.toLowerCase().includes(q) || (s.description || '').toLowerCase().includes(q);
+            });
+        },
         get filteredPackages() { return this.allPackages.filter(p => p.country_id === this.selectedCountry); },
         get cartTotal()        { return this.cart.reduce((sum, i) => sum + i.price, 0); },
 
