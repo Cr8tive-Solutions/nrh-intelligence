@@ -118,8 +118,12 @@
                         @endif
                         @foreach (['scopes' => 'Verification Scopes', 'packages' => 'Packages', 'favourites' => 'My Favourites'] as $tab => $label)
                             <button @click="scopeTab = '{{ $tab }}'"
-                                style="padding:14px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color 120ms,border-color 120ms;font-family:var(--font-ui);"
-                                :style="scopeTab === '{{ $tab }}' ? 'border-bottom-color:var(--emerald-600);color:var(--emerald-700);font-weight:600;' : 'color:var(--ink-500);'"
+                                style="padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color 120ms,border-color 120ms;font-family:var(--font-ui);"
+                                :style="{
+                                    borderBottomColor: scopeTab === '{{ $tab }}' ? 'var(--emerald-600)' : 'transparent',
+                                    color:      scopeTab === '{{ $tab }}' ? 'var(--emerald-700)' : 'var(--ink-500)',
+                                    fontWeight: scopeTab === '{{ $tab }}' ? '600' : '500'
+                                }"
                             >{{ $label }}</button>
                         @endforeach
                     </div>
