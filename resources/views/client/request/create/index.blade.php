@@ -91,15 +91,20 @@
                 {{-- Country picker (global only) --}}
                 @if(!$lockedCountryId)
                 <div class="card" style="padding:18px 20px;">
-                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:10px;">Select Country</div>
-                    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:12px;">Select Country</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;">
                         @foreach ($countries as $country)
                             <button @click="selectedCountry = {{ $country['id'] }}"
-                                style="display:flex;align-items:center;gap:8px;border-radius:var(--radius);border:1px solid var(--line);padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:all 120ms;font-family:var(--font-ui);"
-                                :style="selectedCountry === {{ $country['id'] }}
-                                    ? 'background:var(--emerald-700);color:white;border-color:var(--emerald-700);'
-                                    : 'background:var(--card);color:var(--ink-700);'">
-                                <span>{{ $country['flag'] }}</span>
+                                x-data="{ hov: false }"
+                                @mouseenter="hov = true" @mouseleave="hov = false"
+                                style="display:flex;align-items:center;gap:10px;border-radius:var(--radius);border:1px solid var(--line);padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:all 120ms;font-family:var(--font-ui);text-align:left;width:100%;"
+                                :style="{
+                                    background:   selectedCountry === {{ $country['id'] }} ? 'var(--emerald-700)' : (hov ? 'var(--paper)' : 'var(--card)'),
+                                    color:        selectedCountry === {{ $country['id'] }} ? 'white' : 'var(--ink-700)',
+                                    borderColor:  selectedCountry === {{ $country['id'] }} ? 'var(--emerald-700)' : (hov ? 'var(--emerald-400)' : 'var(--line)'),
+                                    boxShadow:    selectedCountry === {{ $country['id'] }} ? '0 0 0 3px rgba(5,150,105,0.15)' : ''
+                                }">
+                                <span style="font-size:20px;line-height:1;flex-shrink:0;">{{ $country['flag'] }}</span>
                                 <span>{{ $country['name'] }}</span>
                             </button>
                         @endforeach
@@ -555,38 +560,47 @@
                                 <span class="dot"></span>Docs ready
                             </span>
                         </div>
-                        <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+                        <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
                             <template x-for="docType in requiredDocTypes" :key="docType.id">
-                                <div style="border-radius:var(--radius);border:2px dashed var(--line);padding:20px 12px;text-align:center;cursor:pointer;transition:border-color 120ms,background 120ms;"
-                                    :style="getUploadedFile(candidate._id, docType.id) ? 'border-color:rgba(5,150,105,0.4);background:rgba(5,150,105,0.04);border-style:solid;' : ''"
-                                    @click="$refs['file_' + candidate._id + '_' + docType.id].click()"
-                                    onmouseover="if(!this.style.borderColor.includes('150')){this.style.borderColor='var(--emerald-400)';}"
-                                    onmouseout="if(!this.style.borderColor.includes('150')){this.style.borderColor='var(--line)';}">
+                                <div x-data="{ hovered: false }"
+                                    style="border-radius:var(--radius);border:2px dashed var(--line);padding:20px 12px;text-align:center;cursor:pointer;transition:border-color 120ms,background 120ms;"
+                                    :style="{
+                                        'border-color': getUploadedFile(candidate._id, docType.id) ? 'rgba(5,150,105,0.45)' : (hovered ? 'var(--emerald-500)' : 'var(--line)'),
+                                        'background':   getUploadedFile(candidate._id, docType.id) ? 'rgba(5,150,105,0.04)' : (hovered ? 'rgba(5,150,105,0.02)' : ''),
+                                        'border-style': getUploadedFile(candidate._id, docType.id) ? 'solid' : 'dashed'
+                                    }"
+                                    @mouseenter="hovered = true"
+                                    @mouseleave="hovered = false"
+                                    @click="$refs['file_' + candidate._id + '_' + docType.id].click()">
                                     <input type="file" style="display:none;"
                                         :ref="'file_' + candidate._id + '_' + docType.id"
                                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                         @change="handleFileUpload($event, candidate._id, docType.id)" />
-                                    <template x-if="!getUploadedFile(candidate._id, docType.id)">
-                                        <div>
-                                            <svg style="width:24px;height:24px;color:var(--ink-200);margin:0 auto 8px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+
+                                    {{-- Empty state --}}
+                                    <div x-show="!getUploadedFile(candidate._id, docType.id)">
+                                        <svg style="width:22px;height:22px;color:var(--ink-300);margin:0 auto 8px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+                                        </svg>
+                                        <p style="font-size:12px;font-weight:600;color:var(--ink-700);margin:0;" x-text="docType.label"></p>
+                                        <p style="font-size:11px;color:var(--ink-400);margin:4px 0 0;">Click to upload</p>
+                                        <span x-show="docType.required" style="display:inline-block;margin-top:7px;font-size:10px;font-weight:600;color:var(--gold-700);background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.25);border-radius:999px;padding:2px 8px;">Required</span>
+                                    </div>
+
+                                    {{-- Uploaded state --}}
+                                    <div x-show="getUploadedFile(candidate._id, docType.id)">
+                                        <div style="width:36px;height:36px;border-radius:50%;background:rgba(5,150,105,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;">
+                                            <svg style="width:18px;height:18px;color:var(--emerald-600);" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
                                             </svg>
-                                            <p style="font-size:12px;font-weight:600;color:var(--ink-700);margin:0;" x-text="docType.label"></p>
-                                            <p style="font-size:11px;color:var(--ink-400);margin:3px 0 0;">Click to upload</p>
-                                            <span x-show="docType.required" style="display:inline-block;margin-top:6px;font-size:10px;font-weight:600;color:var(--gold-700);background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.25);border-radius:999px;padding:2px 8px;">Required</span>
                                         </div>
-                                    </template>
-                                    <template x-if="getUploadedFile(candidate._id, docType.id)">
-                                        <div>
-                                            <svg style="width:24px;height:24px;color:var(--emerald-600);margin:0 auto 8px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                                            </svg>
-                                            <p style="font-size:12px;font-weight:600;color:var(--emerald-700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;" x-text="getUploadedFile(candidate._id, docType.id).name"></p>
-                                            <button @click.stop="removeFile(candidate._id, docType.id)"
-                                                style="font-size:11px;color:var(--ink-400);background:none;border:none;cursor:pointer;margin-top:4px;font-family:var(--font-ui);"
-                                                onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--ink-400)'">Remove</button>
-                                        </div>
-                                    </template>
+                                        <p style="font-size:12px;font-weight:600;color:var(--emerald-700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;" x-text="getUploadedFile(candidate._id, docType.id)?.name ?? ''"></p>
+                                        <button @click.stop="removeFile(candidate._id, docType.id)"
+                                            x-data="{ btnHov: false }"
+                                            :style="{ color: btnHov ? 'var(--danger)' : 'var(--ink-400)' }"
+                                            @mouseenter="btnHov = true" @mouseleave="btnHov = false"
+                                            style="font-size:11px;background:none;border:none;cursor:pointer;margin-top:5px;font-family:var(--font-ui);">Remove</button>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -600,16 +614,12 @@
                     <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:10px;">Upload Progress</div>
                     <template x-for="(c, ci) in candidates" :key="c._id">
                         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);">
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <div style="width:20px;height:20px;border-radius:50%;background:rgba(5,150,105,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--emerald-700);" x-text="ci + 1"></div>
-                                <span style="font-size:12px;color:var(--ink-700);font-weight:500;" x-text="c.name"></span>
+                            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                                <div style="width:20px;height:20px;border-radius:50%;background:rgba(5,150,105,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--emerald-700);flex-shrink:0;" x-text="ci + 1"></div>
+                                <span style="font-size:12px;color:var(--ink-700);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" x-text="c.name"></span>
                             </div>
-                            <template x-if="candidateDocsComplete(c._id)">
-                                <svg style="width:14px;height:14px;color:var(--emerald-600);" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
-                            </template>
-                            <template x-if="!candidateDocsComplete(c._id)">
-                                <span style="font-size:11px;color:var(--ink-400);">Pending</span>
-                            </template>
+                            <svg x-show="candidateDocsComplete(c._id)" style="width:14px;height:14px;color:var(--emerald-600);flex-shrink:0;margin-left:6px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                            <span x-show="!candidateDocsComplete(c._id)" style="font-size:11px;color:var(--ink-400);flex-shrink:0;margin-left:6px;">Pending</span>
                         </div>
                     </template>
                 </div>
