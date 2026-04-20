@@ -2,9 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>
-                <em style="font-style:italic;color:var(--emerald-700);">Notifications</em>
-            </h1>
+            <h1><em>Notifications</em></h1>
             <div class="sub">
                 @if ($unreadCount > 0)
                     <b style="color:var(--ink-900);">{{ $unreadCount }}</b> unread ·

@@ -2,9 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>
-                Account <em style="font-style:italic;color:var(--emerald-700);">Settings</em>
-            </h1>
+            <h1>Account <em>Settings</em></h1>
             <div class="sub">Company and contact information</div>
         </div>
     </div>

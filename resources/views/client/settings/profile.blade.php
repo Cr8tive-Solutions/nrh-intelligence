@@ -2,9 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>
-                My <em style="font-style:italic;color:var(--emerald-700);">Profile</em>
-            </h1>
+            <h1>My <em>Profile</em></h1>
             <div class="sub">Your personal account details</div>
         </div>
     </div>

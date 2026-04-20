@@ -7,7 +7,7 @@
             </svg>
         </div>
 
-        <h2 style="font-family:var(--font-display);font-size:28px;font-weight:500;color:var(--ink-900);margin:0 0 8px;">Request <em style="font-style:italic;color:var(--emerald-700);">submitted.</em></h2>
+        <h2 style="font-family:var(--font-display);font-size:28px;font-weight:500;color:var(--ink-900);margin:0 0 8px;">Request <em>submitted.</em></h2>
         <p style="font-size:13px;color:var(--ink-500);line-height:1.6;margin:0 0 24px;">Your background check request has been received. Our team will begin processing it shortly.</p>
 
         <div class="card" style="padding:20px 24px;text-align:left;margin-bottom:28px;">
@@ -33,7 +33,7 @@
         </div>
 
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;">
-            <a href="{{ route('client.request.new') }}" class="btn btn-ghost">New Request</a>
+            <a href="{{ route('client.request.new') }}" class="btn btn-ghost">New Screening</a>
             <a href="{{ route('client.requests.index') }}" class="btn btn-primary">View Active Screenings →</a>
         </div>
     </div>

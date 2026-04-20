@@ -3,9 +3,7 @@
     {{-- Page header --}}
     <div class="page-head">
         <div>
-            <h1>
-                Active <em style="font-style:italic;color:var(--emerald-700);">Requests</em>
-            </h1>
+            <h1>Active <em>Screenings</em></h1>
             <div class="sub">Screenings currently being processed</div>
         </div>
         <a href="{{ route('client.request.new') }}" class="btn btn-primary">

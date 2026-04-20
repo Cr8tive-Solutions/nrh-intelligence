@@ -2,9 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>
-                Team <em style="font-style:italic;color:var(--emerald-700);">Users</em>
-            </h1>
+            <h1>Team <em>Users</em></h1>
             <div class="sub">Team members with portal access</div>
         </div>
         <button x-data @click="$dispatch('open-create-user')" class="btn btn-primary">

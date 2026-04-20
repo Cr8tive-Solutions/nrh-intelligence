@@ -2,9 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>
-                Service <em style="font-style:italic;color:var(--emerald-700);">Agreement</em>
-            </h1>
+            <h1>Service <em>Agreement</em></h1>
             <div class="sub">Terms, SLA, and agreement details</div>
         </div>
     </div>

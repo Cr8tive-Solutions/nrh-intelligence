@@ -2,9 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>
-                <em style="font-style:italic;color:var(--emerald-700);">Security</em> Settings
-            </h1>
+            <h1><em>Security</em> Settings</h1>
             <div class="sub">Manage your password and access</div>
         </div>
     </div>

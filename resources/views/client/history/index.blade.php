@@ -2,9 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>
-                <em style="font-style:italic;color:var(--emerald-700);">Completed</em> Reports
-            </h1>
+            <h1><em>Completed</em> Reports</h1>
             <div class="sub">Finalized background check requests</div>
         </div>
     </div>

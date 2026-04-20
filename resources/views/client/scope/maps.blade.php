@@ -2,9 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>
-                Scope <em style="font-style:italic;color:var(--emerald-700);">Maps</em>
-            </h1>
+            <h1>Scope <em>Maps</em></h1>
             <div class="sub">Countries where background verification services are available</div>
         </div>
     </div>

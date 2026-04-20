@@ -2,9 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>
-                Screening <em style="font-style:italic;color:var(--emerald-700);">Packages</em>
-            </h1>
+            <h1>Screening <em>Packages</em></h1>
             <div class="sub">Saved scope bundles for quick request creation</div>
         </div>
         <button x-data @click="$dispatch('open-create-package')" class="btn btn-primary">

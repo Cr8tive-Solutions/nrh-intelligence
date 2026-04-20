@@ -2,9 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>
-                <em style="font-style:italic;color:var(--emerald-700);">Payment</em> Transactions
-            </h1>
+            <h1><em>Payment</em> Transactions</h1>
             <div class="sub">Payment history recorded by admin</div>
         </div>
     </div>

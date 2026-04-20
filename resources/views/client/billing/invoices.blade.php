@@ -2,9 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>
-                Monthly <em style="font-style:italic;color:var(--emerald-700);">Invoices</em>
-            </h1>
+            <h1>Monthly <em>Invoices</em></h1>
             <div class="sub">Invoices issued by NRH Intelligence</div>
         </div>
     </div>
