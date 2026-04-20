@@ -67,7 +67,7 @@
                 @if ($i < count($steps) - 1)
                     <div style="flex:1;height:1px;margin:0 16px;position:relative;overflow:hidden;background:var(--line);">
                         <div style="position:absolute;inset:0;background:var(--emerald-600);transition:transform 400ms ease;transform-origin:left;"
-                            :style="step > {{ $s['num'] }} ? 'transform:scaleX(1)' : 'transform:scaleX(0)'"></div>
+                            :style="{ transform: step > {{ $s['num'] }} ? 'scaleX(1)' : 'scaleX(0)' }"></div>
                     </div>
                 @endif
 

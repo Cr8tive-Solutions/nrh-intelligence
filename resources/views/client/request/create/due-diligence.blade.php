@@ -1,20 +1,21 @@
 <x-client.layouts.app pageTitle="{{ $config['label'] }}">
 
+@php
+    $h1Em = ['kyc' => 'Customer', 'kyb' => 'Business', 'kys' => 'Supplier'][$type] ?? strtoupper($type);
+@endphp
 {{-- Page header --}}
-<div class="page-head" style="margin-bottom:24px;">
+<div class="page-head">
     <div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
-            <span style="font-family:var(--font-mono);font-size:11px;color:var(--ink-400);letter-spacing:0.1em;text-transform:uppercase;">Due Diligence</span>
-            <span style="font-size:11px;font-weight:600;color:var(--emerald-700);background:var(--emerald-50);border:1px solid rgba(5,150,105,0.15);border-radius:999px;padding:2px 10px;">{{ $config['badge'] }}</span>
-        </div>
-        <p style="font-size:13px;color:var(--ink-500);margin:0;max-width:620px;">{{ $config['description'] }}</p>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-400);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Due Diligence</div>
+        <h1>Know Your <em>{{ $h1Em }}</em></h1>
+        <div class="sub">{{ $config['description'] }}</div>
     </div>
 </div>
 
 <div
     x-data="dueDiligence()"
     x-init="init()"
-    style="max-width:960px;"
+    style=""
 >
 
     {{-- Step indicator --}}
@@ -54,7 +55,7 @@
                     @if ($i < count($steps) - 1)
                         <div style="flex:1;height:1px;margin:0 16px;position:relative;overflow:hidden;background:var(--line);">
                             <div style="position:absolute;inset:0;background:var(--emerald-600);transition:transform 400ms ease;transform-origin:left;"
-                                :style="step > {{ $s['num'] }} ? 'transform:scaleX(1)' : 'transform:scaleX(0)'"></div>
+                                :style="{ transform: step > {{ $s['num'] }} ? 'scaleX(1)' : 'scaleX(0)' }"></div>
                         </div>
                     @endif
 
@@ -294,9 +295,11 @@
                 <div style="font-size:13px;font-weight:600;color:var(--ink-700);margin-bottom:2px;">Select the compliance checks to run for this subject.</div>
                 @foreach ($checks as $check)
                     <div
-                        x-data="{}"
                         style="display:flex;align-items:center;justify-content:space-between;border-radius:var(--radius);border:1px solid var(--line);padding:14px 16px;transition:border-color 120ms,background 120ms;cursor:default;"
-                        :style="isChecked('{{ $check['id'] }}') ? 'border-color:rgba(5,150,105,0.4);background:rgba(5,150,105,0.04);' : ''"
+                        :style="{
+                            'border-color': isChecked('{{ $check['id'] }}') ? 'rgba(5,150,105,0.4)' : 'var(--line)',
+                            background:     isChecked('{{ $check['id'] }}') ? 'rgba(5,150,105,0.04)' : ''
+                        }"
                     >
                         <div style="flex:1;min-width:0;padding-right:16px;">
                             <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
@@ -309,10 +312,12 @@
                             <span style="font-size:13px;font-weight:600;color:var(--ink-900);font-family:var(--font-mono);">MYR {{ number_format($check['price'], 2) }}</span>
                             <button
                                 @click="toggleCheck('{{ $check['id'] }}', '{{ $check['name'] }}', {{ $check['price'] }}, '{{ $check['turnaround'] }}')"
-                                style="border-radius:var(--radius);border:1px solid;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;transition:background 120ms,color 120ms;font-family:var(--font-ui);"
-                                :style="isChecked('{{ $check['id'] }}')
-                                    ? 'background:rgba(196,69,58,0.06);color:var(--danger);border-color:rgba(196,69,58,0.25);'
-                                    : 'background:var(--emerald-700);color:white;border-color:var(--emerald-700);'"
+                                style="border-radius:var(--radius);border:1px solid;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;transition:background 120ms,color 120ms,border-color 120ms;font-family:var(--font-ui);"
+                                :style="{
+                                    background:   isChecked('{{ $check['id'] }}') ? 'rgba(196,69,58,0.06)' : 'var(--emerald-700)',
+                                    color:        isChecked('{{ $check['id'] }}') ? 'var(--danger)' : 'white',
+                                    'border-color': isChecked('{{ $check['id'] }}') ? 'rgba(196,69,58,0.25)' : 'var(--emerald-700)'
+                                }"
                             >
                                 <span x-text="isChecked('{{ $check['id'] }}') ? 'Remove' : 'Add'"></span>
                             </button>
@@ -329,9 +334,7 @@
                         <span style="border-radius:999px;background:rgba(5,150,105,0.1);color:var(--emerald-700);font-size:11px;font-weight:700;padding:2px 8px;font-family:var(--font-mono);" x-text="selectedChecks.length"></span>
                     </div>
                     <div style="padding:14px 18px;">
-                        <template x-if="selectedChecks.length === 0">
-                            <p style="padding:24px 0;text-align:center;font-size:12px;color:var(--ink-400);">No checks selected yet.</p>
-                        </template>
+                        <p x-show="selectedChecks.length === 0" style="padding:24px 0;text-align:center;font-size:12px;color:var(--ink-400);margin:0;">No checks selected yet.</p>
                         <div style="display:flex;flex-direction:column;gap:8px;">
                             <template x-for="item in selectedChecks" :key="item.id">
                                 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
@@ -340,8 +343,9 @@
                                         <p style="font-size:11px;color:var(--ink-400);margin:2px 0 0;font-family:var(--font-mono);">MYR <span x-text="item.price.toFixed(2)"></span></p>
                                     </div>
                                     <button @click="removeCheck(item.id)"
-                                        style="color:var(--ink-300);background:none;border:none;cursor:pointer;flex-shrink:0;margin-top:2px;padding:0;"
-                                        onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--ink-300)'">
+                                        x-data="{ h: false }" @mouseenter="h=true" @mouseleave="h=false"
+                                        :style="{ color: h ? 'var(--danger)' : 'var(--ink-300)' }"
+                                        style="background:none;border:none;cursor:pointer;flex-shrink:0;margin-top:2px;padding:0;">
                                         <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
                                         </svg>
@@ -349,14 +353,12 @@
                                 </div>
                             </template>
                         </div>
-                        <template x-if="selectedChecks.length > 0">
-                            <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">
-                                <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
-                                    <span>Total</span>
-                                    <span style="font-weight:600;font-family:var(--font-mono);">MYR <span x-text="checksTotal.toFixed(2)"></span></span>
-                                </div>
+                        <div x-show="selectedChecks.length > 0" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">
+                            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
+                                <span>Total</span>
+                                <span style="font-weight:600;font-family:var(--font-mono);">MYR <span x-text="checksTotal.toFixed(2)"></span></span>
                             </div>
-                        </template>
+                        </div>
                     </div>
                     <div style="padding:0 18px 18px;">
                         <button @click="nextStep()" :disabled="selectedChecks.length === 0"
@@ -404,40 +406,47 @@
                         <p style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);margin:2px 0 0;" x-text="subject.identity_number"></p>
                     </div>
                 </div>
-                <div style="padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+                <div style="padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
                     @foreach ($config['doc_types'] as $docType)
-                        <div
-                            style="position:relative;border-radius:var(--radius);border:2px dashed var(--line);padding:20px 16px;text-align:center;transition:border-color 120ms,background 120ms;cursor:pointer;"
-                            :style="getDoc({{ $docType['id'] }}) ? 'border-color:rgba(5,150,105,0.4);background:rgba(5,150,105,0.04);' : ''"
-                            @click="$refs['doc_{{ $docType['id'] }}'].click()"
-                            onmouseover="if(!this.style.borderColor.includes('150')) { this.style.borderColor='var(--emerald-400)'; }"
-                            onmouseout="if(!this.style.borderColor.includes('150')) { this.style.borderColor='var(--line)'; }"
-                        >
+                        <div x-data="{ hovered: false }"
+                            style="border-radius:var(--radius);border:2px dashed var(--line);padding:20px 12px;text-align:center;cursor:pointer;transition:border-color 120ms,background 120ms;"
+                            :style="{
+                                'border-color': getDoc({{ $docType['id'] }}) ? 'rgba(5,150,105,0.45)' : (hovered ? 'var(--emerald-500)' : 'var(--line)'),
+                                background:     getDoc({{ $docType['id'] }}) ? 'rgba(5,150,105,0.04)' : (hovered ? 'rgba(5,150,105,0.02)' : ''),
+                                'border-style': getDoc({{ $docType['id'] }}) ? 'solid' : 'dashed'
+                            }"
+                            @mouseenter="hovered = true" @mouseleave="hovered = false"
+                            @click="$refs['doc_{{ $docType['id'] }}'].click()">
                             <input type="file" style="display:none;" x-ref="doc_{{ $docType['id'] }}"
                                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                 @change="handleDoc($event, {{ $docType['id'] }})" />
-                            <template x-if="!getDoc({{ $docType['id'] }})">
-                                <div>
-                                    <svg style="width:28px;height:28px;color:var(--ink-200);margin:0 auto 8px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+
+                            {{-- Empty state --}}
+                            <div x-show="!getDoc({{ $docType['id'] }})">
+                                <svg style="width:22px;height:22px;color:var(--ink-300);margin:0 auto 8px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+                                </svg>
+                                <p style="font-size:12px;font-weight:600;color:var(--ink-700);margin:0;">{{ $docType['label'] }}</p>
+                                <p style="font-size:11px;color:var(--ink-400);margin:4px 0 0;">Click to upload</p>
+                                @if($docType['required'])
+                                    <span style="display:inline-block;margin-top:7px;font-size:10px;font-weight:600;color:var(--gold-700);background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.25);border-radius:999px;padding:2px 8px;">Required</span>
+                                @endif
+                            </div>
+
+                            {{-- Uploaded state --}}
+                            <div x-show="getDoc({{ $docType['id'] }})">
+                                <div style="width:36px;height:36px;border-radius:50%;background:rgba(5,150,105,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;">
+                                    <svg style="width:18px;height:18px;color:var(--emerald-600);" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
                                     </svg>
-                                    <p style="font-size:12px;font-weight:600;color:var(--ink-700);margin:0;">{{ $docType['label'] }}</p>
-                                    <p style="font-size:11px;color:var(--ink-400);margin:3px 0 0;">Click to upload</p>
-                                    @if($docType['required'])
-                                        <span class="pill pill-review" style="display:inline-flex;margin-top:6px;font-size:10px;">Required</span>
-                                    @endif
                                 </div>
-                            </template>
-                            <template x-if="getDoc({{ $docType['id'] }})">
-                                <div>
-                                    <svg style="width:28px;height:28px;color:var(--emerald-600);margin:0 auto 8px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                                    </svg>
-                                    <p style="font-size:12px;font-weight:600;color:var(--emerald-700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;" x-text="getDoc({{ $docType['id'] }}).name"></p>
-                                    <button @click.stop="removeDoc({{ $docType['id'] }})" style="font-size:11px;color:var(--ink-400);background:none;border:none;cursor:pointer;margin-top:4px;font-family:var(--font-ui);"
-                                        onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--ink-400)'">Remove</button>
-                                </div>
-                            </template>
+                                <p style="font-size:12px;font-weight:600;color:var(--emerald-700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;" x-text="getDoc({{ $docType['id'] }})?.name ?? ''"></p>
+                                <button @click.stop="removeDoc({{ $docType['id'] }})"
+                                    x-data="{ btnHov: false }"
+                                    :style="{ color: btnHov ? 'var(--danger)' : 'var(--ink-400)' }"
+                                    @mouseenter="btnHov = true" @mouseleave="btnHov = false"
+                                    style="font-size:11px;background:none;border:none;cursor:pointer;margin-top:5px;font-family:var(--font-ui);">Remove</button>
+                            </div>
                         </div>
                     @endforeach
                 </div>
