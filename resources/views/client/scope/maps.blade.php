@@ -2,17 +2,17 @@
 
     <div class="page-head">
         <div>
-            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+            <h1>
                 Scope <em style="font-style:italic;color:var(--emerald-700);">Maps</em>
             </h1>
-            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Countries where background verification services are available</p>
+            <div class="sub">Countries where background verification services are available</div>
         </div>
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
         @foreach ($countries as $country)
             <a href="{{ route('client.maps.country', $country['id']) }}"
-               class="nrh-card" style="padding:20px;display:block;text-decoration:none;transition:border-color 150ms,box-shadow 150ms;"
+               class="card" style="padding:20px;display:block;text-decoration:none;transition:border-color 150ms,box-shadow 150ms;"
                onmouseover="this.style.borderColor='rgba(5,150,105,0.4)';this.style.boxShadow='var(--shadow)'" onmouseout="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
                     <span style="font-size:28px;line-height:1;">{{ $country['flag'] }}</span>

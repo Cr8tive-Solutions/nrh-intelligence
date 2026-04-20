@@ -117,7 +117,7 @@
         @csrf
         <input type="hidden" name="code" id="otpCodeInput">
         <div style="display:flex;gap:10px;">
-            <a href="{{ route('client.login') }}" class="btn-ghost" style="flex:0 0 auto;padding:12px 18px;display:inline-flex;align-items:center;justify-content:center;">Cancel</a>
+            <a href="{{ route('client.login') }}" class="btn btn-ghost" style="flex:0 0 auto;justify-content:center;">Cancel</a>
             <button type="submit" class="btn-auth" style="flex:1;">
                 Verify and sign in
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>

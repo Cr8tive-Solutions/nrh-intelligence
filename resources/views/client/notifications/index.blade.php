@@ -2,23 +2,23 @@
 
     <div class="page-head">
         <div>
-            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+            <h1>
                 <em style="font-style:italic;color:var(--emerald-700);">Notifications</em>
             </h1>
-            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">
+            <div class="sub">
                 @if ($unreadCount > 0)
                     <b style="color:var(--ink-900);">{{ $unreadCount }}</b> unread ·
                 @endif
                 {{ $notifications->count() }} total alerts
-            </p>
+            </div>
         </div>
         @if ($unreadCount > 0)
-            <button class="btn-ghost" style="font-size:13px;">Mark all as read</button>
+            <button class="btn btn-ghost" style="font-size:13px;">Mark all as read</button>
         @endif
     </div>
 
     @if ($notifications->isEmpty())
-        <div class="nrh-card" style="padding:80px 20px;text-align:center;">
+        <div class="card" style="padding:80px 20px;text-align:center;">
             <svg style="width:44px;height:44px;color:var(--ink-200);margin:0 auto 16px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/>
             </svg>
@@ -74,7 +74,7 @@
                     {{-- Content --}}
                     <div style="flex:1;min-width:0;">
                         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
-                            <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;{{ ! $notif['read'] ? '' : '' }}">
+                            <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;">
                                 {{ $notif['title'] }}
                                 @if (! $notif['read'])
                                     <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--emerald-600);margin-left:6px;vertical-align:middle;"></span>
@@ -86,8 +86,7 @@
                         </div>
                         <p style="font-size:12px;color:var(--ink-600);margin:4px 0 0;line-height:1.5;">{{ $notif['body'] }}</p>
                         @if (isset($notif['link']))
-                            <a href="{{ $notif['link'] }}" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--emerald-700);text-decoration:none;margin-top:8px;"
-                               onmouseover="this.style.color='var(--emerald-900)'" onmouseout="this.style.color='var(--emerald-700)'">
+                            <a href="{{ $notif['link'] }}" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--emerald-700);text-decoration:none;margin-top:8px;">
                                 View details
                                 <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
                             </a>

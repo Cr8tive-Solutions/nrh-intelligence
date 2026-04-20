@@ -33,6 +33,18 @@ class LoginController extends Controller
                 ->withErrors(['email' => 'Invalid email address or password.']);
         }
 
+        if (app()->isLocal()) {
+            session([
+                'client_user_id' => $user->id,
+                'client_customer_id' => $user->customer_id,
+                'client_user_name' => $user->name,
+                'client_company' => $user->customer->name,
+                'client_last_login' => now()->format('d M Y, H:i'),
+            ]);
+
+            return redirect()->intended(route('client.dashboard'));
+        }
+
         $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         session([
@@ -100,14 +112,16 @@ class LoginController extends Controller
             return redirect()->route('client.login');
         }
 
-        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $code = app()->isLocal() ? '000000' : str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $email = session('2fa_email');
 
         session(['2fa_code' => $code, '2fa_expires_at' => now()->addMinutes(10)->timestamp]);
 
-        Mail::raw("Your NRH Intelligence verification code is: {$code}\n\nThis code expires in 10 minutes.", function ($message) use ($email) {
-            $message->to($email)->subject('Your NRH verification code');
-        });
+        if (! app()->isLocal()) {
+            Mail::raw("Your NRH Intelligence verification code is: {$code}\n\nThis code expires in 10 minutes.", function ($message) use ($email) {
+                $message->to($email)->subject('Your NRH verification code');
+            });
+        }
 
         return back()->with('status', 'A new code has been sent to '.$email.'.');
     }

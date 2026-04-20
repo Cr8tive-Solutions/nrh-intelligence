@@ -2,12 +2,12 @@
 
     <div class="page-head">
         <div>
-            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+            <h1>
                 Screening <em style="font-style:italic;color:var(--emerald-700);">Packages</em>
             </h1>
-            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Saved scope bundles for quick request creation</p>
+            <div class="sub">Saved scope bundles for quick request creation</div>
         </div>
-        <button x-data @click="$dispatch('open-create-package')" class="btn-primary">
+        <button x-data @click="$dispatch('open-create-package')" class="btn btn-primary">
             <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>
             New Package
         </button>
@@ -15,7 +15,7 @@
 
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
         @forelse ($packages as $pkg)
-            <div class="nrh-card" style="padding:20px;">
+            <div class="card" style="padding:20px;">
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
                     <div>
                         <h3 style="font-family:var(--font-display);font-size:16px;font-weight:500;color:var(--ink-900);margin:0;">{{ $pkg->name }}</h3>
@@ -65,14 +65,13 @@
                     <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M6 18 18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            @php $inp = "width:100%;padding:10px 14px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);box-sizing:border-box;"; @endphp
             <form style="display:flex;flex-direction:column;gap:16px;">
-                <div>
-                    <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Package Name</label>
-                    <input type="text" placeholder="e.g. Standard Screening" style="{{ $inp }}" onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'"/>
+                <div class="field">
+                    <label>Package Name</label>
+                    <input type="text" placeholder="e.g. Standard Screening"/>
                 </div>
-                <div>
-                    <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:8px;">Select Scopes</label>
+                <div class="field">
+                    <label>Select Scopes</label>
                     <div style="display:flex;flex-direction:column;gap:6px;">
                         @foreach ($allScopes as $scope)
                             <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius);cursor:pointer;transition:background 120ms;"
@@ -84,8 +83,8 @@
                     </div>
                 </div>
                 <div style="display:flex;gap:10px;padding-top:4px;">
-                    <button type="button" @click="open = false" class="btn-ghost" style="flex:1;justify-content:center;">Cancel</button>
-                    <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">Save Package</button>
+                    <button type="button" @click="open = false" class="btn btn-ghost" style="flex:1;justify-content:center;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center;">Save Package</button>
                 </div>
             </form>
         </div>

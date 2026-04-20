@@ -46,8 +46,8 @@
         </button>
 
         {{-- New screening --}}
-        <a href="{{ route('client.request.new') }}" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:var(--radius);font-size:13px;font-weight:600;color:#fff;text-decoration:none;border:none;cursor:pointer;">
-            <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        <a href="{{ route('client.request.new') }}" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
             New screening
         </a>
     </div>

@@ -2,20 +2,20 @@
 
     <div class="page-head">
         <div>
-            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+            <h1>
                 Team <em style="font-style:italic;color:var(--emerald-700);">Users</em>
             </h1>
-            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Team members with portal access</p>
+            <div class="sub">Team members with portal access</div>
         </div>
-        <button x-data @click="$dispatch('open-create-user')" class="btn-primary">
+        <button x-data @click="$dispatch('open-create-user')" class="btn btn-primary">
             <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>
             Add User
         </button>
     </div>
 
-    <div class="nrh-card">
+    <div class="card">
         <div style="overflow-x:auto;">
-            <table class="nrh-table">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>User</th>
@@ -50,7 +50,7 @@
                             </td>
                             <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $user->created_at->format('d M Y') }}</td>
                             <td style="text-align:right;">
-                                <button class="btn-ghost" style="padding:5px 12px;font-size:12px;">Edit</button>
+                                <button class="btn btn-ghost" style="padding:5px 12px;font-size:12px;">Edit</button>
                             </td>
                         </tr>
                     @endforeach
@@ -83,27 +83,26 @@
                     <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M6 18 18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            @php $inp = "width:100%;padding:10px 14px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);box-sizing:border-box;"; @endphp
             <form style="display:flex;flex-direction:column;gap:16px;">
-                <div>
-                    <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Full Name</label>
-                    <input type="text" placeholder="Ahmad bin Ali" style="{{ $inp }}" onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'"/>
+                <div class="field">
+                    <label>Full Name</label>
+                    <input type="text" placeholder="Ahmad bin Ali"/>
                 </div>
-                <div>
-                    <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Email Address</label>
-                    <input type="email" placeholder="ahmad@company.com" style="{{ $inp }}" onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'"/>
+                <div class="field">
+                    <label>Email Address</label>
+                    <input type="email" placeholder="ahmad@company.com"/>
                 </div>
-                <div>
-                    <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Role</label>
-                    <select style="{{ $inp }}" onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'">
+                <div class="field">
+                    <label>Role</label>
+                    <select>
                         <option>User</option>
                         <option>Admin</option>
                     </select>
                 </div>
                 <p style="font-size:11px;color:var(--ink-400);margin:0;">A temporary password will be sent to the user's email.</p>
                 <div style="display:flex;gap:10px;padding-top:4px;">
-                    <button type="button" @click="open = false" class="btn-ghost" style="flex:1;justify-content:center;">Cancel</button>
-                    <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">Create User</button>
+                    <button type="button" @click="open = false" class="btn btn-ghost" style="flex:1;justify-content:center;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center;">Create User</button>
                 </div>
             </form>
         </div>

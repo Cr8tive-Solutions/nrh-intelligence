@@ -2,14 +2,14 @@
 
     <div class="page-head">
         <div>
-            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+            <h1>
                 <em style="font-style:italic;color:var(--emerald-700);">Payment</em> Transactions
             </h1>
-            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Payment history recorded by admin</p>
+            <div class="sub">Payment history recorded by admin</div>
         </div>
     </div>
 
-    <div class="nrh-card">
+    <div class="card">
         <div class="card-head">
             <h3>All Transactions</h3>
             @if(count($transactions) > 0)
@@ -19,7 +19,7 @@
             @endif
         </div>
         <div style="overflow-x:auto;">
-            <table class="nrh-table">
+            <table class="table">
                 <thead>
                     <tr>
                         <th style="width:140px;">Date</th>
@@ -49,7 +49,7 @@
                             </td>
                             <td style="text-align:right;">
                                 <a href="{{ route('client.billing.transactions.receipt', $txn->id) }}"
-                                   class="btn-ghost" style="padding:5px 12px;font-size:12px;">View</a>
+                                   class="btn btn-ghost" style="padding:5px 12px;font-size:12px;">View</a>
                             </td>
                         </tr>
                     @empty

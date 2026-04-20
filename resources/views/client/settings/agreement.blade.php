@@ -2,10 +2,10 @@
 
     <div class="page-head">
         <div>
-            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+            <h1>
                 Service <em style="font-style:italic;color:var(--emerald-700);">Agreement</em>
             </h1>
-            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Terms, SLA, and agreement details</p>
+            <div class="sub">Terms, SLA, and agreement details</div>
         </div>
     </div>
 
@@ -28,12 +28,12 @@
         </div>
 
         {{-- Agreement details --}}
-        <div class="nrh-card">
+        <div class="card">
             <div class="card-head">
                 <h3>{{ $agreement->type }}</h3>
                 <span class="pill pill-clear"><span class="dot"></span>Active</span>
             </div>
-            <div style="padding:20px 24px;display:grid;grid-template-columns:1fr 1fr;gap:x:24px;gap:20px;">
+            <div style="padding:20px 24px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
                 @foreach ([
                     ['Agreement Type',  $agreement->type],
                     ['Start Date',      $agreement->start_date->format('d M Y')],
@@ -51,7 +51,7 @@
         </div>
 
         {{-- Key terms --}}
-        <div class="nrh-card">
+        <div class="card">
             <div class="card-head">
                 <h3>Key Terms</h3>
             </div>

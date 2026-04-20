@@ -3,19 +3,19 @@
     {{-- Page header --}}
     <div class="page-head">
         <div>
-            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+            <h1>
                 Active <em style="font-style:italic;color:var(--emerald-700);">Requests</em>
             </h1>
-            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Screenings currently being processed</p>
+            <div class="sub">Screenings currently being processed</div>
         </div>
-        <a href="{{ route('client.request.new') }}" class="btn-primary">
+        <a href="{{ route('client.request.new') }}" class="btn btn-primary">
             <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
             New screening
         </a>
     </div>
 
     {{-- Table card --}}
-    <div class="nrh-card" x-data="{ filter: 'all', search: '' }">
+    <div class="card" x-data="{ filter: 'all', search: '' }">
         <div class="card-head">
             {{-- Filter chips --}}
             <div style="display:flex;align-items:center;gap:6px;">
@@ -33,14 +33,12 @@
                 <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-400);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
                 <input x-model="search" type="text" placeholder="Search requests…"
                     style="width:100%;padding:8px 10px 8px 32px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);transition:border-color 120ms,box-shadow 120ms;"
-                    onfocus="this.style.borderColor='var(--emerald-600)';this.style.boxShadow='0 0 0 3px rgba(5,150,105,0.1)'"
-                    onblur="this.style.borderColor='var(--line)';this.style.boxShadow=''"
                 />
             </div>
         </div>
 
         <div style="overflow-x:auto;">
-            <table class="nrh-table">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Request ID</th>
@@ -63,7 +61,7 @@
                             <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $req->created_at->format('d M Y') }}</td>
                             <td style="text-align:right;">
                                 <a href="{{ route('client.requests.details', $req->id) }}"
-                                   class="btn-ghost" style="padding:5px 12px;font-size:12px;"
+                                   class="btn btn-ghost" style="padding:5px 12px;font-size:12px;"
                                    onclick="event.stopPropagation()">View</a>
                             </td>
                         </tr>

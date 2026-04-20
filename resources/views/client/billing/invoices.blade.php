@@ -2,20 +2,20 @@
 
     <div class="page-head">
         <div>
-            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+            <h1>
                 Monthly <em style="font-style:italic;color:var(--emerald-700);">Invoices</em>
             </h1>
-            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Invoices issued by NRH Intelligence</p>
+            <div class="sub">Invoices issued by NRH Intelligence</div>
         </div>
     </div>
 
-    <div class="nrh-card">
+    <div class="card">
         <div class="card-head">
             <h3>Invoice History</h3>
             <span class="count-pill">{{ count($invoices) }} INVOICES</span>
         </div>
         <div style="overflow-x:auto;">
-            <table class="nrh-table">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Invoice No.</th>
@@ -48,11 +48,10 @@
                             <td style="text-align:right;">
                                 <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
                                     <a href="{{ route('client.billing.invoices.show', $inv->id) }}"
-                                       class="btn-ghost" style="padding:5px 10px;font-size:12px;"
+                                       class="btn btn-ghost" style="padding:5px 10px;font-size:12px;"
                                        onclick="event.stopPropagation()">View</a>
                                     <a href="{{ route('client.billing.invoices.download', $inv->id) }}"
                                        style="font-size:12px;font-weight:500;color:var(--ink-400);text-decoration:none;transition:color 120ms;"
-                                       onmouseover="this.style.color='var(--ink-700)'" onmouseout="this.style.color='var(--ink-400)'"
                                        onclick="event.stopPropagation()">PDF</a>
                                 </div>
                             </td>

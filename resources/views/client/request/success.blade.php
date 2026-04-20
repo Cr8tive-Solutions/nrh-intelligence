@@ -10,7 +10,7 @@
         <h2 style="font-family:var(--font-display);font-size:28px;font-weight:500;color:var(--ink-900);margin:0 0 8px;">Request <em style="font-style:italic;color:var(--emerald-700);">submitted.</em></h2>
         <p style="font-size:13px;color:var(--ink-500);line-height:1.6;margin:0 0 24px;">Your background check request has been received. Our team will begin processing it shortly.</p>
 
-        <div class="nrh-card" style="padding:20px 24px;text-align:left;margin-bottom:28px;">
+        <div class="card" style="padding:20px 24px;text-align:left;margin-bottom:28px;">
             <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-400);margin:0 0 16px;">What happens next?</p>
             <div style="display:flex;flex-direction:column;gap:12px;">
                 @foreach ([
@@ -33,8 +33,8 @@
         </div>
 
         <div style="display:flex;align-items:center;justify-content:center;gap:12px;">
-            <a href="{{ route('client.request.new') }}" class="btn-ghost">New Request</a>
-            <a href="{{ route('client.requests.index') }}" class="btn-primary">View Active Requests →</a>
+            <a href="{{ route('client.request.new') }}" class="btn btn-ghost">New Request</a>
+            <a href="{{ route('client.requests.index') }}" class="btn btn-primary">View Active Requests →</a>
         </div>
     </div>
 

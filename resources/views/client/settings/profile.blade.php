@@ -1,24 +1,18 @@
 <x-client.layouts.app pageTitle="My Profile">
 
-    @php
-        $inputStyle = "width:100%;padding:10px 14px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:14px;color:var(--ink-900);outline:none;font-family:var(--font-ui);transition:border-color 120ms,box-shadow 120ms;";
-        $labelStyle = "display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;";
-        $readonlyStyle = "width:100%;padding:10px 14px;border:1px solid var(--line);background:var(--paper);border-radius:var(--radius);font-size:14px;color:var(--ink-400);font-family:var(--font-ui);cursor:not-allowed;";
-    @endphp
-
     <div class="page-head">
         <div>
-            <h1 style="font-family:var(--font-display);font-weight:500;font-size:30px;letter-spacing:-0.01em;margin:0;color:var(--ink-900);">
+            <h1>
                 My <em style="font-style:italic;color:var(--emerald-700);">Profile</em>
             </h1>
-            <p style="margin-top:6px;font-size:13px;color:var(--ink-500);">Your personal account details</p>
+            <div class="sub">Your personal account details</div>
         </div>
     </div>
 
     <div style="max-width:560px;display:flex;flex-direction:column;gap:16px;">
 
         {{-- Avatar + role card --}}
-        <div class="nrh-card" style="padding:20px 24px;">
+        <div class="card" style="padding:20px 24px;">
             <div style="display:flex;align-items:center;gap:16px;">
                 <div style="width:56px;height:56px;border-radius:50%;background:var(--emerald-700);color:var(--gold-400);display:grid;place-items:center;font-size:18px;font-weight:600;font-family:var(--font-mono);box-shadow:inset 0 0 0 2px rgba(212,175,55,0.4);flex-shrink:0;">
                     {{ strtoupper(substr($user->name, 0, 2)) }}
@@ -35,53 +29,49 @@
         </div>
 
         {{-- Edit form --}}
-        <div class="nrh-card">
+        <div class="card">
             <div class="card-head">
                 <h3>Personal Details</h3>
             </div>
-            <form method="POST" action="{{ route('client.settings.profile.update') }}" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+            <form method="POST" action="{{ route('client.settings.profile.update') }}" class="form-body">
                 @csrf
 
-                <div>
-                    <label style="{{ $labelStyle }}">Full Name</label>
-                    <input type="text" name="name" value="{{ old('name', $user->name) }}" style="{{ $inputStyle }}"
-                        onfocus="this.style.borderColor='var(--emerald-600)';this.style.boxShadow='0 0 0 3px rgba(5,150,105,0.12)'"
-                        onblur="this.style.borderColor='var(--line)';this.style.boxShadow=''"/>
-                    @error('name')<p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ $message }}</p>@enderror
+                <div class="field">
+                    <label>Full Name</label>
+                    <input type="text" name="name" value="{{ old('name', $user->name) }}"/>
+                    @error('name') <p class="hint">{{ $message }}</p> @enderror
                 </div>
 
-                <div>
-                    <label style="{{ $labelStyle }}">Work Email</label>
-                    <input type="email" name="email" value="{{ old('email', $user->email) }}" style="{{ $inputStyle }}"
-                        onfocus="this.style.borderColor='var(--emerald-600)';this.style.boxShadow='0 0 0 3px rgba(5,150,105,0.12)'"
-                        onblur="this.style.borderColor='var(--line)';this.style.boxShadow=''"/>
-                    @error('email')<p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ $message }}</p>@enderror
+                <div class="field">
+                    <label>Work Email</label>
+                    <input type="email" name="email" value="{{ old('email', $user->email) }}"/>
+                    @error('email') <p class="hint">{{ $message }}</p> @enderror
                 </div>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                    <div>
-                        <label style="{{ $labelStyle }}">Role</label>
-                        <div style="{{ $readonlyStyle }}">{{ ucfirst($user->role) }}</div>
+                <div class="field-row field-row-2">
+                    <div class="field">
+                        <label>Role</label>
+                        <div class="readonly">{{ ucfirst($user->role) }}</div>
                     </div>
-                    <div>
-                        <label style="{{ $labelStyle }}">Status</label>
-                        <div style="{{ $readonlyStyle }}">{{ ucfirst($user->status) }}</div>
+                    <div class="field">
+                        <label>Status</label>
+                        <div class="readonly">{{ ucfirst($user->status) }}</div>
                     </div>
                 </div>
 
-                <div>
-                    <label style="{{ $labelStyle }}">Member Since</label>
-                    <div style="{{ $readonlyStyle }}">{{ $user->created_at->format('d M Y') }}</div>
+                <div class="field">
+                    <label>Member Since</label>
+                    <div class="readonly">{{ $user->created_at->format('d M Y') }}</div>
                 </div>
 
-                <div style="display:flex;justify-content:flex-end;padding-top:4px;">
-                    <button type="submit" class="btn-primary">Save Changes</button>
+                <div class="form-footer">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
         </div>
 
         {{-- Quick links --}}
-        <div class="nrh-card" style="padding:16px 20px;">
+        <div class="card" style="padding:16px 20px;">
             <p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-500);margin:0 0 12px;">Related Settings</p>
             <div style="display:flex;flex-direction:column;gap:2px;">
                 @foreach ([

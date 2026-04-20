@@ -1288,3 +1288,44 @@ body {
 .cand .name { font-weight: 600; line-height: 1.2; }
 .cand .role { font-size: 11px; color: var(--ink-500); }
 .cand .id   { font-family: var(--font-mono); font-size: 10px; color: var(--ink-400); }
+
+/* ─── Form fields ──────────────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > label {
+    display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-500);
+}
+.field input, .field textarea, .field select {
+    width: 100%; padding: 10px 14px; border: 1px solid var(--line);
+    background: var(--card); border-radius: var(--radius); font-size: 14px;
+    color: var(--ink-900); outline: none; font-family: var(--font-ui);
+    transition: border-color 120ms, box-shadow 120ms;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+    border-color: var(--emerald-600); box-shadow: 0 0 0 3px rgba(5,150,105,0.1);
+}
+.field textarea { resize: none; }
+.field .readonly {
+    padding: 10px 14px; border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius); font-size: 14px; color: var(--ink-400);
+    font-family: var(--font-ui); cursor: not-allowed;
+}
+.field .hint { font-size: 12px; color: var(--danger); margin-top: 2px; }
+.field .pw-wrap { position: relative; }
+.field .pw-wrap input { padding-right: 42px; }
+.field .pw-wrap .toggle {
+    position: absolute; right: 0; top: 0; bottom: 0; padding: 0 12px;
+    background: none; border: none; cursor: pointer; color: var(--ink-400);
+    transition: color 120ms;
+}
+.field .pw-wrap .toggle:hover { color: var(--ink-700); }
+.form-body { padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+.form-footer { display: flex; justify-content: flex-end; padding-top: 4px; }
+.form-section { padding-top: 16px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 16px; }
+.form-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-500); margin: 0; }
+.field-row { display: grid; gap: 16px; }
+.field-row-2 { grid-template-columns: 1fr 1fr; }
+.alert { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius); margin-bottom: 20px; font-size: 13px; font-weight: 500; }
+.alert svg { flex-shrink: 0; }
+.alert-success { background: var(--emerald-50); border: 1px solid rgba(5,150,105,0.2); color: var(--emerald-800); }
+.alert-success svg { color: var(--emerald-700); }

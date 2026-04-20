@@ -7,6 +7,6 @@
         </div>
         <h2 style="font-family:var(--font-display);font-size:20px;font-weight:500;color:var(--ink-900);margin:0 0 6px;">Coming soon</h2>
         <p style="font-size:13px;color:var(--ink-500);margin:0 0 20px;">This section is under construction.</p>
-        <a href="{{ route('client.dashboard') }}" class="btn-primary">Back to Dashboard</a>
+        <a href="{{ route('client.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
     </div>
 </x-client.layouts.app>

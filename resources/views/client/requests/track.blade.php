@@ -3,28 +3,23 @@
     <div style="max-width:680px;">
 
         {{-- Search card --}}
-        <div class="nrh-card" style="padding:24px;margin-bottom:16px;">
+        <div class="card" style="padding:24px;margin-bottom:16px;">
             <h3 style="font-size:14px;font-weight:600;color:var(--ink-900);margin:0 0 4px;">Search by Candidate</h3>
             <p style="font-size:12px;color:var(--ink-500);margin:0 0 16px;">Enter a candidate name or identity number to track their verification status.</p>
             <form method="POST" action="{{ route('client.requests.track.search') }}" style="display:flex;gap:10px;">
                 @csrf
-                <div style="position:relative;flex:1;">
-                    <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-400);pointer-events:none;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
-                    </svg>
-                    <input type="text" name="q" value="{{ $query }}" placeholder="Name or identity number..."
-                        style="width:100%;padding:10px 14px 10px 38px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);box-sizing:border-box;"
-                        onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'"
-                        autofocus />
+                <div class="search" style="flex:1;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+                    <input type="text" name="q" value="{{ $query }}" placeholder="Name or identity number…" autofocus />
                 </div>
-                <button type="submit" class="btn-primary">Search</button>
+                <button type="submit" class="btn btn-primary">Search</button>
             </form>
         </div>
 
         {{-- Results --}}
         @if ($results !== null)
             @if ($results->isEmpty())
-                <div class="nrh-card" style="padding:60px 20px;text-align:center;">
+                <div class="card" style="padding:60px 20px;text-align:center;">
                     <svg style="width:40px;height:40px;color:var(--ink-200);margin:0 auto 12px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
                     </svg>
@@ -37,15 +32,14 @@
                             $stepMap = ['new' => 1, 'in_progress' => 2, 'flagged' => 2, 'complete' => 3];
                             $currentStep = $stepMap[$result->status] ?? 1;
                         @endphp
-                        <div class="nrh-card" style="padding:20px 24px;">
+                        <div class="card" style="padding:20px 24px;">
                             <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
                                 <div>
                                     <p style="font-size:14px;font-weight:600;color:var(--ink-900);margin:0;">{{ $result->name }}</p>
                                     <p style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);margin:3px 0 0;">{{ $result->identity_number }}</p>
                                 </div>
                                 <a href="{{ route('client.requests.details', $result->screeningRequest->id) }}"
-                                   style="font-size:12px;font-weight:600;color:var(--emerald-700);text-decoration:none;"
-                                   onmouseover="this.style.color='var(--emerald-900)'" onmouseout="this.style.color='var(--emerald-700)'">
+                                   style="font-size:12px;font-weight:600;color:var(--emerald-700);text-decoration:none;">
                                     {{ $result->screeningRequest->reference }} →
                                 </a>
                             </div>

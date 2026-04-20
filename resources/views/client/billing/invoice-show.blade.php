@@ -1,13 +1,25 @@
 <x-client.layouts.app pageTitle="Invoice {{ $invoice->number }}">
 
-    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-500);margin-bottom:24px;">
-        <a href="{{ route('client.billing.invoices') }}" style="color:var(--ink-500);text-decoration:none;" onmouseover="this.style.color='var(--emerald-700)'" onmouseout="this.style.color='var(--ink-500)'">Invoices</a>
-        <svg style="width:12px;height:12px;color:var(--ink-300);" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
-        <span style="color:var(--ink-900);font-weight:600;font-family:var(--font-mono);">{{ $invoice->number }}</span>
+    <div class="page-head">
+        <div style="display:flex;align-items:center;gap:16px;">
+            <a href="{{ route('client.billing.invoices') }}"
+               style="display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink-500);flex-shrink:0;"
+               onmouseover="this.style.borderColor='var(--emerald-600)';this.style.color='var(--emerald-700)'"
+               onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--ink-500)'">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </a>
+            <div>
+                <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-400);letter-spacing:0.1em;text-transform:uppercase;">Invoices</div>
+                <div style="font-size:14px;font-weight:600;color:var(--ink-900);">{{ $invoice->number }}</div>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+            {{-- action buttons if any --}}
+        </div>
     </div>
 
     <div style="max-width:760px;">
-        <div class="nrh-card" style="overflow:hidden;">
+        <div class="card" style="overflow:hidden;">
 
             {{-- Invoice header --}}
             <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:28px 32px;border-bottom:1px solid var(--line);">
@@ -47,7 +59,7 @@
 
             {{-- Line items --}}
             <div style="padding:20px 32px;">
-                <table class="nrh-table">
+                <table class="table">
                     <thead>
                         <tr>
                             <th>Description</th>
@@ -91,7 +103,7 @@
             {{-- Footer --}}
             <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-top:1px solid var(--line);">
                 <p style="font-size:11px;color:var(--ink-400);margin:0;">Payment via direct bank transfer. Please reference invoice number.</p>
-                <a href="{{ route('client.billing.invoices.download', $invoice->id) }}" class="btn-ghost" style="font-size:12px;">
+                <a href="{{ route('client.billing.invoices.download', $invoice->id) }}" class="btn btn-ghost" style="font-size:12px;">
                     <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/>
                     </svg>

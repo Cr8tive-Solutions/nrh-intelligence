@@ -1,9 +1,21 @@
 <x-client.layouts.app pageTitle="Completed Request">
 
-    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-500);margin-bottom:24px;">
-        <a href="{{ route('client.history.index') }}" style="color:var(--ink-500);text-decoration:none;" onmouseover="this.style.color='var(--emerald-700)'" onmouseout="this.style.color='var(--ink-500)'">History</a>
-        <svg style="width:12px;height:12px;color:var(--ink-300);" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
-        <span style="color:var(--ink-900);font-weight:600;font-family:var(--font-mono);">{{ $request->reference }}</span>
+    <div class="page-head">
+        <div style="display:flex;align-items:center;gap:16px;">
+            <a href="{{ route('client.history.index') }}"
+               style="display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink-500);flex-shrink:0;"
+               onmouseover="this.style.borderColor='var(--emerald-600)';this.style.color='var(--emerald-700)'"
+               onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--ink-500)'">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </a>
+            <div>
+                <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-400);letter-spacing:0.1em;text-transform:uppercase;">History</div>
+                <div style="font-size:14px;font-weight:600;color:var(--ink-900);">{{ $request->reference }}</div>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+            {{-- action buttons if any --}}
+        </div>
     </div>
 
     @php
@@ -23,12 +35,12 @@
             </div>
 
             {{-- Candidates --}}
-            <div class="nrh-card">
+            <div class="card">
                 <div class="card-head">
                     <h3>Candidates</h3>
                 </div>
                 <div style="overflow-x:auto;">
-                    <table class="nrh-table">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th style="width:40px;">#</th>
@@ -54,7 +66,7 @@
             </div>
 
             {{-- Scopes --}}
-            <div class="nrh-card" style="padding:20px 24px;">
+            <div class="card" style="padding:20px 24px;">
                 <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 12px;">Verification Scopes</h3>
                 <div style="display:flex;flex-wrap:wrap;gap:8px;">
                     @foreach ($scopes as $scope)
@@ -65,7 +77,7 @@
         </div>
 
         <div style="display:flex;flex-direction:column;gap:12px;">
-            <div class="nrh-card" style="padding:20px 24px;">
+            <div class="card" style="padding:20px 24px;">
                 <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 16px;">Request Info</h3>
                 <dl style="display:flex;flex-direction:column;gap:12px;">
                     @foreach ([
@@ -81,7 +93,7 @@
                     @endforeach
                 </dl>
             </div>
-            <a href="{{ route('client.history.index') }}" class="btn-ghost" style="justify-content:center;">
+            <a href="{{ route('client.history.index') }}" class="btn btn-ghost" style="justify-content:center;">
                 <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
                 </svg>
