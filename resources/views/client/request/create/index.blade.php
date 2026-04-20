@@ -285,11 +285,30 @@
 
                 {{-- Add candidate form --}}
                 <div class="card">
-                    <div style="padding:16px 20px;border-bottom:1px solid var(--line);">
-                        <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;">Add Candidate</h3>
-                        <p style="font-size:12px;color:var(--ink-400);margin:3px 0 0;">Each candidate will be screened against all selected scopes.</p>
+                    {{-- Card header with mode toggle --}}
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);">
+                        <div>
+                            <h3 style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;">Add Candidates</h3>
+                            <p style="font-size:12px;color:var(--ink-400);margin:3px 0 0;">Each candidate will be screened against all selected scopes.</p>
+                        </div>
+                        <div style="display:flex;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;flex-shrink:0;">
+                            <button @click="bulkMode = false"
+                                style="display:flex;align-items:center;gap:5px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:background 120ms,color 120ms;font-family:var(--font-ui);"
+                                :style="{ background: !bulkMode ? 'var(--emerald-700)' : 'var(--card)', color: !bulkMode ? 'white' : 'var(--ink-500)' }">
+                                <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 1 1 3.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                Manual
+                            </button>
+                            <button @click="bulkMode = true"
+                                style="display:flex;align-items:center;gap:5px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;border:none;border-left:1px solid var(--line);transition:background 120ms,color 120ms;font-family:var(--font-ui);"
+                                :style="{ background: bulkMode ? 'var(--emerald-700)' : 'var(--card)', color: bulkMode ? 'white' : 'var(--ink-500)' }">
+                                <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/></svg>
+                                Bulk Upload
+                            </button>
+                        </div>
                     </div>
-                    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+
+                    {{-- Manual form --}}
+                    <div x-show="!bulkMode" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
                         <div class="field-row field-row-2">
                             <div class="field" style="grid-column:span 2;">
                                 <label>Full Name <span style="color:var(--danger)">*</span></label>
@@ -328,6 +347,84 @@
                                 Add Candidate
                             </button>
                         </div>
+                    </div>
+
+                    {{-- Bulk upload panel --}}
+                    <div x-show="bulkMode" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+
+                        {{-- Drop zone --}}
+                        <div @dragover.prevent="$event.currentTarget.style.borderColor='var(--emerald-600)';$event.currentTarget.style.background='rgba(5,150,105,0.03)'"
+                             @dragleave.prevent="$event.currentTarget.style.borderColor='var(--line)';$event.currentTarget.style.background=''"
+                             @drop.prevent="$event.currentTarget.style.borderColor='var(--line)';$event.currentTarget.style.background='';handleBulkDrop($event)"
+                             @click="$refs.bulkFileInput.click()"
+                             style="border:2px dashed var(--line);border-radius:var(--radius-lg);padding:28px 20px;text-align:center;cursor:pointer;transition:all 150ms;">
+                            <input type="file" x-ref="bulkFileInput" accept=".csv,.xlsx,.xls" style="display:none;"
+                                @change="handleBulkFile($event.target.files[0]);$event.target.value=''">
+                            <svg style="width:28px;height:28px;color:var(--ink-300);margin:0 auto 10px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+                            </svg>
+                            <p style="font-size:13px;font-weight:600;color:var(--ink-700);margin:0 0 4px;">Drop your file here or click to browse</p>
+                            <p style="font-size:12px;color:var(--ink-400);margin:0;">Accepts <b>.csv</b>, <b>.xlsx</b>, <b>.xls</b></p>
+                        </div>
+
+                        {{-- Template + format hint --}}
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);font-size:12px;">
+                            <span style="color:var(--ink-500);">Columns: <b style="color:var(--ink-700);">Name, Identity Type, Identity Number, Mobile, Remarks</b></span>
+                            <button @click.prevent="downloadTemplate()"
+                                style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--emerald-700);background:none;border:none;cursor:pointer;font-family:var(--font-ui);flex-shrink:0;margin-left:12px;">
+                                <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                Download template
+                            </button>
+                        </div>
+
+                        {{-- Error --}}
+                        <div x-show="bulkError" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(196,69,58,0.06);border:1px solid rgba(196,69,58,0.2);border-radius:var(--radius);font-size:12px;color:#c4453a;">
+                            <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                            <span x-text="bulkError"></span>
+                        </div>
+
+                        {{-- Preview table --}}
+                        <template x-if="bulkPreview.length > 0">
+                            <div>
+                                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                                    <p style="font-size:12px;font-weight:600;color:var(--ink-700);margin:0;">
+                                        <span x-text="bulkPreview.length"></span> candidates ready to import
+                                    </p>
+                                    <button @click="bulkPreview = []" style="font-size:11px;color:var(--ink-400);background:none;border:none;cursor:pointer;font-family:var(--font-ui);"
+                                        onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--ink-400)'">Clear</button>
+                                </div>
+                                <div style="border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;">
+                                    <div style="overflow-x:auto;max-height:220px;overflow-y:auto;">
+                                        <table class="table" style="margin:0;">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:28px;">#</th>
+                                                    <th>Name</th>
+                                                    <th>Identity No.</th>
+                                                    <th style="width:100px;">Type</th>
+                                                    <th style="width:120px;">Mobile</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template x-for="(c, i) in bulkPreview" :key="i">
+                                                    <tr>
+                                                        <td style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);" x-text="i + 1"></td>
+                                                        <td style="font-weight:600;" x-text="c.name"></td>
+                                                        <td style="font-family:var(--font-mono);font-size:12px;color:var(--ink-500);" x-text="c.identity_number"></td>
+                                                        <td style="font-size:12px;color:var(--ink-500);" x-text="c._typeName || '—'"></td>
+                                                        <td style="font-size:12px;color:var(--ink-500);" x-text="c.mobile || '—'"></td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <button @click="importBulk()" class="btn btn-primary" style="width:100%;justify-content:center;">
+                                    <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    Import <span x-text="bulkPreview.length"></span> candidates
+                                </button>
+                            </div>
+                        </template>
                     </div>
                 </div>
 
@@ -642,6 +739,7 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 function newRequest() {
     return {
@@ -655,9 +753,13 @@ function newRequest() {
         newCandidate: { name: '', identity_type_id: '', identity_number: '', mobile: '', remarks: '' },
         candidateError: '',
         submitting: false,
+        bulkMode: false,
+        bulkPreview: [],
+        bulkError: '',
 
-        allScopes:   @json($scopes),
-        allPackages: @json($packages),
+        allScopes:     @json($scopes),
+        allPackages:   @json($packages),
+        identityTypes: @json($identityTypes),
 
         requiredDocTypes: [
             { id: 1, label: 'Consent Form',    required: true  },
@@ -722,6 +824,88 @@ function newRequest() {
             return this.requiredDocTypes
                 .filter(dt => dt.required)
                 .every(dt => this.getUploadedFile(candidateId, dt.id));
+        },
+
+        // ── Bulk upload ──────────────────────────────────────────────────
+        downloadTemplate() {
+            const header = 'Name,Identity Type,Identity Number,Mobile,Remarks\n';
+            const example = 'John Doe,NRIC,900101-14-5678,+60123456789,Optional note\n';
+            const blob = new Blob([header + example], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'candidates-template.csv';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        },
+
+        handleBulkDrop(e) {
+            const file = e.dataTransfer?.files[0];
+            if (file) { this.handleBulkFile(file); }
+        },
+
+        async handleBulkFile(file) {
+            this.bulkError = '';
+            this.bulkPreview = [];
+            if (!file) { return; }
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (ext === 'csv') {
+                const text = await file.text();
+                this.bulkPreview = this.parseCsvToRows(text);
+            } else if (ext === 'xlsx' || ext === 'xls') {
+                const buffer = await file.arrayBuffer();
+                this.bulkPreview = this.parseExcelToRows(buffer);
+            } else {
+                this.bulkError = 'Unsupported format. Please upload a .csv, .xlsx, or .xls file.';
+            }
+        },
+
+        parseCsvToRows(text) {
+            const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+            if (lines.length < 2) { this.bulkError = 'File needs a header row and at least one data row.'; return []; }
+            return lines.slice(1).map((line, i) => this.rowToCandidate(this.splitCsvLine(line), i + 2)).filter(Boolean);
+        },
+
+        splitCsvLine(line) {
+            const cols = [];
+            let cur = '', inQ = false;
+            for (const ch of line) {
+                if (ch === '"') { inQ = !inQ; }
+                else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+                else { cur += ch; }
+            }
+            cols.push(cur.trim());
+            return cols;
+        },
+
+        parseExcelToRows(buffer) {
+            if (typeof XLSX === 'undefined') { this.bulkError = 'Excel library not loaded — please try CSV instead.'; return []; }
+            const wb = XLSX.read(buffer, { type: 'array' });
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
+            if (rows.length < 2) { this.bulkError = 'File needs a header row and at least one data row.'; return []; }
+            return rows.slice(1).map((r, i) => this.rowToCandidate(r.map(String), i + 2)).filter(Boolean);
+        },
+
+        rowToCandidate(cols, rowNum) {
+            const [name, idType, idNumber, mobile, remarks] = cols.map(c => (c || '').trim());
+            if (!name && !idNumber) { return null; } // skip blank rows
+            if (!name || !idNumber) { this.bulkError = `Row ${rowNum}: Name and Identity Number are required.`; return null; }
+            const typeMatch = this.identityTypes.find(t => t.name.toLowerCase().includes((idType || '').toLowerCase()) || (idType || '').toLowerCase().includes(t.name.toLowerCase()));
+            const typeId = String(typeMatch ? typeMatch.id : (this.identityTypes[0]?.id ?? 1));
+            const typeName = typeMatch ? typeMatch.name : (this.identityTypes[0]?.name ?? '');
+            return { name, identity_type_id: typeId, _typeName: typeName, identity_number: idNumber, mobile: mobile || '', remarks: remarks || '' };
+        },
+
+        importBulk() {
+            let added = 0;
+            this.bulkPreview.forEach(c => {
+                if (this.candidates.some(e => e.identity_number === c.identity_number)) { return; }
+                const { _typeName, ...candidate } = c;
+                this.candidates.push({ ...candidate, _id: Date.now() + Math.random() });
+                added++;
+            });
+            this.bulkPreview = [];
+            this.bulkMode = false;
+            this.bulkError = '';
         },
 
         nextStep() { if (this.step < 4) { this.step++; } },
