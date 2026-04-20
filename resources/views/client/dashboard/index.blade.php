@@ -80,6 +80,7 @@
                 </button>
             </div>
 
+            <div class="table-scroll">
             <table class="table">
                 <thead>
                     <tr>
@@ -170,6 +171,7 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
 
         {{-- Side column --}}

@@ -13,7 +13,7 @@
             <span class="count-pill">{{ count($invoices) }} INVOICES</span>
         </div>
         <div style="overflow-x:auto;">
-            <table class="table">
+            <div class="table-scroll"><table class="table">
                 <thead>
                     <tr>
                         <th>Invoice No.</th>
@@ -62,7 +62,7 @@
                         </tr>
                     @endforelse
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
 

@@ -34,7 +34,7 @@
                     <span style="font-size:12px;color:var(--ink-400);">{{ $request->candidates->count() }} total</span>
                 </div>
                 <div style="overflow-x:auto;">
-                    <table class="table">
+                    <div class="table-scroll"><table class="table">
                         <thead>
                             <tr>
                                 <th style="width:40px;">#</th>
@@ -55,7 +55,7 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                    </table>
+                    </table></div>
                 </div>
             </div>
 

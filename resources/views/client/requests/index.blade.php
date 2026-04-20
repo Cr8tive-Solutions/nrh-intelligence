@@ -36,7 +36,7 @@
         </div>
 
         <div style="overflow-x:auto;">
-            <table class="table">
+            <div class="table-scroll"><table class="table">
                 <thead>
                     <tr>
                         <th>Request ID</th>
@@ -75,7 +75,7 @@
                         </tr>
                     @endforelse
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </div>
 
