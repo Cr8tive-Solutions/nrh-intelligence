@@ -469,10 +469,8 @@
         </div>
     </div>
 
-</x-client.layouts.app>
-
-@push('scripts')
-<script>
+    @push('scripts')
+    <script>
 (function () {
     const list = document.getElementById('checksList');
     if (!list) { return; }
@@ -495,5 +493,7 @@
     const firstFlagged = list.querySelector('.check-row[data-idx="1"]');
     if (firstFlagged) { firstFlagged.click(); }
 })();
-</script>
-@endpush
+    </script>
+    @endpush
+
+</x-client.layouts.app>
