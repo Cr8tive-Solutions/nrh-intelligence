@@ -196,7 +196,7 @@
             position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
             width: 16px; height: 16px; color: var(--ink-400);
         }
-        .auth-input {
+        input.auth-input {
             width: 100%;
             padding: 12px 14px 12px 38px;
             border: 1px solid var(--line);
@@ -208,8 +208,8 @@
             outline: none;
             transition: border-color 120ms ease, box-shadow 120ms ease;
         }
-        .auth-input:focus { border-color: var(--emerald-600); box-shadow: 0 0 0 3px rgba(5,150,105,0.12); }
-        .auth-input::placeholder { color: var(--ink-400); }
+        input.auth-input:focus { border-color: var(--emerald-600); box-shadow: 0 0 0 3px rgba(5,150,105,0.12); }
+        input.auth-input::placeholder { color: var(--ink-400); }
         .eye-btn {
             position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
             background: transparent; border: none; color: var(--ink-400); cursor: pointer;

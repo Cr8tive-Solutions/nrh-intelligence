@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__laravel-boost__get-absolute-url",
+      "mcp__laravel-boost__browser-logs",
+      "Bash(php artisan:*)",
+      "mcp__laravel-boost__application-info",
+      "Bash(\"/c/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan migrate:rollback --step=1 --no-interaction)",
+      "Bash(\"/c/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan route:list --except-vendor)",
+      "mcp__laravel-boost__last-error",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(echo \"=== $f ===\")",
+      "Read(//d/Application/Herd/nrh-intelligence/**)",
+      "Bash(done)",
+      "Bash(\"/c/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan config:clear)",
+      "Bash(\"/c/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan cache:clear)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "laravel-boost"
+  ]
+}
