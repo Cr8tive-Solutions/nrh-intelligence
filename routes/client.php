@@ -7,6 +7,7 @@ use App\Http\Controllers\Client\Billing\TransactionController;
 use App\Http\Controllers\Client\CandidatesController;
 use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\NotificationController;
+use App\Http\Controllers\Client\SystemUpdateController;
 use App\Http\Controllers\Client\Request\CreateRequestController;
 use App\Http\Controllers\Client\Request\OldRequestController;
 use App\Http\Controllers\Client\Request\TrackRequestController;
@@ -88,6 +89,9 @@ Route::name('client.')->group(function () {
 
         // Notifications
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+
+        // System updates
+        Route::get('/updates', [SystemUpdateController::class, 'index'])->name('updates');
 
         // Settings
         Route::prefix('settings')->name('settings.')->group(function () {
