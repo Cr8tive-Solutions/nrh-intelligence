@@ -13,12 +13,13 @@ class ScopeType extends Model
     /** @use HasFactory<ScopeTypeFactory> */
     use HasFactory;
 
-    protected $fillable = ['country_id', 'name', 'turnaround', 'price', 'description'];
+    protected $fillable = ['country_id', 'category', 'name', 'turnaround', 'price', 'price_on_request', 'description'];
 
     protected function casts(): array
     {
         return [
             'price' => 'decimal:2',
+            'price_on_request' => 'boolean',
         ];
     }
 

@@ -120,16 +120,6 @@
             </a>
         </div>
 
-        {{-- Scope --}}
-        <div style="display:flex;flex-direction:column;gap:2px;">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:var(--ink-500);padding:0 10px 8px;">Scope</div>
-
-            @php $active = request()->routeIs('client.maps*'); @endphp
-            <a href="{{ route('client.maps') }}" class="nav-item {{ $active ? 'active' : '' }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M8 4v4M16 4v4"/></svg>
-                Scope Maps
-            </a>
-        </div>
 
         {{-- Settings --}}
         <div style="display:flex;flex-direction:column;gap:2px;">

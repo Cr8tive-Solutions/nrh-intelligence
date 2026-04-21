@@ -11,7 +11,6 @@ use App\Http\Controllers\Client\Request\CreateRequestController;
 use App\Http\Controllers\Client\Request\OldRequestController;
 use App\Http\Controllers\Client\Request\TrackRequestController;
 use App\Http\Controllers\Client\Request\ViewRequestController;
-use App\Http\Controllers\Client\Scope\MapsController;
 use App\Http\Controllers\Client\Settings\AccountController;
 use App\Http\Controllers\Client\Settings\AgreementController;
 use App\Http\Controllers\Client\Settings\PackageController;
@@ -85,10 +84,6 @@ Route::name('client.')->group(function () {
             Route::get('/invoices/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
             Route::get('/invoices/{id}/download', [InvoiceController::class, 'download'])->name('invoices.download');
         });
-
-        // Scope Maps
-        Route::get('/maps', [MapsController::class, 'index'])->name('maps');
-        Route::get('/maps/{countryId}', [MapsController::class, 'countries'])->name('maps.country');
 
         // Notifications
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');

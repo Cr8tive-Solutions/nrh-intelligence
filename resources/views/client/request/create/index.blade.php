@@ -193,37 +193,79 @@
                                     <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path d="M6 18 18 6M6 6l12 12"/></svg>
                                 </button>
                             </div>
-                            <template x-for="scope in filteredScopes" :key="scope.id">
-                                <div style="display:flex;align-items:center;justify-content:space-between;border-radius:var(--radius);border:1px solid var(--line);padding:14px 16px;margin-bottom:8px;transition:border-color 120ms,background 120ms;"
-                                    :style="isInCart(scope.id) ? 'border-color:rgba(5,150,105,0.35);background:rgba(5,150,105,0.03);' : ''">
-                                    <div style="flex:1;min-width:0;padding-right:16px;">
-                                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
-                                            <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;" x-text="scope.name"></p>
-                                            <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--ink-400);font-family:var(--font-mono);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:2px 7px;flex-shrink:0;">
-                                                <svg style="width:9px;height:9px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-                                                <span x-text="scope.turnaround"></span>
-                                            </span>
+
+                            {{-- Grouped by category --}}
+                            <template x-if="filteredScopes.length > 0">
+                                <div>
+                                    <template x-for="group in filteredScopesGrouped" :key="group.category">
+                                        <div style="margin-bottom:16px;" x-data="{ open: true }">
+                                            {{-- Category header --}}
+                                            <button @click="open = !open"
+                                                style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);cursor:pointer;margin-bottom:6px;font-family:var(--font-ui);">
+                                                <div style="display:flex;align-items:center;gap:8px;">
+                                                    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-600);" x-text="group.category"></span>
+                                                    <span style="font-size:10px;font-weight:600;color:var(--ink-400);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:1px 7px;font-family:var(--font-mono);" x-text="group.scopes.length + ' checks'"></span>
+                                                    <span x-show="group.scopes.some(s => isInCart(s.id))"
+                                                        style="font-size:10px;font-weight:600;color:var(--emerald-700);background:rgba(5,150,105,0.08);border:1px solid rgba(5,150,105,0.2);border-radius:999px;padding:1px 7px;">
+                                                        <span x-text="group.scopes.filter(s => isInCart(s.id)).length"></span> selected
+                                                    </span>
+                                                </div>
+                                                <svg style="width:13px;height:13px;color:var(--ink-400);transition:transform 150ms;flex-shrink:0;"
+                                                    :style="{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }"
+                                                    fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/>
+                                                </svg>
+                                            </button>
+
+                                            {{-- Scope items --}}
+                                            <div x-show="open"
+                                                x-transition:enter="transition ease-out duration-150"
+                                                x-transition:enter-start="opacity-0"
+                                                x-transition:enter-end="opacity-100"
+                                                style="display:flex;flex-direction:column;gap:6px;">
+                                                <template x-for="scope in group.scopes" :key="scope.id">
+                                                    <div style="display:flex;align-items:center;justify-content:space-between;border-radius:var(--radius);border:1px solid var(--line);padding:12px 14px;transition:border-color 120ms,background 120ms;"
+                                                        :style="isInCart(scope.id) ? 'border-color:rgba(5,150,105,0.35);background:rgba(5,150,105,0.03);' : ''">
+                                                        <div style="flex:1;min-width:0;padding-right:14px;">
+                                                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;flex-wrap:wrap;">
+                                                                <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;" x-text="scope.name"></p>
+                                                                <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--ink-400);font-family:var(--font-mono);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:2px 7px;flex-shrink:0;">
+                                                                    <svg style="width:9px;height:9px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                                                                    <span x-text="scope.turnaround"></span>
+                                                                </span>
+                                                            </div>
+                                                            <p style="font-size:12px;color:var(--ink-500);margin:0;line-height:1.5;" x-text="scope.description || ''"></p>
+                                                        </div>
+                                                        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                                                            <div style="text-align:right;">
+                                                                <template x-if="scope.price_on_request">
+                                                                    <div style="font-size:11px;font-weight:600;color:var(--ink-500);white-space:nowrap;">Price on<br>request</div>
+                                                                </template>
+                                                                <template x-if="!scope.price_on_request">
+                                                                    <div>
+                                                                        <div style="font-size:13px;font-weight:700;color:var(--ink-900);font-family:var(--font-mono);">MYR <span x-text="parseFloat(scope.price).toFixed(2)"></span></div>
+                                                                        <div style="font-size:10px;color:var(--ink-400);">per candidate</div>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                            <button @click="toggleScope(scope)"
+                                                                style="width:30px;height:30px;border-radius:var(--radius);border:1px solid;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 120ms;flex-shrink:0;"
+                                                                :style="isInCart(scope.id)
+                                                                    ? 'background:rgba(196,69,58,0.06);color:var(--danger);border-color:rgba(196,69,58,0.25);'
+                                                                    : 'background:var(--emerald-700);color:white;border-color:var(--emerald-700);'">
+                                                                <template x-if="isInCart(scope.id)">
+                                                                    <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                                                                </template>
+                                                                <template x-if="!isInCart(scope.id)">
+                                                                    <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                                                </template>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </div>
-                                        <p style="font-size:12px;color:var(--ink-500);margin:0;line-height:1.5;" x-text="scope.description || ''"></p>
-                                    </div>
-                                    <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
-                                        <div style="text-align:right;">
-                                            <div style="font-size:13px;font-weight:700;color:var(--ink-900);font-family:var(--font-mono);">MYR <span x-text="scope.price.toFixed(2)"></span></div>
-                                            <div style="font-size:10px;color:var(--ink-400);">per candidate</div>
-                                        </div>
-                                        <button @click="toggleScope(scope)"
-                                            style="width:32px;height:32px;border-radius:var(--radius);border:1px solid;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 120ms;flex-shrink:0;"
-                                            :style="isInCart(scope.id)
-                                                ? 'background:rgba(196,69,58,0.06);color:var(--danger);border-color:rgba(196,69,58,0.25);'
-                                                : 'background:var(--emerald-700);color:white;border-color:var(--emerald-700);'">
-                                            <template x-if="isInCart(scope.id)">
-                                                <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
-                                            </template>
-                                            <template x-if="!isInCart(scope.id)">
-                                                <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                                            </template>
-                                        </button>
-                                    </div>
+                                    </template>
                                 </div>
                             </template>
                             <template x-if="filteredScopes.length === 0">
@@ -839,8 +881,17 @@ function newRequest() {
             return this.allScopes.filter(s => {
                 if (s.country_id !== this.selectedCountry) { return false; }
                 if (!q) { return true; }
-                return s.name.toLowerCase().includes(q) || (s.description || '').toLowerCase().includes(q);
+                return s.name.toLowerCase().includes(q) || (s.description || '').toLowerCase().includes(q) || (s.category || '').toLowerCase().includes(q);
             });
+        },
+        get filteredScopesGrouped() {
+            const groups = {};
+            this.filteredScopes.forEach(s => {
+                const cat = s.category || 'Other';
+                if (!groups[cat]) { groups[cat] = { category: cat, scopes: [] }; }
+                groups[cat].scopes.push(s);
+            });
+            return Object.values(groups);
         },
         get filteredPackages() { return this.allPackages.filter(p => p.country_id === this.selectedCountry); },
         get cartTotal()        { return this.cart.reduce((sum, i) => sum + i.price, 0); },
