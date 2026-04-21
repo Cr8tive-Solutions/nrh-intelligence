@@ -95,6 +95,7 @@ Route::name('client.')->group(function () {
             Route::post('/account', [AccountController::class, 'update'])->name('account.update');
             Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
             Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+            Route::delete('/profile/avatar', [ProfileController::class, 'removeAvatar'])->name('profile.avatar.remove');
             Route::get('/users', [UserController::class, 'index'])->name('users');
             Route::get('/packages', [PackageController::class, 'index'])->name('packages');
             Route::get('/security', [SecurityController::class, 'index'])->name('security');

@@ -181,9 +181,15 @@
                 onmouseover="this.style.background='rgba(5,150,105,0.06)'"
                 onmouseout="this.style.background=''"
             >
-                <div style="width:28px;height:28px;border-radius:50%;background:var(--emerald-700);color:var(--gold-400);display:grid;place-items:center;font-size:11px;font-weight:600;font-family:var(--font-mono);box-shadow:inset 0 0 0 1px rgba(212,175,55,0.4);flex-shrink:0;">
-                    {{ strtoupper(substr(session('client_user_name', 'U'), 0, 2)) }}
-                </div>
+                @if (session('client_user_avatar'))
+                    <img src="{{ Storage::url(session('client_user_avatar')) }}"
+                         style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(212,175,55,0.4);"
+                         alt="{{ session('client_user_name') }}">
+                @else
+                    <div style="width:28px;height:28px;border-radius:50%;background:var(--emerald-700);color:var(--gold-400);display:grid;place-items:center;font-size:11px;font-weight:600;font-family:var(--font-mono);box-shadow:inset 0 0 0 1px rgba(212,175,55,0.4);flex-shrink:0;">
+                        {{ strtoupper(substr(session('client_user_name', 'U'), 0, 2)) }}
+                    </div>
+                @endif
                 <div style="display:flex;flex-direction:column;line-height:1.2;min-width:0;">
                     <span style="font-size:12px;font-weight:600;color:var(--ink-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ session('client_user_name', 'User') }}</span>
                     <span style="font-size:10px;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.1em;">{{ session('client_company', 'Company') }}</span>

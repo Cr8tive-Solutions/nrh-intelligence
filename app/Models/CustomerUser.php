@@ -17,6 +17,7 @@ class CustomerUser extends Authenticatable
         'customer_id',
         'name',
         'email',
+        'avatar',
         'password',
         'role',
         'status',

@@ -22,7 +22,10 @@
       "Bash(\"/c/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan migrate --no-interaction)",
       "Bash(\"/c/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan db:seed --class=ScopeTypeSeeder --no-interaction)",
       "Bash(pandoc --version)",
-      "Bash(composer require:*)"
+      "Bash(composer require:*)",
+      "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:migration add_avatar_to_customer_users_table --no-interaction)",
+      "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan migrate --no-interaction)",
+      "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" vendor/bin/pint app/Http/Controllers/Client/Settings/ProfileController.php app/Models/CustomerUser.php --format agent)"
     ]
   },
   "enableAllProjectMcpServers": true,

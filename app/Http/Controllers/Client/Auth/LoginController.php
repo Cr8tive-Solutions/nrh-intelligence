@@ -38,6 +38,7 @@ class LoginController extends Controller
                 'client_user_id' => $user->id,
                 'client_customer_id' => $user->customer_id,
                 'client_user_name' => $user->name,
+                'client_user_avatar' => $user->avatar,
                 'client_company' => $user->customer->name,
                 'client_last_login' => now()->format('d M Y, H:i'),
             ]);
@@ -99,6 +100,7 @@ class LoginController extends Controller
             'client_user_id' => $user->id,
             'client_customer_id' => $user->customer_id,
             'client_user_name' => $user->name,
+            'client_user_avatar' => $user->avatar,
             'client_company' => $user->customer->name,
             'client_last_login' => now()->format('d M Y, H:i'),
         ]);
