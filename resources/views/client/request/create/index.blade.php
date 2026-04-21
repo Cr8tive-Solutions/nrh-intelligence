@@ -30,7 +30,7 @@
 <div x-data="newRequest()" x-init="init()">
 
     {{-- ── Step indicator ── --}}
-    <div style="display:flex;align-items:center;padding:16px 20px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);margin-bottom:24px;">
+    <div class="step-indicator" style="display:flex;align-items:center;padding:16px 20px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);margin-bottom:24px;">
         @php
             $steps = [
                 ['num' => 1, 'label' => 'Select Scopes',    'desc' => 'Pick checks'],
