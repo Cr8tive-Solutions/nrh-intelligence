@@ -20,7 +20,9 @@
       "Bash(\"/c/Users/Anwar Saad/AppData/Local/Programs/Python/Python313/python.exe\" -c \":*)",
       "Bash(\"/c/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:migration add_category_to_scope_types_table --table=scope_types --no-interaction)",
       "Bash(\"/c/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan migrate --no-interaction)",
-      "Bash(\"/c/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan db:seed --class=ScopeTypeSeeder --no-interaction)"
+      "Bash(\"/c/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan db:seed --class=ScopeTypeSeeder --no-interaction)",
+      "Bash(pandoc --version)",
+      "Bash(composer require:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

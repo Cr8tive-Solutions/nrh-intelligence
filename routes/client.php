@@ -66,6 +66,7 @@ Route::name('client.')->group(function () {
             Route::get('/', [ViewRequestController::class, 'index'])->name('index');
             Route::get('/search', [ViewRequestController::class, 'index'])->name('search');
             Route::get('/track', [TrackRequestController::class, 'index'])->name('track');
+            Route::get('/track/search', [TrackRequestController::class, 'search'])->name('track.search.get');
             Route::post('/track', [TrackRequestController::class, 'search'])->name('track.search');
             Route::get('/{id}', [ViewRequestController::class, 'details'])->name('details');
         });

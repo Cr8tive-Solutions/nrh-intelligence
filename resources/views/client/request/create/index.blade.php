@@ -90,7 +90,7 @@
 
                 {{-- Country picker (global only) --}}
                 @if(!$lockedCountryId)
-                <div class="card" style="padding:18px 20px;">
+                <div class="card" style="padding:18px 20px;overflow:visible;">
                     <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:10px;">Select Country</div>
 
                     {{-- Combobox --}}

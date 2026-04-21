@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client\Request;
 
 use App\Http\Controllers\Controller;
 use App\Models\Country;
+use App\Models\Customer;
 use App\Models\IdentityType;
 use App\Models\Package;
 use App\Models\RequestCandidate;
@@ -138,25 +139,44 @@ class CreateRequestController extends Controller
 
         $countries = Country::withCount('scopeTypes')->get();
 
-        $scopes = ScopeType::all()->map(fn ($s) => [
-            'id' => $s->id,
-            'country_id' => $s->country_id,
-            'name' => $s->name,
-            'description' => $s->description,
-            'turnaround' => $s->turnaround,
-            'price' => (float) $s->price,
-        ]);
+        // Build a keyed map of customer-specific prices
+        $customerPrices = Customer::find($customerId)
+            ?->scopePrices()
+            ->pluck('price', 'scope_type_id') ?? collect();
+
+        $scopes = ScopeType::all()->map(function ($s) use ($customerPrices) {
+            $hasCustomPrice = $customerPrices->has($s->id);
+
+            return [
+                'id' => $s->id,
+                'country_id' => $s->country_id,
+                'category' => $s->category,
+                'name' => $s->name,
+                'description' => $s->description,
+                'turnaround' => $s->turnaround,
+                'price' => $hasCustomPrice ? (float) $customerPrices->get($s->id) : (float) $s->price,
+                'price_on_request' => ! $hasCustomPrice && $s->price_on_request,
+            ];
+        });
 
         $packages = Package::with('scopeTypes')
             ->where('customer_id', $customerId)
             ->get()
-            ->map(fn ($p) => [
-                'id' => $p->id,
-                'country_id' => $p->country_id,
-                'name' => $p->name,
-                'scope_ids' => $p->scopeTypes->pluck('id')->all(),
-                'price' => $p->scopeTypes->sum('price'),
-            ]);
+            ->map(function ($p) use ($customerPrices) {
+                $total = $p->scopeTypes->sum(function ($s) use ($customerPrices) {
+                    return $customerPrices->has($s->id)
+                        ? (float) $customerPrices->get($s->id)
+                        : (float) $s->price;
+                });
+
+                return [
+                    'id' => $p->id,
+                    'country_id' => $p->country_id,
+                    'name' => $p->name,
+                    'scope_ids' => $p->scopeTypes->pluck('id')->all(),
+                    'price' => $total,
+                ];
+            });
 
         $identityTypes = IdentityType::all();
 

@@ -61,4 +61,9 @@ class Customer extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+
+    public function scopePrices(): HasMany
+    {
+        return $this->hasMany(CustomerScopePrice::class);
+    }
 }

@@ -24,12 +24,13 @@
     </div>
 
     {{-- Search --}}
-    <div class="topbar-search">
+    <form method="GET" action="{{ route('client.requests.track.search.get') }}" class="topbar-search" @keydown.escape.window="document.getElementById('topbar-q').blur()">
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
-        <input type="text" placeholder="Search candidates, orders, case IDs…" readonly
-            onfocus="this.removeAttribute('readonly')" />
+        <input id="topbar-q" type="text" name="q" placeholder="Search candidates, requests, case IDs…"
+            @keydown.meta.k.window.prevent="document.getElementById('topbar-q').focus()"
+            @keydown.ctrl.k.window.prevent="document.getElementById('topbar-q').focus()" />
         <span class="kbd">⌘K</span>
-    </div>
+    </form>
 
     {{-- Actions --}}
     <div style="display:flex;align-items:center;gap:8px;">

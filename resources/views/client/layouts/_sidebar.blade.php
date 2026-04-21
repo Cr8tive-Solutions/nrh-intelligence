@@ -90,10 +90,16 @@
                 </div>
             </div>
 
-            @php $active = request()->routeIs('client.requests*'); @endphp
+            @php $active = request()->routeIs('client.requests.index') || request()->routeIs('client.requests.details'); @endphp
             <a href="{{ route('client.requests.index') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14h6M9 18h4"/></svg>
                 Active Screenings
+            </a>
+
+            @php $active = request()->routeIs('client.requests.track*'); @endphp
+            <a href="{{ route('client.requests.track') }}" class="nav-item {{ $active ? 'active' : '' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+                Track Request
             </a>
 
             @php $active = request()->routeIs('client.history*'); @endphp
