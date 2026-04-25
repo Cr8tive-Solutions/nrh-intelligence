@@ -40,7 +40,7 @@
                     style="width:100%;background:none;border:none;cursor:pointer;font-family:var(--font-ui);display:flex;align-items:center;gap:10px;justify-content:space-between;padding:7px 10px;">
                     <span style="display:flex;align-items:center;gap:10px;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px;flex-shrink:0;"><path d="M9 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-                        Screenings
+                        Requests
                     </span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         style="width:12px;height:12px;flex-shrink:0;transition:transform 150ms;"
@@ -93,7 +93,7 @@
             @php $active = request()->routeIs('client.requests.index') || request()->routeIs('client.requests.details'); @endphp
             <a href="{{ route('client.requests.index') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14h6M9 18h4"/></svg>
-                Active Screenings
+                Active Requests
             </a>
 
             @php $active = request()->routeIs('client.requests.track*'); @endphp
