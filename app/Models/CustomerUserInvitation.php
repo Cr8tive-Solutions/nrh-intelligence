@@ -9,7 +9,14 @@ class CustomerUserInvitation extends Model
 {
     protected $table = 'customer_user_invitations';
 
-    protected $fillable = ['accepted_at'];
+    protected $fillable = [
+        'customer_user_id',
+        'token',
+        'expires_at',
+        'accepted_at',
+        'sent_count',
+        'last_sent_at',
+    ];
 
     protected function casts(): array
     {

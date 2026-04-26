@@ -64,8 +64,19 @@ class InvitationController extends Controller
             $user->status = 'active';
             $user->save();
 
+            // Admin-portal invites arrive with no Spatie role assigned (they only set the legacy
+            // role enum). The very first admin-portal-invited user per customer becomes Owner.
+            // Any later admin-portal-invited user activates with no role and must be configured
+            // by their customer's Owner/Admin via Settings → Users.
             if ($user->roles()->count() === 0) {
-                $user->assignRole($user->role === 'admin' ? 'Admin' : 'Member');
+                $customerHasOwner = CustomerUser::where('customer_id', $user->customer_id)
+                    ->where('id', '!=', $user->id)
+                    ->whereHas('roles', fn ($q) => $q->where('name', 'Owner')->where('guard_name', 'customer_user'))
+                    ->exists();
+
+                if (! $customerHasOwner) {
+                    $user->assignRole('Owner');
+                }
             }
 
             $invitation->accepted_at = now();

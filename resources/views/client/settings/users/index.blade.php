@@ -7,13 +7,19 @@
         </div>
         <button x-data @click="$dispatch('open-create-user')" class="btn btn-primary">
             <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>
-            Add User
+            Invite User
         </button>
     </div>
 
     @if (session('status'))
         <div style="margin-bottom:16px;padding:10px 14px;background:var(--emerald-50);border:1px solid rgba(5,150,105,0.25);border-left:3px solid var(--emerald-600);border-radius:var(--radius);font-size:13px;color:var(--emerald-700);">
             {{ session('status') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div style="margin-bottom:16px;padding:10px 14px;background:rgba(196,69,58,0.08);border:1px solid rgba(196,69,58,0.25);border-left:3px solid #c4453a;border-radius:var(--radius);font-size:13px;color:#c4453a;">
+            {{ session('error') }}
         </div>
     @endif
 
@@ -31,7 +37,10 @@
                 </thead>
                 <tbody>
                     @foreach ($users as $user)
-                        @php $userRole = $user->roles->first()?->name ?? '—'; @endphp
+                        @php
+                            $userRole = $user->roles->first()?->name ?? '—';
+                            $hasPendingInvite = in_array($user->id, $pendingInvitedIds, true);
+                        @endphp
                         <tr>
                             <td>
                                 <div style="display:flex;align-items:center;gap:12px;">
@@ -48,17 +57,28 @@
                                 <span class="pill {{ $userRole === 'Owner' ? 'pill-clear' : 'pill-pending' }}"><span class="dot"></span>{{ $userRole }}</span>
                             </td>
                             <td>
-                                <span class="pill {{ $user->status === 'active' ? 'pill-clear' : 'pill-pending' }}">
-                                    <span class="dot"></span>
-                                    {{ ucfirst($user->status) }}
-                                </span>
+                                @if ($user->status === 'active')
+                                    <span class="pill pill-clear"><span class="dot"></span>Active</span>
+                                @elseif ($hasPendingInvite)
+                                    <span class="pill pill-progress" style="font-family:var(--font-ui);"><span class="dot"></span>Invitation pending</span>
+                                @else
+                                    <span class="pill pill-pending"><span class="dot"></span>Inactive</span>
+                                @endif
                             </td>
                             <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $user->created_at->format('d M Y') }}</td>
                             <td style="text-align:right;">
-                                <button type="button" class="btn btn-ghost" style="padding:5px 12px;font-size:12px;"
-                                    x-data @click="$dispatch('open-edit-user', { id: {{ $user->id }} })">
-                                    Edit
-                                </button>
+                                <div style="display:inline-flex;gap:6px;">
+                                    @if ($user->status !== 'active')
+                                        <form method="POST" action="{{ route('client.settings.users.resend-invitation', $user->id) }}" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-ghost" style="padding:5px 12px;font-size:12px;">Resend invite</button>
+                                        </form>
+                                    @endif
+                                    <button type="button" class="btn btn-ghost" style="padding:5px 12px;font-size:12px;"
+                                        x-data @click="$dispatch('open-edit-user', { id: {{ $user->id }} })">
+                                        Edit
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
@@ -79,7 +99,7 @@
         <div style="position:absolute;inset:0;background:rgba(0,0,0,0.4);" @click="open = false"></div>
         <div style="position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:100%;max-width:420px;padding:24px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-                <h3 style="font-family:var(--font-display);font-size:18px;font-weight:500;color:var(--ink-900);margin:0;">Add New User</h3>
+                <h3 style="font-family:var(--font-display);font-size:18px;font-weight:500;color:var(--ink-900);margin:0;">Invite a Team Member</h3>
                 <button type="button" @click="open = false" aria-label="Close" style="background:none;border:none;cursor:pointer;color:var(--ink-400);padding:4px;">
                     <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M6 18 18 6M6 6l12 12"/></svg>
                 </button>
@@ -104,17 +124,10 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="field">
-                    <label for="create-status">Status</label>
-                    <select id="create-status" name="status" required>
-                        <option value="active" @selected(old('status', 'active') === 'active')>Active</option>
-                        <option value="inactive" @selected(old('status') === 'inactive')>Inactive</option>
-                    </select>
-                </div>
-                <p style="font-size:11px;color:var(--ink-400);margin:0;">A temporary password will be sent to the user's email.</p>
+                <p style="font-size:11px;color:var(--ink-400);margin:0;">An activation link will be emailed to this address. The user sets their password and the account becomes active on first login. Invitations expire after 14 days.</p>
                 <div style="display:flex;gap:10px;padding-top:4px;">
                     <button type="button" @click="open = false" class="btn btn-ghost" style="flex:1;justify-content:center;">Cancel</button>
-                    <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center;">Create User</button>
+                    <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center;">Send Invitation</button>
                 </div>
             </form>
         </div>
