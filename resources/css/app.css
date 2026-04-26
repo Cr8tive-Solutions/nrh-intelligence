@@ -965,6 +965,195 @@ body {
     color: var(--emerald-500);
 }
 
+/* ─── Request detail (shipment-tracker style) ────────────── */
+.request-banner {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 18px;
+    align-items: center;
+}
+.request-banner .ref {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-500);
+    letter-spacing: 0.06em;
+}
+.request-banner .ref b {
+    color: var(--ink-900);
+    font-size: 15px;
+    letter-spacing: 0;
+}
+.request-banner .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--ink-500);
+}
+.request-banner .meta b { color: var(--ink-900); font-weight: 600; }
+.request-banner .verdict {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+.request-banner .pill { font-size: 12px; padding: 5px 11px; }
+
+/* Milestone tracker */
+.tracker {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    overflow-x: auto;
+}
+.tracker-rail {
+    display: grid;
+    grid-template-columns: repeat(var(--steps, 5), 1fr);
+    gap: 0;
+    position: relative;
+    min-width: 560px;
+}
+.tracker-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    padding-top: 4px;
+    text-align: center;
+}
+.tracker-step::before {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    right: -50%;
+    height: 2px;
+    background: var(--line);
+    z-index: 0;
+}
+.tracker-step:last-child::before { display: none; }
+.tracker-step.is-done::before { background: var(--emerald-600); }
+.tracker-step .dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    background: var(--card);
+    display: grid;
+    place-items: center;
+    z-index: 1;
+    color: var(--ink-400);
+    transition: all 200ms;
+}
+.tracker-step .dot svg { width: 14px; height: 14px; }
+.tracker-step.is-done .dot {
+    border-color: var(--emerald-600);
+    background: var(--emerald-600);
+    color: white;
+}
+.tracker-step.is-current .dot {
+    border-color: var(--emerald-600);
+    background: var(--card);
+    color: var(--emerald-700);
+    box-shadow: 0 0 0 4px rgba(5,150,105,0.12);
+}
+.tracker-step.is-flagged .dot {
+    border-color: var(--gold-500);
+    background: var(--card);
+    color: var(--gold-700);
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.18);
+}
+.tracker-step .label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-500);
+}
+.tracker-step.is-done .label,
+.tracker-step.is-current .label { color: var(--ink-900); }
+.tracker-step .when {
+    font-size: 10px;
+    color: var(--ink-400);
+    font-family: var(--font-mono);
+}
+
+/* Candidate card grid */
+.cand-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
+.cand-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 120ms, box-shadow 120ms, transform 120ms;
+}
+.cand-card:hover {
+    border-color: var(--emerald-600);
+    box-shadow: var(--shadow-xs);
+    transform: translateY(-1px);
+}
+.cand-card .head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.cand-card .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--emerald-700);
+    color: var(--gold-400);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    box-shadow: inset 0 0 0 1px rgba(212,175,55,0.4);
+    flex-shrink: 0;
+}
+.cand-card .name { font-size: 13px; font-weight: 600; color: var(--ink-900); }
+.cand-card .id   { font-size: 11px; color: var(--ink-400); font-family: var(--font-mono); }
+.cand-card .progress-track {
+    height: 6px;
+    background: var(--paper-2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.cand-card .progress-fill { height: 100%; background: var(--emerald-600); }
+.cand-card.is-flagged .progress-fill { background: var(--gold-500); }
+.cand-card .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--ink-500);
+}
+
+@media (max-width: 768px) {
+    .request-banner   { grid-template-columns: 1fr; }
+    .request-banner .verdict { align-items: flex-start; }
+}
+
 /* ─── Case / Candidate detail ────────────────────────────── */
 .case-back {
     display: grid;

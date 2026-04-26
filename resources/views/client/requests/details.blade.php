@@ -19,11 +19,11 @@
         $progressPct = $totalChecks > 0 ? round($doneChecks / $totalChecks * 100) : 0;
 
         $statusVerdict = match ($request->status) {
-            'complete' => ['text' => 'Complete', 'cls' => 'clear'],
-            'flagged' => ['text' => 'Needs review', 'cls' => 'flagged'],
-            'in_progress' => ['text' => 'In progress', 'cls' => ''],
-            'new' => ['text' => 'Awaiting consent', 'cls' => ''],
-            default => ['text' => ucwords(str_replace('_', ' ', $request->status)), 'cls' => ''],
+            'complete' => ['text' => 'Complete', 'cls' => 'pill-clear'],
+            'flagged' => ['text' => 'Needs review', 'cls' => 'pill-flagged'],
+            'in_progress' => ['text' => 'In progress', 'cls' => 'pill-progress'],
+            'new' => ['text' => 'Awaiting consent', 'cls' => 'pill-pending'],
+            default => ['text' => ucwords(str_replace('_', ' ', $request->status)), 'cls' => 'pill-pending'],
         };
 
         $typeLabel = match ($request->type) {
@@ -35,8 +35,24 @@
             default => ucfirst((string) $request->type),
         };
 
-        $elapsed = $request->created_at->diffForHumans(null, true);
         $dueDate = $request->created_at->copy()->addDays(5);
+
+        // Pipeline stages — derive completion from request status
+        $stageMap = [
+            'submitted' => 1,
+            'consent' => 2,
+            'verifying' => 3,
+            'review' => 4,
+            'complete' => 5,
+        ];
+        $currentStage = match ($request->status) {
+            'new' => 2,           // submitted, awaiting consent
+            'in_progress' => 3,   // verifying
+            'flagged' => 4,       // analyst review
+            'complete' => 5,
+            default => 1,
+        };
+        $isFlagged = $request->status === 'flagged' || $flaggedChecks > 0;
     @endphp
 
     {{-- Page head --}}
@@ -62,124 +78,128 @@
         </div>
     </div>
 
-    {{-- Case hero --}}
-    <div class="case-hero">
+    {{-- Banner --}}
+    <div class="request-banner">
         <div>
-            <div class="case-id">
-                <span>REQUEST · {{ $request->reference }}</span>
-                <span class="chip">{{ strtoupper($typeLabel) }}</span>
+            <div class="ref">
+                <span>REF</span>
+                <b>{{ $request->reference }}</b>
+                <span style="padding:2px 8px;background:var(--gold-100);color:var(--gold-700);border-radius:3px;font-size:10px;font-weight:600;text-transform:uppercase;">{{ $typeLabel }}</span>
             </div>
-            <div class="case-name">{{ $candidates->count() }} {{ Str::plural('candidate', $candidates->count()) }}</div>
-            <div class="case-meta">
+            <div class="meta">
                 <span>Submitted <b>{{ $request->created_at->format('d M Y') }}</b></span>
                 <span>by <b>{{ $request->submittedBy?->name ?? '—' }}</b></span>
                 <span>Due <b>{{ $dueDate->format('d M Y') }}</b></span>
-                <span>{{ $doneChecks }} of {{ $totalChecks }} {{ Str::plural('check', $totalChecks) }} complete</span>
+                <span>{{ $candidates->count() }} {{ Str::plural('candidate', $candidates->count()) }} · {{ $doneChecks }}/{{ $totalChecks }} {{ Str::plural('check', $totalChecks) }}</span>
             </div>
         </div>
+        <div class="verdict">
+            <span class="pill {{ $statusVerdict['cls'] }}"><span class="dot"></span>{{ $statusVerdict['text'] }}</span>
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--ink-500);">{{ $progressPct }}% COMPLETE</span>
+        </div>
+    </div>
 
-        <div class="case-verdict">
-            <div class="verdict-label">Status</div>
-            <div class="verdict-value {{ $statusVerdict['cls'] }}">{{ $statusVerdict['text'] }}</div>
-            <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-500);margin-top:4px;">{{ $progressPct }}% complete</div>
+    {{-- Pipeline tracker --}}
+    <div class="tracker" style="--steps: 5;">
+        <div class="tracker-rail">
+            @php
+                $stages = [
+                    ['key' => 'submitted', 'label' => 'Submitted', 'when' => $request->created_at->format('d M')],
+                    ['key' => 'consent',   'label' => 'Consent',   'when' => $currentStage >= 2 ? $request->created_at->copy()->addHours(2)->format('d M') : ''],
+                    ['key' => 'verifying', 'label' => 'Verifying', 'when' => $currentStage >= 3 ? $request->created_at->copy()->addDay()->format('d M') : ''],
+                    ['key' => 'review',    'label' => 'Review',    'when' => $currentStage >= 4 ? $request->updated_at->format('d M') : ''],
+                    ['key' => 'complete',  'label' => 'Complete',  'when' => $currentStage >= 5 ? $request->updated_at->format('d M') : 'Est. ' . $dueDate->format('d M')],
+                ];
+            @endphp
+            @foreach ($stages as $i => $stage)
+                @php
+                    $stageNum = $i + 1;
+                    $cls = '';
+                    if ($stageNum < $currentStage) {
+                        $cls = 'is-done';
+                    } elseif ($stageNum === $currentStage) {
+                        $cls = $isFlagged && $stage['key'] === 'review' ? 'is-flagged' : 'is-current';
+                    }
+                @endphp
+                <div class="tracker-step {{ $cls }}">
+                    <div class="dot">
+                        @if ($stageNum < $currentStage)
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                        @elseif ($stageNum === $currentStage && $isFlagged && $stage['key'] === 'review')
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 9v4M12 17h.01"/></svg>
+                        @elseif ($stageNum === $currentStage)
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+                        @endif
+                    </div>
+                    <div class="label">{{ $stage['label'] }}</div>
+                    @if (! empty($stage['when']))
+                        <div class="when">{{ $stage['when'] }}</div>
+                    @endif
+                </div>
+            @endforeach
         </div>
 
-        @if ($request->status === 'flagged' || $flaggedChecks > 0)
-            <div class="case-alert">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M12 2L2 22h20z"/></svg>
-                <div>
-                    <b>{{ $flaggedChecks > 0 ? $flaggedChecks : 'One or more' }} {{ Str::plural('check', max($flaggedChecks, 1)) }} flagged</b>
-                    — analyst review pending. You'll be notified once resolved.
-                </div>
+        @if ($isFlagged)
+            <div style="margin-top:18px;padding:10px 14px;background:var(--gold-100);border:1px solid rgba(184,147,31,0.2);border-left:3px solid var(--gold-500);border-radius:6px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--gold-700);">
+                <svg style="width:14px;height:14px;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M12 2L2 22h20z"/></svg>
+                <span><b>{{ $flaggedChecks > 0 ? $flaggedChecks : 'One or more' }} {{ Str::plural('check', max($flaggedChecks, 1)) }} flagged</b> — analyst review pending. You'll be notified once resolved.</span>
             </div>
         @endif
     </div>
 
-    {{-- Summary rail --}}
-    <div class="summary-rail">
-        <div class="summary-cell">
-            <div class="l">Candidates</div>
-            <div class="v">{{ $candidates->count() }}</div>
-        </div>
-        <div class="summary-cell">
-            <div class="l">Checks complete</div>
-            <div class="v">{{ $doneChecks }} <span style="color:var(--ink-400);font-size:16px;">of {{ $totalChecks }}</span></div>
-        </div>
-        <div class="summary-cell">
-            <div class="l">Elapsed</div>
-            <div class="v">{{ $elapsed }}</div>
-        </div>
-        <div class="summary-cell">
-            <div class="l">Flagged</div>
-            <div class="v" style="{{ $flaggedChecks > 0 ? 'color:var(--gold-700);' : '' }}">{{ $flaggedChecks }}</div>
-        </div>
-    </div>
+    {{-- Candidates + sidebar --}}
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
 
-    {{-- Detail grid --}}
-    <div class="case-grid">
-
-        {{-- Candidates list --}}
-        <div class="card">
-            <div class="card-head">
-                <h3>Candidates</h3>
-                <span class="count-pill">{{ $candidates->count() }} TOTAL</span>
+        {{-- Candidates as cards --}}
+        <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0 12px;">
+                <h2 style="font-size:14px;font-weight:600;color:var(--ink-900);margin:0;">Candidates <span style="color:var(--ink-400);font-weight:400;">· {{ $candidates->count() }}</span></h2>
             </div>
 
-            <div class="checks-list">
-                @forelse ($candidates as $candidate)
-                    @php
-                        $candDone = $candidate->scopeTypes->where('pivot.status', 'complete')->count();
-                        $candTotal = $candidate->scopeTypes->count();
-                        $candFlagged = $candidate->scopeTypes->where('pivot.status', 'flagged')->count();
-                        $candProgress = $candTotal > 0 ? round($candDone / $candTotal * 100) : 0;
-
-                        $candPill = match ($candidate->status) {
-                            'complete' => ['cls' => 'pill-clear', 'txt' => 'Cleared'],
-                            'flagged' => ['cls' => 'pill-flagged', 'txt' => 'Flagged'],
-                            'in_progress' => ['cls' => 'pill-progress', 'txt' => 'In progress'],
-                            default => ['cls' => 'pill-pending', 'txt' => 'Pending'],
-                        };
-                    @endphp
-                    <a href="{{ route('client.candidates.show', $candidate->id) }}"
-                       class="check-row" style="text-decoration:none;color:inherit;">
-                        <div style="width:36px;height:36px;border-radius:50%;background:var(--emerald-700);color:var(--gold-400);display:grid;place-items:center;font-size:11px;font-weight:600;font-family:var(--font-mono);box-shadow:inset 0 0 0 1px rgba(212,175,55,0.4);flex-shrink:0;">
-                            {{ strtoupper(substr($candidate->name, 0, 2)) }}
-                        </div>
-                        <div class="check-info">
-                            <div class="t">{{ $candidate->name }}</div>
-                            <div class="s">
-                                {{ $candidate->identityType?->name ?? 'ID' }}
-                                <span class="src">{{ $candidate->identity_number }}</span>
-                                @if ($candTotal > 0)
-                                    · {{ $candDone }}/{{ $candTotal }} checks
-                                @endif
+            @if ($candidates->isEmpty())
+                <div class="card" style="padding:48px 20px;text-align:center;">
+                    <p style="font-size:13px;color:var(--ink-400);margin:0;">No candidates on this request.</p>
+                </div>
+            @else
+                <div class="cand-grid">
+                    @foreach ($candidates as $candidate)
+                        @php
+                            $candDone = $candidate->scopeTypes->where('pivot.status', 'complete')->count();
+                            $candTotal = $candidate->scopeTypes->count();
+                            $candProgress = $candTotal > 0 ? round($candDone / $candTotal * 100) : 0;
+                            $candPill = match ($candidate->status) {
+                                'complete' => ['cls' => 'pill-clear', 'txt' => 'Cleared'],
+                                'flagged' => ['cls' => 'pill-flagged', 'txt' => 'Flagged'],
+                                'in_progress' => ['cls' => 'pill-progress', 'txt' => 'In progress'],
+                                default => ['cls' => 'pill-pending', 'txt' => 'Pending'],
+                            };
+                        @endphp
+                        <a href="{{ route('client.candidates.show', $candidate->id) }}" class="cand-card {{ $candidate->status === 'flagged' ? 'is-flagged' : '' }}">
+                            <div class="head">
+                                <div class="avatar">{{ strtoupper(substr($candidate->name, 0, 2)) }}</div>
+                                <div style="min-width:0;flex:1;">
+                                    <div class="name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $candidate->name }}</div>
+                                    <div class="id">{{ $candidate->identity_number }}</div>
+                                </div>
                             </div>
-                        </div>
-                        <span class="pill {{ $candPill['cls'] }}"><span class="dot"></span>{{ $candPill['txt'] }}</span>
-                        <div style="display:flex;align-items:center;gap:14px;">
-                            <div style="width:80px;height:6px;background:var(--paper-2);border-radius:3px;overflow:hidden;">
-                                <div style="width:{{ $candProgress }}%;height:100%;background:{{ $candidate->status === 'flagged' ? 'var(--gold-500)' : 'var(--emerald-600)' }};"></div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width:{{ $candProgress }}%;"></div>
                             </div>
-                            <div class="check-chev">
-                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+                            <div class="row">
+                                <span>{{ $candDone }}/{{ $candTotal }} checks</span>
+                                <span class="pill {{ $candPill['cls'] }}"><span class="dot"></span>{{ $candPill['txt'] }}</span>
                             </div>
-                        </div>
-                    </a>
-                @empty
-                    <div style="padding:48px 20px;text-align:center;">
-                        <p style="font-size:13px;color:var(--ink-400);margin:0;">No candidates on this request.</p>
-                    </div>
-                @endforelse
-            </div>
+                        </a>
+                    @endforeach
+                </div>
+            @endif
         </div>
 
-        {{-- Right col --}}
-        <div class="side-col">
-
-            {{-- Request meta --}}
+        {{-- Sidebar: meta + scopes --}}
+        <div style="display:flex;flex-direction:column;gap:16px;">
             <div class="card">
                 <div class="card-head">
-                    <h3>Request info</h3>
+                    <h3>Order details</h3>
                 </div>
                 <div class="identity">
                     <div class="id-row">
@@ -205,24 +225,23 @@
                 </div>
             </div>
 
-            {{-- Verification scopes --}}
-            @php
-                $allScopes = $candidates->flatMap(fn ($c) => $c->scopeTypes)->unique('id');
-            @endphp
+            @php $allScopes = $candidates->flatMap(fn ($c) => $c->scopeTypes)->unique('id'); @endphp
             @if ($allScopes->isNotEmpty())
                 <div class="card">
                     <div class="card-head">
-                        <h3>Verification scopes</h3>
+                        <h3>Scope of work</h3>
                         <span class="count-pill">{{ $allScopes->count() }}</span>
                     </div>
-                    <div style="padding:14px 18px;display:flex;flex-wrap:wrap;gap:6px;">
+                    <div style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;">
                         @foreach ($allScopes as $scope)
-                            <span class="pill pill-pending" style="font-family:var(--font-ui);">{{ $scope->name }}</span>
+                            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-700);">
+                                <svg style="width:12px;height:12px;color:var(--emerald-600);flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M9 12l2 2 4-4"/></svg>
+                                {{ $scope->name }}
+                            </div>
                         @endforeach
                     </div>
                 </div>
             @endif
-
         </div>
     </div>
 
