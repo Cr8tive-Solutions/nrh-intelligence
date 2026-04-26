@@ -1,14 +1,14 @@
-<x-client.layouts.app pageTitle="Active Screenings">
+<x-client.layouts.app pageTitle="Active Requests">
 
     {{-- Page header --}}
     <div class="page-head">
         <div>
-            <h1>Active <em>Screenings</em></h1>
-            <div class="sub">Screenings currently being processed</div>
+            <h1>Active <em>Requests</em></h1>
+            <div class="sub">Requests currently being processed</div>
         </div>
         <a href="{{ route('client.request.new') }}" class="btn btn-primary">
             <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            New screening
+            New request
         </a>
     </div>
 
@@ -28,8 +28,9 @@
 
             {{-- Search --}}
             <div style="position:relative;width:240px;">
-                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-400);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
-                <input x-model="search" type="text" placeholder="Search requests…"
+                <label for="requests-search" class="sr-only">Search requests</label>
+                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-400);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+                <input id="requests-search" x-model="search" type="text" placeholder="Search requests…" aria-label="Search requests"
                     style="width:100%;padding:8px 10px 8px 32px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);transition:border-color 120ms,box-shadow 120ms;"
                 />
             </div>
@@ -69,7 +70,7 @@
                                 <svg style="width:40px;height:40px;color:var(--ink-200);margin:0 auto 12px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
                                 </svg>
-                                <p style="font-size:13px;color:var(--ink-400);margin:0;">No active screenings.</p>
+                                <p style="font-size:13px;color:var(--ink-400);margin:0;">No active requests.</p>
                                 <a href="{{ route('client.request.new') }}" style="font-size:13px;font-weight:600;color:var(--emerald-700);text-decoration:none;display:inline-block;margin-top:8px;">Submit your first request →</a>
                             </td>
                         </tr>

@@ -256,7 +256,7 @@
             {{-- Right: summary card --}}
             <div>
                 <div class="card" style="padding:18px;position:sticky;top:80px;">
-                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:12px;">Screening Type</div>
+                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:12px;">Request Type</div>
                     <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--paper);border-radius:var(--radius);margin-bottom:16px;">
                         <div style="width:36px;height:36px;border-radius:var(--radius);background:var(--emerald-700);display:grid;place-items:center;flex-shrink:0;">
                             @if($type === 'kyc')

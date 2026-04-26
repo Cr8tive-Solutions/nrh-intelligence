@@ -36,20 +36,20 @@
     <div style="display:flex;align-items:center;gap:8px;">
 
         {{-- Notifications --}}
-        <a href="{{ route('client.notifications') }}" class="icon-btn" title="Notifications" style="text-decoration:none;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7v4l-2 3h18l-2-3V9a7 7 0 0 0-7-7z"/><path d="M9 19a3 3 0 0 0 6 0"/></svg>
+        <a href="{{ route('client.notifications') }}" class="icon-btn" title="Notifications" aria-label="Notifications" style="text-decoration:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7v4l-2 3h18l-2-3V9a7 7 0 0 0-7-7z"/><path d="M9 19a3 3 0 0 0 6 0"/></svg>
             <span class="pulse-dot"></span>
         </a>
 
         {{-- Help --}}
-        <button class="icon-btn" title="Help">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+        <button class="icon-btn" title="Help" aria-label="Help">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
         </button>
 
-        {{-- New screening --}}
+        {{-- New request --}}
         <a href="{{ route('client.request.new') }}" class="btn btn-primary">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            New screening
+            New request
         </a>
     </div>
 

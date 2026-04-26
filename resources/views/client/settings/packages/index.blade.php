@@ -2,7 +2,7 @@
 
     <div class="page-head">
         <div>
-            <h1>Screening <em>Packages</em></h1>
+            <h1>Request <em>Packages</em></h1>
             <div class="sub">Saved scope bundles for quick request creation</div>
         </div>
         <button x-data @click="$dispatch('open-create-package')" class="btn btn-primary">
@@ -66,7 +66,7 @@
             <form style="display:flex;flex-direction:column;gap:16px;">
                 <div class="field">
                     <label>Package Name</label>
-                    <input type="text" placeholder="e.g. Standard Screening"/>
+                    <input type="text" placeholder="e.g. Standard Package"/>
                 </div>
                 <div class="field">
                     <label>Select Scopes</label>

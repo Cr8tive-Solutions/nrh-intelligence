@@ -4,7 +4,7 @@
     <div class="page-head">
         <div>
             <h1>Candidates. <em>{{ $stats['active'] }} active</em> &middot; {{ $stats['consent'] }} awaiting consent.</h1>
-            <div class="sub">All screening candidates across <b>{{ session('client_company', 'your company') }}</b> &middot; billing period {{ now()->startOfMonth()->format('M d') }} &ndash; {{ now()->endOfMonth()->format('M d') }}</div>
+            <div class="sub">All candidates across <b>{{ session('client_company', 'your company') }}</b> &middot; billing period {{ now()->startOfMonth()->format('M d') }} &ndash; {{ now()->endOfMonth()->format('M d') }}</div>
         </div>
         <div style="display:flex;gap:8px;">
             <button class="btn btn-ghost">
@@ -165,7 +165,7 @@
                     <tr>
                         <td colspan="8" style="padding:48px 20px;text-align:center;">
                             <p style="font-size:13px;color:var(--ink-400);margin:0 0 8px;">No candidates yet.</p>
-                            <a href="{{ route('client.request.new') }}" style="font-size:13px;font-weight:600;color:var(--emerald-700);">Submit your first screening request →</a>
+                            <a href="{{ route('client.request.new') }}" style="font-size:13px;font-weight:600;color:var(--emerald-700);">Submit your first request →</a>
                         </td>
                     </tr>
                 @endforelse

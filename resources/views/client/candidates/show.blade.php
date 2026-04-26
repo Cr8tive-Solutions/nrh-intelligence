@@ -23,11 +23,8 @@
     {{-- Page head --}}
     <div class="page-head">
         <div style="display:flex;align-items:center;gap:16px;">
-            <a href="{{ route('client.candidates') }}"
-               style="display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink-500);flex-shrink:0;"
-               onmouseover="this.style.borderColor='var(--emerald-600)';this.style.color='var(--emerald-700)'"
-               onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--ink-500)'">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            <a href="{{ route('client.candidates') }}" class="case-back" aria-label="Back to candidates">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
             </a>
             <div>
                 <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-400);letter-spacing:0.1em;text-transform:uppercase;">Candidates</div>
@@ -444,7 +441,7 @@
                         <div class="tl-item">
                             <div class="tl-time">{{ strtoupper($candidate->updated_at->format('M d · H:i')) }}</div>
                             <div class="tl-title">All checks cleared</div>
-                            <div class="tl-desc">Screening complete · verdict: clear.</div>
+                            <div class="tl-desc">Request complete · verdict: clear.</div>
                         </div>
                     @elseif ($candidate->status === 'in_progress')
                         <div class="tl-item">

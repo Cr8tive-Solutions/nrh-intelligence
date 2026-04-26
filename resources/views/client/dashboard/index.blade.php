@@ -5,7 +5,7 @@
         <div>
             <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-400);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">{{ now()->startOfWeek()->format('M d') }} – {{ now()->endOfWeek()->format('M d') }}</div>
             <h1>Good morning, <em>{{ $userName }}</em></h1>
-            <div class="sub">{{ $companyName }} · {{ $stats['in_progress'] }} active {{ Str::plural('screening', $stats['in_progress']) }}, {{ $stats['needs_review'] }} flagged for review</div>
+            <div class="sub">{{ $companyName }} · {{ $stats['in_progress'] }} active {{ Str::plural('request', $stats['in_progress']) }}, {{ $stats['needs_review'] }} flagged for review</div>
         </div>
         <div style="display:flex;gap:8px;">
             <button class="btn btn-ghost">
@@ -164,7 +164,7 @@
                     @empty
                         <tr>
                             <td colspan="6" style="padding:48px 20px;text-align:center;">
-                                <p style="font-size:13px;color:var(--ink-400);margin:0 0 8px;">No screening requests yet.</p>
+                                <p style="font-size:13px;color:var(--ink-400);margin:0 0 8px;">No requests yet.</p>
                                 <a href="{{ route('client.request.new') }}" style="font-size:13px;font-weight:600;color:var(--emerald-700);">Submit your first request →</a>
                             </td>
                         </tr>
@@ -234,7 +234,7 @@
                             $feedText = match($req->status) {
                                 'complete'    => '<b>' . e($req->reference) . '</b> cleared all checks',
                                 'flagged'     => '<b>' . e($req->reference) . '</b> — flagged for review',
-                                'in_progress' => 'Screening in progress — <b>' . e($req->reference) . '</b>',
+                                'in_progress' => 'Request in progress — <b>' . e($req->reference) . '</b>',
                                 default       => 'New order submitted — <b>' . e($req->reference) . '</b>',
                             };
                             $feedMeta = strtoupper($req->created_at->diffForHumans()) . ' · ' . $req->candidates_count . ' ' . strtoupper(Str::plural('candidate', $req->candidates_count));

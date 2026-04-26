@@ -30,7 +30,11 @@
       "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:controller Admin/DashboardController --no-interaction)",
       "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:controller Admin/CustomerController --no-interaction)",
       "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:controller Admin/RequestController --no-interaction)",
-      "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:seeder AdminSeeder --no-interaction)"
+      "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:seeder AdminSeeder --no-interaction)",
+      "Bash(vendor/bin/pint --dirty --format agent)",
+      "Bash(npm run *)",
+      "Bash(herd which-php *)",
+      "mcp__laravel-boost__read-log-entries"
     ]
   },
   "enableAllProjectMcpServers": true,

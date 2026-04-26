@@ -11,8 +11,9 @@
         <div class="card-head">
             <h3>Report History</h3>
             <div style="position:relative;width:200px;">
-                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-400);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
-                <input type="text" placeholder="Search…"
+                <label for="report-search" class="sr-only">Search reports</label>
+                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-400);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+                <input id="report-search" type="text" placeholder="Search…" aria-label="Search reports"
                     style="width:100%;padding:7px 10px 7px 30px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);"
                 />
             </div>

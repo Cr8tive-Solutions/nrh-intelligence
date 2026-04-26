@@ -52,7 +52,16 @@
                         default   => 'var(--paper)',
                     };
                 @endphp
-                <div style="display:flex;align-items:flex-start;gap:16px;padding:16px 20px;background:{{ $bgColor }};border:1px solid {{ $borderColor }};border-left:3px solid {{ $borderColor }};border-radius:var(--radius);{{ ! $notif['read'] ? 'box-shadow:0 0 0 3px rgba(5,150,105,0.08);' : '' }}">
+                @php
+                    $typeLabel = match($notif['type']) {
+                        'danger'  => 'Alert',
+                        'warning' => 'Warning',
+                        'success' => 'Success',
+                        default   => 'Info',
+                    };
+                @endphp
+                <div role="{{ $notif['type'] === 'danger' ? 'alert' : 'status' }}" style="display:flex;align-items:flex-start;gap:16px;padding:16px 20px;background:{{ $bgColor }};border:1px solid {{ $borderColor }};border-left:3px solid {{ $borderColor }};border-radius:var(--radius);{{ ! $notif['read'] ? 'box-shadow:0 0 0 3px rgba(5,150,105,0.08);' : '' }}">
+                    <span class="sr-only">{{ $typeLabel }}.</span>
 
                     {{-- Icon --}}
                     <div style="width:36px;height:36px;border-radius:var(--radius);background:{{ $iconBg }};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
@@ -75,7 +84,8 @@
                             <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;">
                                 {{ $notif['title'] }}
                                 @if (! $notif['read'])
-                                    <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--emerald-600);margin-left:6px;vertical-align:middle;"></span>
+                                    <span class="sr-only">(unread)</span>
+                                    <span aria-hidden="true" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--emerald-600);margin-left:6px;vertical-align:middle;"></span>
                                 @endif
                             </p>
                             @if ($notif['time'])

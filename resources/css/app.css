@@ -901,6 +901,19 @@ body {
 .icon-btn:hover { border-color: var(--line); background: var(--card); }
 
 /* ─── Case / Candidate detail ────────────────────────────── */
+.case-back {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--ink-500);
+    flex-shrink: 0;
+    transition: border-color 120ms, color 120ms;
+}
+.case-back:hover { border-color: var(--emerald-600); color: var(--emerald-700); }
+
 .case-hero {
     background: var(--card);
     border: 1px solid var(--line);
@@ -1354,6 +1367,9 @@ body {
     .grid     { grid-template-columns: 1fr; }
     .side-col { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .side-col > .card:first-child { grid-column: span 2; }
+
+    /* Case detail: stack checks list and side col */
+    .case-grid { grid-template-columns: 1fr; }
 }
 
 /* Mobile — ≤ 768px */
@@ -1418,6 +1434,17 @@ body {
         position: static !important;
         top: auto !important;
     }
+
+    /* Case detail: collapse hero, summary, and check rows for narrow viewports */
+    .case-hero       { grid-template-columns: 1fr; padding: 20px; gap: 18px; }
+    .case-name       { font-size: 28px; }
+    .case-verdict    { text-align: left; align-items: flex-start; }
+    .summary-rail    { grid-template-columns: 1fr 1fr; }
+    .summary-cell    { border-right: 1px solid var(--line); }
+    .summary-cell:nth-child(2n) { border-right: none; }
+    .summary-cell:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .check-row       { grid-template-columns: 36px 1fr auto; gap: 12px; padding: 14px 16px; }
+    .check-row .check-time { display: none; }
 }
 
 /* Small mobile — ≤ 480px */
