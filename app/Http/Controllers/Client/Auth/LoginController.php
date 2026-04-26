@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
@@ -28,20 +29,24 @@ class LoginController extends Controller
             ->first();
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
+            activity('auth')
+                ->withProperties($this->requestProperties($request) + ['email' => $validated['email']])
+                ->event('login.failed')
+                ->log('Failed login attempt');
+
             return back()
                 ->withInput($request->only('email'))
                 ->withErrors(['email' => 'Invalid email address or password.']);
         }
 
         if (app()->isLocal()) {
-            session([
-                'client_user_id' => $user->id,
-                'client_customer_id' => $user->customer_id,
-                'client_user_name' => $user->name,
-                'client_user_avatar' => $user->avatar,
-                'client_company' => $user->customer->name,
-                'client_last_login' => now()->format('d M Y, H:i'),
-            ]);
+            $this->loginAndPopulateSession($request, $user);
+
+            activity('auth')
+                ->causedBy($user)
+                ->withProperties($this->requestProperties($request))
+                ->event('login.success')
+                ->log('User logged in');
 
             return redirect()->intended(route('client.dashboard'));
         }
@@ -59,6 +64,12 @@ class LoginController extends Controller
         Mail::raw("Your NRH Intelligence verification code is: {$code}\n\nThis code expires in 10 minutes.", function ($message) use ($user) {
             $message->to($user->email)->subject('Your NRH verification code');
         });
+
+        activity('auth')
+            ->causedBy($user)
+            ->withProperties($this->requestProperties($request))
+            ->event('2fa.requested')
+            ->log('2FA code requested');
 
         return redirect()->route('client.verification');
     }
@@ -85,16 +96,43 @@ class LoginController extends Controller
         }
 
         if (now()->timestamp > $expiresAt) {
+            activity('auth')
+                ->causedBy(CustomerUser::find($userId))
+                ->withProperties($this->requestProperties($request))
+                ->event('2fa.expired')
+                ->log('2FA code expired');
+
             return back()->withErrors(['code' => 'This code has expired. Please request a new one.']);
         }
 
         if ($request->input('code') !== $stored) {
+            activity('auth')
+                ->causedBy(CustomerUser::find($userId))
+                ->withProperties($this->requestProperties($request))
+                ->event('2fa.failed')
+                ->log('Invalid 2FA code');
+
             return back()->withErrors(['code' => 'Invalid code. Please try again.']);
         }
 
         $user = CustomerUser::with('customer')->findOrFail($userId);
 
         session()->forget(['2fa_pending_user_id', '2fa_pending_customer_id', '2fa_code', '2fa_expires_at', '2fa_email']);
+
+        $this->loginAndPopulateSession($request, $user);
+
+        activity('auth')
+            ->causedBy($user)
+            ->withProperties($this->requestProperties($request))
+            ->event('login.success')
+            ->log('User logged in (2FA)');
+
+        return redirect()->intended(route('client.dashboard'));
+    }
+
+    protected function loginAndPopulateSession(Request $request, CustomerUser $user): void
+    {
+        Auth::guard('customer_user')->login($user, remember: $request->boolean('remember'));
 
         session([
             'client_user_id' => $user->id,
@@ -104,8 +142,6 @@ class LoginController extends Controller
             'client_company' => $user->customer->name,
             'client_last_login' => now()->format('d M Y, H:i'),
         ]);
-
-        return redirect()->intended(route('client.dashboard'));
     }
 
     public function resend(Request $request)
@@ -150,8 +186,31 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        $request->session()->flush();
+        $user = Auth::guard('customer_user')->user();
+
+        if ($user) {
+            activity('auth')
+                ->causedBy($user)
+                ->withProperties($this->requestProperties($request))
+                ->event('logout')
+                ->log('User logged out');
+        }
+
+        Auth::guard('customer_user')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('client.login');
+    }
+
+    /**
+     * @return array{ip: string|null, user_agent: string|null}
+     */
+    protected function requestProperties(Request $request): array
+    {
+        return [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ];
     }
 }

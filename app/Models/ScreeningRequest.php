@@ -8,13 +8,27 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class ScreeningRequest extends Model
 {
     /** @use HasFactory<ScreeningRequestFactory> */
     use HasFactory;
 
+    use LogsActivity;
+
     protected $fillable = ['customer_id', 'customer_user_id', 'reference', 'status', 'type', 'meta'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['reference', 'status', 'type'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('screening_request')
+            ->setDescriptionForEvent(fn (string $event) => "Screening request {$event}");
+    }
 
     protected function casts(): array
     {

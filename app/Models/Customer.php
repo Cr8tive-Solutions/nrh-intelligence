@@ -7,11 +7,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Customer extends Model
 {
     /** @use HasFactory<CustomerFactory> */
     use HasFactory;
+
+    use LogsActivity;
 
     protected $fillable = [
         'name',
@@ -24,6 +28,16 @@ class Customer extends Model
         'contact_phone',
         'balance',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'registration_no', 'address', 'country', 'industry', 'contact_name', 'contact_email', 'contact_phone'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('account')
+            ->setDescriptionForEvent(fn (string $event) => "Account {$event}");
+    }
 
     protected function casts(): array
     {

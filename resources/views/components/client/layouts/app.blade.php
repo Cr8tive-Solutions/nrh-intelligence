@@ -18,7 +18,7 @@
         x-show="sidebarOpen"
         @click="sidebarOpen = false"
         style="position:fixed;inset:0;z-index:30;background:rgba(0,0,0,0.35);"
-        class="lg:hidden"
+        class="min-[960px]:hidden"
         x-transition:enter="transition-opacity duration-200"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"

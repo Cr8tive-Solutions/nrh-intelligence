@@ -1,7 +1,7 @@
 <aside
     id="sidebar"
-    class="nrh-sidebar fixed inset-y-0 left-0 z-40 transition-transform duration-300 lg:sticky lg:top-0 lg:translate-x-0 lg:inset-auto"
-    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    class="nrh-sidebar fixed inset-y-0 left-0 z-40 transition-transform duration-300 min-[960px]:sticky min-[960px]:top-0 min-[960px]:translate-x-0 min-[960px]:inset-auto"
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full min-[960px]:translate-x-0'"
 >
     {{-- Brand --}}
     <div style="display:flex;gap:10px;align-items:center;padding:6px 8px 14px;border-bottom:1px solid var(--line);">
@@ -21,18 +21,23 @@
         <div style="display:flex;flex-direction:column;gap:2px;">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:var(--ink-500);padding:0 10px 8px;">Workspace</div>
 
+            @can('view-dashboard')
             @php $active = request()->routeIs('client.dashboard*'); @endphp
             <a href="{{ route('client.dashboard') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
                 Dashboard
             </a>
+            @endcan
 
+            @can('view-candidates')
             @php $active = request()->routeIs('client.candidates*'); @endphp
             <a href="{{ route('client.candidates') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 Candidates
             </a>
+            @endcan
 
+            @can('create-requests')
             @php $screeningsActive = request()->routeIs('client.request*'); @endphp
             <div x-data="{ open: {{ $screeningsActive ? 'true' : 'false' }} }">
                 <button @click="open = !open"
@@ -89,7 +94,9 @@
 
                 </div>
             </div>
+            @endcan
 
+            @can('view-requests')
             @php $active = request()->routeIs('client.requests.index') || request()->routeIs('client.requests.details'); @endphp
             <a href="{{ route('client.requests.index') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14h6M9 18h4"/></svg>
@@ -101,14 +108,18 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
                 Track Request
             </a>
+            @endcan
 
+            @can('view-reports')
             @php $active = request()->routeIs('client.history*'); @endphp
             <a href="{{ route('client.history.index') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M10 13l2 2 4-4"/></svg>
                 Reports
             </a>
+            @endcan
         </div>
 
+        @can('view-billing')
         {{-- Billing --}}
         <div style="display:flex;flex-direction:column;gap:2px;">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:var(--ink-500);padding:0 10px 8px;">Billing</div>
@@ -125,6 +136,7 @@
                 Invoices
             </a>
         </div>
+        @endcan
 
 
         {{-- System --}}
@@ -138,28 +150,44 @@
             </a>
         </div>
 
+        @canany(['manage-settings', 'manage-team', 'manage-packages', 'view-audit-log'])
         {{-- Settings --}}
         <div style="display:flex;flex-direction:column;gap:2px;">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:var(--ink-500);padding:0 10px 8px;">Settings</div>
 
+            @can('manage-settings')
             @php $active = request()->routeIs('client.settings.account*'); @endphp
             <a href="{{ route('client.settings.account') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
                 Account
             </a>
+            @endcan
 
+            @can('manage-team')
             @php $active = request()->routeIs('client.settings.users*'); @endphp
             <a href="{{ route('client.settings.users') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 0 1 0 7.75"/></svg>
                 Users
             </a>
+            @endcan
 
+            @can('manage-packages')
             @php $active = request()->routeIs('client.settings.packages*'); @endphp
             <a href="{{ route('client.settings.packages') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
                 Packages
             </a>
+            @endcan
 
+            @can('view-audit-log')
+            @php $active = request()->routeIs('client.settings.audit-log*'); @endphp
+            <a href="{{ route('client.settings.audit-log') }}" class="nav-item {{ $active ? 'active' : '' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>
+                Audit Log
+            </a>
+            @endcan
+
+            @can('manage-settings')
             @php $active = request()->routeIs('client.settings.security*'); @endphp
             <a href="{{ route('client.settings.security') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7v4l-2 3h18l-2-3V9a7 7 0 0 0-7-7z"/><path d="M9 19a3 3 0 0 0 6 0"/></svg>
@@ -171,7 +199,9 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M10 13l2 2 4-4"/></svg>
                 Agreement
             </a>
+            @endcan
         </div>
+        @endcanany
 
     </nav>
 

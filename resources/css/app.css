@@ -1362,6 +1362,8 @@ body {
     .stat:nth-child(3) { border-right: none; }
     .stat:nth-child(n+4) { border-top: 1px solid var(--line); }
     .stat:nth-child(3n) { border-right: none; }
+    /* Fill trailing row when there are exactly 5 stats */
+    .stat:nth-child(5):last-child { grid-column: span 2; border-right: none; }
 
     /* Dashboard: stack side column as 2-col grid */
     .grid     { grid-template-columns: 1fr; }
@@ -1429,10 +1431,40 @@ body {
     [style*="grid-column:span 2"] {
         grid-column: span 1 !important;
     }
+    /* Inline repeat(N,1fr) grids → collapse */
+    [style*="grid-template-columns:repeat(2,1fr)"],
+    [style*="grid-template-columns:repeat(3,1fr)"] {
+        grid-template-columns: 1fr !important;
+    }
+    /* Auto-sized side columns (e.g. pipeline health) → stack */
+    [style*="grid-template-columns:1fr auto"],
+    [style*="grid-template-columns:auto 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+    [style*="grid-template-columns:repeat(4,1fr)"],
+    [style*="grid-template-columns:repeat(5,1fr)"],
+    [style*="grid-template-columns:repeat(6,1fr)"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    /* Search-input wrappers with hardcoded widths → full width */
+    [style*="position:relative;width:240px"],
+    [style*="position:relative;width:200px"],
+    [style*="position:relative;width:220px"],
+    .search[style*="width:240px"],
+    .search[style*="width:200px"] {
+        width: 100% !important;
+        max-width: none !important;
+    }
     /* Unstick inline sticky sidebars */
     [style*="position:sticky"] {
         position: static !important;
         top: auto !important;
+    }
+    /* Modals with max-width inline → safe margin on small viewports */
+    [style*="max-width:520px"],
+    [style*="max-width:480px"],
+    [style*="max-width:420px"] {
+        width: calc(100% - 24px) !important;
     }
 
     /* Case detail: collapse hero, summary, and check rows for narrow viewports */
@@ -1459,4 +1491,15 @@ body {
 
     /* Filter chips: show only active */
     .filter-bar .chip:not(.on) { display: none; }
+
+    /* Tighter inline grids: collapse 4–6 col grids fully */
+    [style*="grid-template-columns:repeat(4,1fr)"],
+    [style*="grid-template-columns:repeat(5,1fr)"],
+    [style*="grid-template-columns:repeat(6,1fr)"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Case detail header buttons full-width */
+    .verdict-actions { width: 100%; flex-direction: column; }
+    .verdict-actions .btn { width: 100%; justify-content: center; }
 }

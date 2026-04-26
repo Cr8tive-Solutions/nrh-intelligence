@@ -3,7 +3,7 @@
     {{-- Mobile menu toggle --}}
     <button
         @click="sidebarOpen = !sidebarOpen"
-        class="lg:hidden"
+        class="min-[960px]:hidden"
         style="width:32px;height:32px;display:grid;place-items:center;border-radius:var(--radius);border:1px solid transparent;background:transparent;cursor:pointer;color:var(--ink-700);"
         onmouseover="this.style.borderColor='var(--line)';this.style.background='var(--card)'"
         onmouseout="this.style.borderColor='transparent';this.style.background='transparent'"
@@ -46,11 +46,13 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
         </button>
 
+        @can('create-requests')
         {{-- New request --}}
         <a href="{{ route('client.request.new') }}" class="btn btn-primary">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
             New request
         </a>
+        @endcan
     </div>
 
 </header>

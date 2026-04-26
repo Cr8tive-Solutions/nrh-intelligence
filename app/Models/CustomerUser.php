@@ -7,11 +7,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
 
 class CustomerUser extends Authenticatable
 {
     /** @use HasFactory<CustomerUserFactory> */
     use HasFactory;
+
+    use HasRoles;
+
+    protected string $guard_name = 'customer_user';
 
     protected $fillable = [
         'customer_id',
