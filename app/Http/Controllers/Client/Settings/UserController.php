@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -101,10 +102,26 @@ class UserController extends Controller
             ."{$url}\n\n"
             ."This invitation expires in {$expiresIn}. If you weren't expecting this email, you can ignore it safely.";
 
-        Mail::raw($body, function ($message) use ($user, $companyName) {
-            $message->to($user->email)
-                ->subject("You're invited to {$companyName} on NRH Intelligence");
-        });
+        Log::info('invitation_email.sending', [
+            'invitation_id' => $invitation->id,
+            'to' => $user->email,
+            'company' => $companyName,
+            'sent_count' => $invitation->sent_count,
+        ]);
+
+        try {
+            Mail::raw($body, function ($message) use ($user, $companyName) {
+                $message->to($user->email)
+                    ->subject("You're invited to {$companyName} on NRH Intelligence");
+            });
+            Log::info('invitation_email.sent', ['to' => $user->email]);
+        } catch (\Throwable $e) {
+            Log::error('invitation_email.failed', [
+                'to' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
     }
 
     public function edit(CustomerUser $user)

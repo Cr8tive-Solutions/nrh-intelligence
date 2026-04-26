@@ -38,7 +38,10 @@
       "Bash(xargs ls *)",
       "Bash(xargs cat *)",
       "Read(//private/tmp/**)",
-      "Bash(awk '{print $1, $2, $3}')"
+      "Bash(awk '{print $1, $2, $3}')",
+      "Bash(nslookup mail.nrhintelligence.com)",
+      "Bash(nc -vz -w 5 mail.nrhintelligence.com 465)",
+      "Bash(openssl s_client -connect mail.nrhintelligence.com:465 -servername mail.nrhintelligence.com -quiet)"
     ]
   },
   "enableAllProjectMcpServers": true,
