@@ -194,7 +194,7 @@
                 </div>
 
                 @else
-                {{-- KYS: Supplier fields --}}
+                {{-- KYS: Supplier fields (mirrors KYB layout) --}}
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
                     <div style="grid-column:span 2;">
                         <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Supplier / Vendor Name <span style="color:var(--danger)">*</span></label>
@@ -205,19 +205,6 @@
                         <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Registration No. <span style="color:var(--danger)">*</span></label>
                         <input x-model="subject.identity_number" type="text" placeholder="Company registration number" style="{{ $inp }}"
                             onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'" />
-                    </div>
-                    <div>
-                        <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Country <span style="color:var(--danger)">*</span></label>
-                        <select x-model="subject.country" style="{{ $inp }}"
-                            onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'">
-                            <option value="">Select country</option>
-                            <option>Malaysia</option>
-                            <option>Singapore</option>
-                            <option>Indonesia</option>
-                            <option>Thailand</option>
-                            <option>Philippines</option>
-                            <option>Other</option>
-                        </select>
                     </div>
                     <div>
                         <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Supplier Category <span style="color:var(--danger)">*</span></label>
@@ -232,6 +219,24 @@
                             <option>Healthcare & Pharma</option>
                             <option>Other</option>
                         </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Country of Registration <span style="color:var(--danger)">*</span></label>
+                        <select x-model="subject.country" style="{{ $inp }}"
+                            onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'">
+                            <option value="">Select country</option>
+                            <option>Malaysia</option>
+                            <option>Singapore</option>
+                            <option>Indonesia</option>
+                            <option>Thailand</option>
+                            <option>Philippines</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-500);margin-bottom:6px;">Date of Incorporation</label>
+                        <input x-model="subject.incorporation_date" type="date" style="{{ $inp }}"
+                            onfocus="this.style.borderColor='var(--emerald-600)'" onblur="this.style.borderColor='var(--line)'" />
                     </div>
                     <div style="grid-column:span 2;border-top:1px solid var(--line);padding-top:16px;margin-top:4px;">
                         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:12px;">Primary Contact</div>
@@ -248,6 +253,7 @@
                             </div>
                         </div>
                     </div>
+                </div>
                 @endif
 
                 <p x-show="subjectError" style="font-size:12px;color:var(--danger);margin:16px 0 0;" x-text="subjectError"></p>
