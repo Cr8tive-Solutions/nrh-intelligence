@@ -900,43 +900,48 @@ body {
 }
 .icon-btn:hover { border-color: var(--line); background: var(--card); }
 
-/* ─── Underline tab bar ──────────────────────────────────── */
+/* ─── Segmented "pill highlight" tabs ────────────────────── */
 .tab-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 0 18px;
+    padding: 14px 18px;
     border-bottom: 1px solid var(--line);
     flex-wrap: wrap;
 }
 .tab-list {
-    display: flex;
-    align-items: flex-end;
-    gap: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: var(--paper-2);
+    padding: 3px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
     overflow-x: auto;
+    max-width: 100%;
 }
 .tab-item {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 12px 10px;
-    background: none;
+    background: transparent;
     border: none;
-    border-bottom: 2px solid transparent;
-    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
     font-weight: 600;
     font-family: var(--font-ui);
     color: var(--ink-500);
     cursor: pointer;
     white-space: nowrap;
-    margin-bottom: -1px;
-    transition: color 120ms, border-color 120ms;
+    transition: background 120ms, color 120ms, box-shadow 120ms;
 }
 .tab-item:hover { color: var(--ink-900); }
 .tab-item.is-active {
-    color: var(--emerald-800);
-    border-bottom-color: var(--emerald-700);
+    background: var(--card);
+    color: var(--ink-900);
+    box-shadow: var(--shadow-xs);
 }
 .tab-count {
     font-size: 10px;
@@ -947,15 +952,16 @@ body {
     line-height: 1.4;
     min-width: 18px;
     text-align: center;
-    background: var(--paper);
+    background: rgba(0,0,0,0.04);
     color: var(--ink-500);
 }
+[data-theme="dark"] .tab-count { background: rgba(255,255,255,0.06); }
 .tab-item.is-active .tab-count {
     background: var(--emerald-50);
     color: var(--emerald-800);
 }
 [data-theme="dark"] .tab-item.is-active .tab-count {
-    background: rgba(5,150,105,0.12);
+    background: rgba(5,150,105,0.15);
     color: var(--emerald-500);
 }
 
