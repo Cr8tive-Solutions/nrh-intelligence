@@ -900,6 +900,65 @@ body {
 }
 .icon-btn:hover { border-color: var(--line); background: var(--card); }
 
+/* ─── Underline tab bar ──────────────────────────────────── */
+.tab-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+}
+.tab-list {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    overflow-x: auto;
+}
+.tab-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 10px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-ui);
+    color: var(--ink-500);
+    cursor: pointer;
+    white-space: nowrap;
+    margin-bottom: -1px;
+    transition: color 120ms, border-color 120ms;
+}
+.tab-item:hover { color: var(--ink-900); }
+.tab-item.is-active {
+    color: var(--emerald-800);
+    border-bottom-color: var(--emerald-700);
+}
+.tab-count {
+    font-size: 10px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    padding: 1px 6px;
+    border-radius: 999px;
+    line-height: 1.4;
+    min-width: 18px;
+    text-align: center;
+    background: var(--paper);
+    color: var(--ink-500);
+}
+.tab-item.is-active .tab-count {
+    background: var(--emerald-50);
+    color: var(--emerald-800);
+}
+[data-theme="dark"] .tab-item.is-active .tab-count {
+    background: rgba(5,150,105,0.12);
+    color: var(--emerald-500);
+}
+
 /* ─── Case / Candidate detail ────────────────────────────── */
 .case-back {
     display: grid;

@@ -13,24 +13,49 @@
     </div>
 
     {{-- Table card --}}
-    <div class="card" x-data="{ filter: 'all', search: '' }">
-        <div class="card-head">
-            {{-- Filter chips --}}
-            <div style="display:flex;align-items:center;gap:6px;">
-                @foreach (['all' => 'All', 'new' => 'New', 'in_progress' => 'In Progress', 'complete' => 'Completed'] as $val => $label)
-                    <button
+    <div class="card" x-data="{
+        filter: 'all',
+        search: '',
+        matches(status, ref) {
+            const filterOk = this.filter === 'all' || this.filter === status;
+            const q = this.search.trim().toLowerCase();
+            const searchOk = q === '' || ref.toLowerCase().includes(q);
+            return filterOk && searchOk;
+        },
+        get visibleCount() {
+            return Array.from(this.$root.querySelectorAll('tr[data-row]'))
+                .filter(r => r.style.display !== 'none').length;
+        },
+    }">
+        @php
+            $counts = [
+                'all' => $requests->count(),
+                'new' => $requests->where('status', 'new')->count(),
+                'in_progress' => $requests->where('status', 'in_progress')->count(),
+                'flagged' => $requests->where('status', 'flagged')->count(),
+                'complete' => $requests->where('status', 'complete')->count(),
+            ];
+        @endphp
+
+        <div class="tab-bar">
+            {{-- Tabs --}}
+            <div class="tab-list" role="tablist">
+                @foreach (['all' => 'All', 'new' => 'New', 'in_progress' => 'In Progress', 'flagged' => 'Flagged', 'complete' => 'Completed'] as $val => $label)
+                    <button type="button" role="tab" class="tab-item"
                         @click="filter = '{{ $val }}'"
-                        :style="filter === '{{ $val }}' ? 'background:var(--emerald-50);color:var(--emerald-800);border-color:rgba(4,108,78,0.2);' : 'background:transparent;color:var(--ink-500);border-color:var(--line);'"
-                        style="padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid;cursor:pointer;transition:all 120ms;font-family:var(--font-ui);"
-                    >{{ $label }}</button>
+                        :class="{ 'is-active': filter === '{{ $val }}' }"
+                        :aria-selected="filter === '{{ $val }}' ? 'true' : 'false'">
+                        {{ $label }}
+                        <span class="tab-count">{{ $counts[$val] }}</span>
+                    </button>
                 @endforeach
             </div>
 
             {{-- Search --}}
-            <div style="position:relative;width:240px;">
+            <div style="position:relative;width:240px;padding:10px 0;">
                 <label for="requests-search" class="sr-only">Search requests</label>
                 <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-400);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
-                <input id="requests-search" x-model="search" type="text" placeholder="Search requests…" aria-label="Search requests"
+                <input id="requests-search" x-model="search" type="text" placeholder="Search by reference…" aria-label="Search requests"
                     style="width:100%;padding:8px 10px 8px 32px;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);font-size:13px;color:var(--ink-900);outline:none;font-family:var(--font-ui);transition:border-color 120ms,box-shadow 120ms;"
                 />
             </div>
@@ -49,7 +74,10 @@
                 </thead>
                 <tbody>
                     @forelse ($requests as $req)
-                        <tr onclick="location.href='{{ route('client.requests.details', $req->id) }}'">
+                        <tr data-row data-status="{{ $req->status }}" data-ref="{{ $req->reference }}"
+                            x-show="matches('{{ $req->status }}', @js($req->reference))"
+                            onclick="location.href='{{ route('client.requests.details', $req->id) }}'"
+                            style="cursor:pointer;">
                             <td>
                                 <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--emerald-700);">{{ $req->reference }}</span>
                             </td>
@@ -67,7 +95,7 @@
                     @empty
                         <tr>
                             <td colspan="5" style="padding:60px 20px;text-align:center;">
-                                <svg style="width:40px;height:40px;color:var(--ink-200);margin:0 auto 12px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <svg style="width:40px;height:40px;color:var(--ink-200);margin:0 auto 12px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
                                 </svg>
                                 <p style="font-size:13px;color:var(--ink-400);margin:0;">No active requests.</p>
@@ -75,6 +103,16 @@
                             </td>
                         </tr>
                     @endforelse
+
+                    @if ($requests->isNotEmpty())
+                        <tr x-show="visibleCount === 0" x-cloak>
+                            <td colspan="5" style="padding:48px 20px;text-align:center;">
+                                <p style="font-size:13px;color:var(--ink-400);margin:0;">No requests match the current filter.</p>
+                                <button type="button" @click="filter = 'all'; search = ''"
+                                    style="font-size:13px;font-weight:600;color:var(--emerald-700);background:none;border:none;cursor:pointer;margin-top:8px;font-family:var(--font-ui);">Clear filters</button>
+                            </td>
+                        </tr>
+                    @endif
                 </tbody>
             </table></div>
         </div>
