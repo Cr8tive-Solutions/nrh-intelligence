@@ -55,7 +55,7 @@ class NotificationController extends Controller
                 $notifications->push([
                     'type' => 'success',
                     'icon' => 'check',
-                    'title' => 'Screening '.$req->reference.' completed',
+                    'title' => 'Request '.$req->reference.' completed',
                     'body' => 'All verifications have been finalised. View the report for details.',
                     'time' => $req->updated_at,
                     'read' => true,
@@ -90,8 +90,8 @@ class NotificationController extends Controller
                 $notifications->push([
                     'type' => 'info',
                     'icon' => 'request',
-                    'title' => 'Screening '.$req->reference.' is '.str_replace('_', ' ', $req->status),
-                    'body' => 'Your screening request is being processed by our verification team.',
+                    'title' => 'Request '.$req->reference.' is '.str_replace('_', ' ', $req->status),
+                    'body' => 'Your request is being processed by our verification team.',
                     'time' => $req->created_at,
                     'read' => true,
                     'link' => route('client.requests.details', $req->id),

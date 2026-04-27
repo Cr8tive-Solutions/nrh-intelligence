@@ -1,11 +1,11 @@
 <x-client.layouts.auth
-    title="Sign In"
-    authTitle='Welcome back, <em>recruiter.</em>'
-    authSub='Sign in to your NRH Intelligence workspace. Your session is encrypted end-to-end and audited under FCRA §611.'
-    step="1 · 2"
-    stepLabel="SECURE · TLS 1.3"
-    footerText="New here?"
-    footerLink="Request access →"
+    title="Activate account"
+    authTitle='Welcome, <em>{{ $user->name }}.</em>'
+    authSub='Set a password to activate your account at {{ $customer->name }}. Your invitation expires {{ $invitation->expires_at->diffForHumans() }}.'
+    step="1 · 1"
+    stepLabel="ACTIVATION"
+    footerText="Already activated?"
+    footerLink="Sign in →"
 >
 
     {{-- Validation errors --}}
@@ -18,38 +18,22 @@
         </div>
     @endif
 
-    {{-- SSO buttons --}}
-    <div class="sso-row">
-        <button type="button" class="sso-btn">
-            <svg viewBox="0 0 24 24" style="width:16px;height:16px;flex-shrink:0;"><path fill="#4285F4" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z"/></svg>
-            Google Workspace
-        </button>
-        <button type="button" class="sso-btn">
-            <svg viewBox="0 0 24 24" style="width:16px;height:16px;flex-shrink:0;"><path fill="#0A2540" d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.2l7.5 3.8L12 11.8 4.5 8 12 4.2z"/><path fill="#D4AF37" d="M4 10l8 4v8l-8-4v-8zm16 0v8l-8 4v-8l8-4z" opacity="0.4"/></svg>
-            Okta SSO
-        </button>
-    </div>
-
-    <div class="auth-divider">or continue with email</div>
-
     {{-- Form --}}
-    <form method="POST" action="{{ route('client.login.submit') }}" style="display:flex;flex-direction:column;gap:18px;">
+    <form method="POST" action="{{ route('client.invitation.accept', $invitation->token) }}" style="display:flex;flex-direction:column;gap:18px;">
         @csrf
 
-        {{-- Email --}}
+        {{-- Email (read-only) --}}
         <div class="field">
             <div class="field-label">Work email</div>
             <div class="input-wrap">
-                <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+                <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
                 <input
                     class="auth-input"
                     id="email"
-                    name="email"
                     type="email"
-                    autocomplete="email"
-                    value="{{ old('email') }}"
-                    placeholder="name@company.com"
-                    required
+                    value="{{ $user->email }}"
+                    readonly
+                    style="background:var(--paper);color:var(--ink-500);cursor:not-allowed;"
                 />
             </div>
         </div>
@@ -57,20 +41,21 @@
         {{-- Password --}}
         <div class="field" x-data="{ show: false }">
             <div class="field-label">
-                <span>Password</span>
-                <a href="{{ route('client.forgot') }}">Forgot password?</a>
+                <span>Set password</span>
+                <span style="font-size:11px;color:var(--ink-400);font-weight:400;">Min 8 characters</span>
             </div>
             <div class="input-wrap">
-                <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
                 <input
                     class="auth-input"
                     id="password"
                     name="password"
                     :type="show ? 'text' : 'password'"
-                    autocomplete="current-password"
+                    autocomplete="new-password"
                     placeholder="••••••••••••"
                     style="padding-right:42px;"
                     required
+                    minlength="8"
                 />
                 <button type="button" class="eye-btn" @click="show = !show" :aria-label="show ? 'Hide password' : 'Show password'" :aria-pressed="show.toString()">
                     <svg x-show="!show" style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
@@ -79,29 +64,35 @@
             </div>
         </div>
 
-        {{-- Trust device --}}
-        <div class="checkbox-row">
-            <label class="cbox">
-                <input type="checkbox" name="remember" id="remember">
-                <span class="cmark">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
-                </span>
-                Trust this device for 30 days
-            </label>
+        {{-- Confirm password --}}
+        <div class="field">
+            <div class="field-label">Confirm password</div>
+            <div class="input-wrap">
+                <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                <input
+                    class="auth-input"
+                    id="password_confirmation"
+                    name="password_confirmation"
+                    type="password"
+                    autocomplete="new-password"
+                    placeholder="••••••••••••"
+                    required
+                    minlength="8"
+                />
+            </div>
         </div>
 
         {{-- Submit --}}
         <button type="submit" class="btn-auth">
-            Continue to verification
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            Activate account
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
 
     </form>
 
-    {{-- Session info --}}
     <div class="session-strip">
-        <span>LAST SIGN-IN · <b>{{ session('client_last_login', 'Never') }}</b></span>
-        <span style="text-align:right;">FCRA AUDITED</span>
+        <span>{{ $customer->name }}</span>
+        <span style="text-align:right;">SECURE · TLS 1.3</span>
     </div>
 
 </x-client.layouts.auth>

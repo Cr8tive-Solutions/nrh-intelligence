@@ -900,7 +900,274 @@ body {
 }
 .icon-btn:hover { border-color: var(--line); background: var(--card); }
 
+/* ─── Segmented "pill highlight" tabs ────────────────────── */
+.tab-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+}
+.tab-list {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: var(--paper-2);
+    padding: 3px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    overflow-x: auto;
+    max-width: 100%;
+}
+.tab-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-ui);
+    color: var(--ink-500);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 120ms, color 120ms, box-shadow 120ms;
+}
+.tab-item:hover { color: var(--ink-900); }
+.tab-item.is-active {
+    background: var(--card);
+    color: var(--ink-900);
+    box-shadow: var(--shadow-xs);
+}
+.tab-count {
+    font-size: 10px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    padding: 1px 6px;
+    border-radius: 999px;
+    line-height: 1.4;
+    min-width: 18px;
+    text-align: center;
+    background: rgba(0,0,0,0.04);
+    color: var(--ink-500);
+}
+[data-theme="dark"] .tab-count { background: rgba(255,255,255,0.06); }
+.tab-item.is-active .tab-count {
+    background: var(--emerald-50);
+    color: var(--emerald-800);
+}
+[data-theme="dark"] .tab-item.is-active .tab-count {
+    background: rgba(5,150,105,0.15);
+    color: var(--emerald-500);
+}
+
+/* ─── Request detail (shipment-tracker style) ────────────── */
+.request-banner {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 18px;
+    align-items: center;
+}
+.request-banner .ref {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-500);
+    letter-spacing: 0.06em;
+}
+.request-banner .ref b {
+    color: var(--ink-900);
+    font-size: 15px;
+    letter-spacing: 0;
+}
+.request-banner .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--ink-500);
+}
+.request-banner .meta b { color: var(--ink-900); font-weight: 600; }
+.request-banner .verdict {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+.request-banner .pill { font-size: 12px; padding: 5px 11px; }
+
+/* Milestone tracker */
+.tracker {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    overflow-x: auto;
+}
+.tracker-rail {
+    display: grid;
+    grid-template-columns: repeat(var(--steps, 5), 1fr);
+    gap: 0;
+    position: relative;
+    min-width: 560px;
+}
+.tracker-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    padding-top: 4px;
+    text-align: center;
+}
+.tracker-step::before {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    right: -50%;
+    height: 2px;
+    background: var(--line);
+    z-index: 0;
+}
+.tracker-step:last-child::before { display: none; }
+.tracker-step.is-done::before { background: var(--emerald-600); }
+.tracker-step .dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    background: var(--card);
+    display: grid;
+    place-items: center;
+    z-index: 1;
+    color: var(--ink-400);
+    transition: all 200ms;
+}
+.tracker-step .dot svg { width: 14px; height: 14px; }
+.tracker-step.is-done .dot {
+    border-color: var(--emerald-600);
+    background: var(--emerald-600);
+    color: white;
+}
+.tracker-step.is-current .dot {
+    border-color: var(--emerald-600);
+    background: var(--card);
+    color: var(--emerald-700);
+    box-shadow: 0 0 0 4px rgba(5,150,105,0.12);
+}
+.tracker-step.is-flagged .dot {
+    border-color: var(--gold-500);
+    background: var(--card);
+    color: var(--gold-700);
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.18);
+}
+.tracker-step .label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-500);
+}
+.tracker-step.is-done .label,
+.tracker-step.is-current .label { color: var(--ink-900); }
+.tracker-step .when {
+    font-size: 10px;
+    color: var(--ink-400);
+    font-family: var(--font-mono);
+}
+
+/* Candidate card grid */
+.cand-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
+.cand-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 120ms, box-shadow 120ms, transform 120ms;
+}
+.cand-card:hover {
+    border-color: var(--emerald-600);
+    box-shadow: var(--shadow-xs);
+    transform: translateY(-1px);
+}
+.cand-card .head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.cand-card .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--emerald-700);
+    color: var(--gold-400);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    box-shadow: inset 0 0 0 1px rgba(212,175,55,0.4);
+    flex-shrink: 0;
+}
+.cand-card .name { font-size: 13px; font-weight: 600; color: var(--ink-900); }
+.cand-card .id   { font-size: 11px; color: var(--ink-400); font-family: var(--font-mono); }
+.cand-card .progress-track {
+    height: 6px;
+    background: var(--paper-2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.cand-card .progress-fill { height: 100%; background: var(--emerald-600); }
+.cand-card.is-flagged .progress-fill { background: var(--gold-500); }
+.cand-card .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--ink-500);
+}
+
+@media (max-width: 768px) {
+    .request-banner   { grid-template-columns: 1fr; }
+    .request-banner .verdict { align-items: flex-start; }
+}
+
 /* ─── Case / Candidate detail ────────────────────────────── */
+.case-back {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--ink-500);
+    flex-shrink: 0;
+    transition: border-color 120ms, color 120ms;
+}
+.case-back:hover { border-color: var(--emerald-600); color: var(--emerald-700); }
+
 .case-hero {
     background: var(--card);
     border: 1px solid var(--line);
@@ -1349,11 +1616,16 @@ body {
     .stat:nth-child(3) { border-right: none; }
     .stat:nth-child(n+4) { border-top: 1px solid var(--line); }
     .stat:nth-child(3n) { border-right: none; }
+    /* Fill trailing row when there are exactly 5 stats */
+    .stat:nth-child(5):last-child { grid-column: span 2; border-right: none; }
 
     /* Dashboard: stack side column as 2-col grid */
     .grid     { grid-template-columns: 1fr; }
     .side-col { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .side-col > .card:first-child { grid-column: span 2; }
+
+    /* Case detail: stack checks list and side col */
+    .case-grid { grid-template-columns: 1fr; }
 }
 
 /* Mobile — ≤ 768px */
@@ -1413,11 +1685,52 @@ body {
     [style*="grid-column:span 2"] {
         grid-column: span 1 !important;
     }
+    /* Inline repeat(N,1fr) grids → collapse */
+    [style*="grid-template-columns:repeat(2,1fr)"],
+    [style*="grid-template-columns:repeat(3,1fr)"] {
+        grid-template-columns: 1fr !important;
+    }
+    /* Auto-sized side columns (e.g. pipeline health) → stack */
+    [style*="grid-template-columns:1fr auto"],
+    [style*="grid-template-columns:auto 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+    [style*="grid-template-columns:repeat(4,1fr)"],
+    [style*="grid-template-columns:repeat(5,1fr)"],
+    [style*="grid-template-columns:repeat(6,1fr)"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    /* Search-input wrappers with hardcoded widths → full width */
+    [style*="position:relative;width:240px"],
+    [style*="position:relative;width:200px"],
+    [style*="position:relative;width:220px"],
+    .search[style*="width:240px"],
+    .search[style*="width:200px"] {
+        width: 100% !important;
+        max-width: none !important;
+    }
     /* Unstick inline sticky sidebars */
     [style*="position:sticky"] {
         position: static !important;
         top: auto !important;
     }
+    /* Modals with max-width inline → safe margin on small viewports */
+    [style*="max-width:520px"],
+    [style*="max-width:480px"],
+    [style*="max-width:420px"] {
+        width: calc(100% - 24px) !important;
+    }
+
+    /* Case detail: collapse hero, summary, and check rows for narrow viewports */
+    .case-hero       { grid-template-columns: 1fr; padding: 20px; gap: 18px; }
+    .case-name       { font-size: 28px; }
+    .case-verdict    { text-align: left; align-items: flex-start; }
+    .summary-rail    { grid-template-columns: 1fr 1fr; }
+    .summary-cell    { border-right: 1px solid var(--line); }
+    .summary-cell:nth-child(2n) { border-right: none; }
+    .summary-cell:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .check-row       { grid-template-columns: 36px 1fr auto; gap: 12px; padding: 14px 16px; }
+    .check-row .check-time { display: none; }
 }
 
 /* Small mobile — ≤ 480px */
@@ -1432,4 +1745,15 @@ body {
 
     /* Filter chips: show only active */
     .filter-bar .chip:not(.on) { display: none; }
+
+    /* Tighter inline grids: collapse 4–6 col grids fully */
+    [style*="grid-template-columns:repeat(4,1fr)"],
+    [style*="grid-template-columns:repeat(5,1fr)"],
+    [style*="grid-template-columns:repeat(6,1fr)"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Case detail header buttons full-width */
+    .verdict-actions { width: 100%; flex-direction: column; }
+    .verdict-actions .btn { width: 100%; justify-content: center; }
 }

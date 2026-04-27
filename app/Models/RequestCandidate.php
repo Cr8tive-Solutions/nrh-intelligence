@@ -7,11 +7,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class RequestCandidate extends Model
 {
     /** @use HasFactory<RequestCandidateFactory> */
     use HasFactory;
+
+    use LogsActivity;
 
     protected $fillable = [
         'screening_request_id',
@@ -22,6 +26,16 @@ class RequestCandidate extends Model
         'remarks',
         'status',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'status', 'remarks'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('candidate')
+            ->setDescriptionForEvent(fn (string $event) => "Candidate {$event}");
+    }
 
     public function screeningRequest(): BelongsTo
     {
