@@ -14,14 +14,15 @@ class ScopeTypeSeeder extends Seeder
         $singapore = Country::where('code', 'SG')->first();
         $indonesia = Country::where('code', 'ID')->first();
         $thailand = Country::where('code', 'TH')->first();
+        $philippines = Country::where('code', 'PH')->first();
+        $vietnam = Country::where('code', 'VN')->first();
 
         // ── Malaysia ──────────────────────────────────────────────────────
         if ($malaysia) {
-            // Remove stale scopes before re-seeding with real data
             ScopeType::where('country_id', $malaysia->id)->delete();
 
             $malaysiaScopes = [
-                // DATA RELATED SCREENING — Security & Integrity Check
+                // Security & Integrity Check
                 [
                     'category' => 'Security & Integrity Check',
                     'name' => 'Personal Data – MyKAD Verification',
@@ -241,7 +242,7 @@ class ScopeTypeSeeder extends Seeder
                     'description' => 'Scan of dark web sources for compromised data, illicit activity, or identity exposure linked to the subject.',
                 ],
 
-                // Education, Skills, Employment & Reference Verification — Qualification
+                // Academic & Qualification Verification
                 [
                     'category' => 'Academic & Qualification Verification',
                     'name' => 'One Academic Credential Verification (Malaysian Institution)',
@@ -301,54 +302,163 @@ class ScopeTypeSeeder extends Seeder
                     'name' => $scope['name'],
                     'turnaround' => $scope['turnaround'],
                     'price' => 0.00,
+                    'currency' => 'MYR',
                     'price_on_request' => true,
                     'description' => $scope['description'],
                 ]);
             }
         }
 
-        // ── Singapore (keep existing) ─────────────────────────────────────
-        if ($singapore) {
-            $sgScopes = [
-                ['category' => 'Criminal & Integrity', 'name' => 'Criminal Record Check', 'turnaround' => '5-7 days', 'price' => 90.00, 'description' => 'Checks against Singapore Police Force records.'],
-                ['category' => 'Employment & Reference Verification', 'name' => 'Employment Verification', 'turnaround' => '7-10 days', 'price' => 110.00, 'description' => 'Verifies employment history with CPF Board and employers.'],
-                ['category' => 'Academic & Qualification Verification', 'name' => 'Education Verification', 'turnaround' => '5-7 days', 'price' => 85.00, 'description' => 'Confirms qualifications with Singapore institutions.'],
-                ['category' => 'Financial Standing & Credit Records', 'name' => 'Credit Check', 'turnaround' => '2-3 days', 'price' => 65.00, 'description' => 'Credit Bureau Singapore check.'],
-            ];
-            foreach ($sgScopes as $scope) {
-                ScopeType::firstOrCreate(
-                    ['country_id' => $singapore->id, 'name' => $scope['name']],
-                    $scope
-                );
-            }
-        }
+        // ── Worldwide scopes (USD) — applied individually per country ─────
+        // These apply to all countries except Malaysia.
+        $worldwideScopes = [
+            // Category A — Security & Integrity Check
+            [
+                'category' => 'Security & Integrity Check',
+                'name' => 'Personal Data – ID Verification',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Verification of personal identity data against official government identity records.',
+            ],
+            [
+                'category' => 'Security & Integrity Check',
+                'name' => 'Crime Risk Integrity Record',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Cross-check against international criminal records and law enforcement databases.',
+            ],
+            [
+                'category' => 'Security & Integrity Check',
+                'name' => 'INTERPOL Crime Data',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Check against INTERPOL international crime data and wanted persons notices.',
+            ],
+            [
+                'category' => 'Security & Integrity Check',
+                'name' => 'Corruption Compliance Check',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Screening against international anti-corruption enforcement records and watchlists.',
+            ],
+            [
+                'category' => 'Security & Integrity Check',
+                'name' => 'International Counter-Terrorism',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Check against global counter-terrorism and extremism watchlists.',
+            ],
 
-        // ── Indonesia (keep existing) ─────────────────────────────────────
-        if ($indonesia) {
-            $idScopes = [
-                ['category' => 'Criminal & Integrity', 'name' => 'Criminal Record Check', 'turnaround' => '7-10 days', 'price' => 75.00, 'description' => 'SKCK certificate verification via Kepolisian.'],
-                ['category' => 'Employment & Reference Verification', 'name' => 'Employment Verification', 'turnaround' => '7-10 days', 'price' => 90.00, 'description' => 'Employment history verification with HR departments.'],
-                ['category' => 'Academic & Qualification Verification', 'name' => 'Education Verification', 'turnaround' => '7-10 days', 'price' => 70.00, 'description' => 'Diploma and degree verification with institutions.'],
-            ];
-            foreach ($idScopes as $scope) {
-                ScopeType::firstOrCreate(
-                    ['country_id' => $indonesia->id, 'name' => $scope['name']],
-                    $scope
-                );
-            }
-        }
+            // Category A — AML/CTF
+            [
+                'category' => 'Anti-Money Laundering & Counter-Terrorism Financing (AML/CTF)',
+                'name' => 'Anti-Money Laundering & Counter-Terrorism Financing (AML/CTF)',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Comprehensive screening against global AML/CTF databases and regulatory watchlists.',
+            ],
 
-        // ── Thailand (keep existing) ──────────────────────────────────────
-        if ($thailand) {
-            $thScopes = [
-                ['category' => 'Criminal & Integrity', 'name' => 'Criminal Record Check', 'turnaround' => '7-14 days', 'price' => 80.00, 'description' => 'Royal Thai Police criminal background check.'],
-                ['category' => 'Employment & Reference Verification', 'name' => 'Employment Verification', 'turnaround' => '7-10 days', 'price' => 95.00, 'description' => 'Past employer verification.'],
-            ];
-            foreach ($thScopes as $scope) {
-                ScopeType::firstOrCreate(
-                    ['country_id' => $thailand->id, 'name' => $scope['name']],
-                    $scope
-                );
+            // Category A — Global Sanctions & PEP
+            [
+                'category' => 'Global Sanctions & Politically Exposed Persons (PEP)',
+                'name' => 'OFAC – Blocked Persons List & SDN List',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Check against OFAC Specially Designated Nationals (SDN) and Blocked Persons List.',
+            ],
+            [
+                'category' => 'Global Sanctions & Politically Exposed Persons (PEP)',
+                'name' => 'United Nations Security Council Sanction',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Screening against the United Nations Security Council consolidated sanctions list.',
+            ],
+            [
+                'category' => 'Global Sanctions & Politically Exposed Persons (PEP)',
+                'name' => 'World Bank Sanction',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Check against World Bank debarment and sanctions list.',
+            ],
+            [
+                'category' => 'Global Sanctions & Politically Exposed Persons (PEP)',
+                'name' => 'Politically Exposed Persons (PEP)',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Identification and screening of politically exposed persons and their associates globally.',
+            ],
+
+            // Category A — Financial Standing & Credit Records
+            [
+                'category' => 'Financial Standing & Credit Records',
+                'name' => 'Credit Summons Record',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Check for credit summons and payment default records.',
+            ],
+            [
+                'category' => 'Financial Standing & Credit Records',
+                'name' => 'Bankruptcy / Insolvency Record',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Search against international insolvency and bankruptcy records.',
+            ],
+
+            // Category A — Corporate Governance & Ownership Risk
+            [
+                'category' => 'Corporate Governance & Ownership Risk',
+                'name' => 'Directorship & Shareholding Risk',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Review of company directorships and shareholding interests held by the subject.',
+            ],
+
+            // Category A — Digital Presence & Online Risk Records
+            [
+                'category' => 'Digital Presence & Online Risk Records',
+                'name' => 'Social Media & Deep Web Intelligence Record',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Review of publicly available social media profiles and deep web data for red flags.',
+            ],
+            [
+                'category' => 'Digital Presence & Online Risk Records',
+                'name' => 'Dark Web Risk Intelligence Report',
+                'turnaround' => '3-5 Working Days',
+                'description' => 'Scan of dark web sources for compromised data, illicit activity, or identity exposure linked to the subject.',
+            ],
+
+            // Category B — Academic & Qualification Verification
+            [
+                'category' => 'Academic & Qualification Verification',
+                'name' => 'One Academic Credential Verification',
+                'turnaround' => '5-7 Working Days',
+                'description' => 'Verification of one academic qualification directly with the issuing institution.',
+            ],
+            [
+                'category' => 'Academic & Qualification Verification',
+                'name' => 'One Professional Body Membership Record',
+                'turnaround' => '5-7 Working Days',
+                'description' => 'Confirmation of active membership with a recognised professional body or association.',
+            ],
+
+            // Category B — Employment & Reference Verification
+            [
+                'category' => 'Employment & Reference Verification',
+                'name' => 'One Employment Verification',
+                'turnaround' => '5-7 Working Days',
+                'description' => 'Direct verification of one employment record with the previous employer.',
+            ],
+            [
+                'category' => 'Employment & Reference Verification',
+                'name' => 'Two Reference Reviews',
+                'turnaround' => '5-7 Working Days',
+                'description' => 'Performance reference interviews with two nominated referees, cross-verified with employers.',
+            ],
+        ];
+
+        $worldwideCountries = array_filter([$singapore, $indonesia, $thailand, $philippines, $vietnam]);
+
+        foreach ($worldwideCountries as $country) {
+            ScopeType::where('country_id', $country->id)->delete();
+
+            foreach ($worldwideScopes as $scope) {
+                ScopeType::create([
+                    'country_id' => $country->id,
+                    'category' => $scope['category'],
+                    'name' => $scope['name'],
+                    'turnaround' => $scope['turnaround'],
+                    'price' => 0.00,
+                    'currency' => 'USD',
+                    'price_on_request' => true,
+                    'description' => $scope['description'],
+                ]);
             }
         }
     }

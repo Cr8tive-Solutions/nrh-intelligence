@@ -30,7 +30,9 @@
       "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:controller Admin/DashboardController --no-interaction)",
       "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:controller Admin/CustomerController --no-interaction)",
       "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:controller Admin/RequestController --no-interaction)",
-      "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:seeder AdminSeeder --no-interaction)"
+      "Bash(\"C:/Users/Anwar Saad/.config/herd/bin/php.bat\" artisan make:seeder AdminSeeder --no-interaction)",
+      "Read(//d C:/Users/Anwar Saad/**)",
+      "Bash(php -r \":*)"
     ]
   },
   "enableAllProjectMcpServers": true,
