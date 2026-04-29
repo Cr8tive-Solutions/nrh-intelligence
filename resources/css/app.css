@@ -1032,7 +1032,7 @@ body {
     display: grid;
     grid-template-columns: 24px 1fr auto;
     gap: 14px;
-    align-items: flex-start;
+    align-items: center;
     padding: 12px 14px;
     border-bottom: 1px solid var(--line);
     cursor: pointer;
@@ -1049,12 +1049,11 @@ body {
 .scope-row .scope-check {
     width: 18px;
     height: 18px;
-    border-radius: 4px;
+    border-radius: 50%;
     border: 1.5px solid var(--ink-300);
     background: var(--card);
     display: grid;
     place-items: center;
-    margin-top: 1px;
     color: white;
     flex-shrink: 0;
     transition: all 120ms;
