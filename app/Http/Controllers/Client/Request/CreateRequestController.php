@@ -144,20 +144,23 @@ class CreateRequestController extends Controller
             ?->scopePrices()
             ->pluck('price', 'scope_type_id') ?? collect();
 
-        $scopes = ScopeType::all()->map(function ($s) use ($customerPrices) {
-            $hasCustomPrice = $customerPrices->has($s->id);
+        $scopes = ScopeType::all()
+            ->map(function ($s) use ($customerPrices) {
+                $hasCustomPrice = $customerPrices->has($s->id);
 
-            return [
-                'id' => $s->id,
-                'country_id' => $s->country_id,
-                'category' => $s->category,
-                'name' => $s->name,
-                'description' => $s->description,
-                'turnaround' => $s->turnaround,
-                'price' => $hasCustomPrice ? (float) $customerPrices->get($s->id) : (float) $s->price,
-                'price_on_request' => ! $hasCustomPrice && $s->price_on_request,
-            ];
-        });
+                return [
+                    'id' => $s->id,
+                    'country_id' => $s->country_id,
+                    'category' => $s->category,
+                    'name' => $s->name,
+                    'description' => $s->description,
+                    'turnaround' => $s->turnaround,
+                    'price' => $hasCustomPrice ? (float) $customerPrices->get($s->id) : (float) $s->price,
+                    'price_on_request' => ! $hasCustomPrice && $s->price_on_request,
+                ];
+            })
+            ->reject(fn ($s) => $s['price_on_request'])
+            ->values();
 
         $packages = Package::with('scopeTypes')
             ->where('customer_id', $customerId)
