@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -26,6 +27,15 @@ class RequestCandidate extends Model
         'remarks',
         'status',
     ];
+
+    protected $casts = [
+        'redacted_at' => 'datetime',
+    ];
+
+    public function isRedacted(): bool
+    {
+        return $this->redacted_at !== null;
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -49,7 +59,13 @@ class RequestCandidate extends Model
 
     public function scopeTypes(): BelongsToMany
     {
-        return $this->belongsToMany(ScopeType::class, 'candidate_scope_type')
-            ->withPivot('status');
+        return $this->belongsToMany(ScopeType::class, 'candidate_scope_type', 'request_candidate_id', 'scope_type_id')
+            ->using(CandidateScopeType::class)
+            ->withPivot('status', 'assigned_at', 'started_at', 'completed_at', 'findings');
+    }
+
+    public function consentRecords(): HasMany
+    {
+        return $this->hasMany(ConsentRecord::class);
     }
 }

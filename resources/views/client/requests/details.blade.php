@@ -175,11 +175,15 @@
                             };
                         @endphp
                         <a href="{{ route('client.candidates.show', $candidate->id) }}" class="cand-card {{ $candidate->status === 'flagged' ? 'is-flagged' : '' }}">
+                            @php
+                                $isRedacted = $candidate->isRedacted();
+                                $avatarTxt = $isRedacted ? '··' : strtoupper(substr($candidate->name, 0, 2));
+                            @endphp
                             <div class="head">
-                                <div class="avatar">{{ strtoupper(substr($candidate->name, 0, 2)) }}</div>
+                                <div class="avatar" @if($isRedacted) style="background:var(--paper-2);color:var(--ink-400);" @endif>{{ $avatarTxt }}</div>
                                 <div style="min-width:0;flex:1;">
-                                    <div class="name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $candidate->name }}</div>
-                                    <div class="id">{{ $candidate->identity_number }}</div>
+                                    <div class="name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;{{ $isRedacted ? 'color:var(--ink-400);font-style:italic;' : '' }}">{{ $isRedacted ? 'Candidate erased' : $candidate->name }}</div>
+                                    <div class="id">{{ $isRedacted ? 'Data erased '.$candidate->redacted_at->format('d M Y') : $candidate->identity_number }}</div>
                                 </div>
                             </div>
                             <div class="progress-track">
@@ -238,6 +242,32 @@
                                 <svg style="width:12px;height:12px;color:var(--emerald-600);flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M9 12l2 2 4-4"/></svg>
                                 {{ $scope->name }}
                             </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @if ($request->currentReportVersions->isNotEmpty())
+                <div class="card">
+                    <div class="card-head">
+                        <h3>Reports</h3>
+                        <span class="count-pill">{{ $request->currentReportVersions->count() }}</span>
+                    </div>
+                    <div style="padding:6px 0;">
+                        @foreach ($request->currentReportVersions as $rv)
+                            <a href="{{ route('client.requests.reports.download', [$request->id, $rv->id]) }}"
+                               style="display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;transition:background 120ms;"
+                               onmouseover="this.style.background='var(--paper)'"
+                               onmouseout="this.style.background='transparent'">
+                                <div style="width:32px;height:32px;border-radius:var(--radius);background:var(--emerald-50);color:var(--emerald-700);display:grid;place-items:center;flex-shrink:0;">
+                                    <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 12-3-3m0 0-3 3m3-3v6m1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                                </div>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:13px;font-weight:600;color:var(--ink-900);">{{ ucfirst($rv->type) }} report <span style="color:var(--ink-400);font-family:var(--font-mono);font-weight:500;">v{{ $rv->version }}</span></div>
+                                    <div style="font-size:11px;color:var(--ink-500);margin-top:2px;">Issued {{ $rv->generated_at->diffForHumans() }} · {{ $rv->generated_at->format('d M Y') }}</div>
+                                </div>
+                                <svg style="width:14px;height:14px;color:var(--ink-400);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                            </a>
                         @endforeach
                     </div>
                 </div>

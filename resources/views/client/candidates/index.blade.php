@@ -114,7 +114,10 @@
             <tbody>
                 @forelse ($candidates as $candidate)
                     @php
-                        $initials = collect(explode(' ', $candidate->name))->map(fn($p) => strtoupper(substr($p, 0, 1)))->take(2)->implode('');
+                        $isRedacted = $candidate->isRedacted();
+                        $displayName = $isRedacted ? 'Candidate erased' : $candidate->name;
+                        $displayId = $isRedacted ? '—' : $candidate->identity_number;
+                        $initials = $isRedacted ? '··' : collect(explode(' ', $candidate->name))->map(fn($p) => strtoupper(substr($p, 0, 1)))->take(2)->implode('');
                         $req = $candidate->screeningRequest;
 
                         $stageMap = [
@@ -143,8 +146,8 @@
                             <div class="cand">
                                 <div class="av">{{ $initials }}</div>
                                 <div>
-                                    <div class="name">{{ $candidate->name }}</div>
-                                    <div class="role">{{ $candidate->identity_number }}</div>
+                                    <div class="name" @if($isRedacted) style="color:var(--ink-400);font-style:italic;" @endif>{{ $displayName }}</div>
+                                    <div class="role" @if($isRedacted) title="Data erased on {{ $candidate->redacted_at->format('d M Y') }}" @endif>{{ $isRedacted ? 'Data erased on '.$candidate->redacted_at->format('d M Y') : $displayId }}</div>
                                 </div>
                             </div>
                         </td>

@@ -788,9 +788,22 @@
                         <input type="hidden" name="screening_type" value="{{ $screeningType ?? 'employment_global' }}">
                         <input type="hidden" name="cart_data" :value="JSON.stringify(cart)">
                         <input type="hidden" name="candidates_data" :value="JSON.stringify(candidates)">
-                        <button type="submit" :disabled="submitting" class="btn btn-primary"
+
+                        {{-- PDPA consent --}}
+                        <div x-data="{ showText: false }" style="margin-bottom:14px;padding:12px;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);">
+                            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                                <input type="checkbox" name="consent" value="1" x-model="consent" required style="margin-top:2px;flex-shrink:0;">
+                                <span style="font-size:12px;color:var(--ink-700);line-height:1.5;">
+                                    Each candidate has read and agreed to the <button type="button" @click.prevent="showText = !showText" style="background:none;border:none;color:var(--emerald-700);font-weight:600;cursor:pointer;padding:0;font-family:inherit;font-size:inherit;text-decoration:underline;" x-text="showText ? 'hide consent text' : 'PDPA consent terms'"></button>. By ticking this box, the requester confirms consent has been obtained from each candidate listed.
+                                </span>
+                            </label>
+                            <div x-show="showText" x-cloak style="margin-top:10px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);max-height:240px;overflow-y:auto;font-size:11px;line-height:1.6;color:var(--ink-700);white-space:pre-wrap;">{{ config('consent.standard_text') }}</div>
+                            <div style="margin-top:6px;font-size:10px;color:var(--ink-400);font-family:var(--font-mono);">v {{ config('consent.current_version') }}</div>
+                        </div>
+
+                        <button type="submit" :disabled="submitting || !consent" class="btn btn-primary"
                             style="width:100%;justify-content:center;"
-                            :style="submitting ? 'opacity:0.5;cursor:not-allowed;' : ''">
+                            :style="(submitting || !consent) ? 'opacity:0.5;cursor:not-allowed;' : ''">
                             <template x-if="!submitting">
                                 <span style="display:flex;align-items:center;gap:8px;">
                                     <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/></svg>
@@ -833,6 +846,7 @@ function newRequest() {
         newCandidate: { name: '', identity_type_id: '', identity_number: '', mobile: '', remarks: '' },
         candidateError: '',
         submitting: false,
+        consent: false,
         bulkMode: false,
         bulkPreview: [],
         bulkError: '',

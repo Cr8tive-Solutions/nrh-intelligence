@@ -29,6 +29,7 @@ class ViewRequestController extends Controller
             'candidates.identityType',
             'candidates.scopeTypes',
             'submittedBy',
+            'currentReportVersions',
         ])
             ->where('customer_id', $customerId)
             ->findOrFail($id);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client\Request;
 
 use App\Http\Controllers\Controller;
+use App\Models\ConsentRecord;
 use App\Models\Country;
 use App\Models\Customer;
 use App\Models\IdentityType;
@@ -11,6 +12,7 @@ use App\Models\RequestCandidate;
 use App\Models\ScopeType;
 use App\Models\ScreeningRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class CreateRequestController extends Controller
@@ -53,6 +55,12 @@ class CreateRequestController extends Controller
 
     public function submit(Request $request)
     {
+        $request->validate([
+            'consent' => ['accepted'],
+        ], [
+            'consent.accepted' => 'PDPA consent must be accepted before submitting the request.',
+        ]);
+
         $customerId = session('client_customer_id', 1);
         $userId = session('client_user_id', 1);
 
@@ -63,37 +71,49 @@ class CreateRequestController extends Controller
         $seq = ScreeningRequest::count() + 1;
         $reference = 'REQ-'.now()->format('Y').'-'.str_pad($seq, 4, '0', STR_PAD_LEFT);
 
-        $screeningRequest = ScreeningRequest::create([
-            'customer_id' => $customerId,
-            'customer_user_id' => $userId,
-            'reference' => $reference,
-            'status' => 'new',
-            'type' => $type,
-        ]);
-
-        $scopeIds = collect($cart)->pluck('id')->all();
-
-        foreach ($candidates as $c) {
-            $candidate = RequestCandidate::create([
-                'screening_request_id' => $screeningRequest->id,
-                'identity_type_id' => (int) $c['identity_type_id'],
-                'name' => $c['name'],
-                'identity_number' => $c['identity_number'],
-                'mobile' => $c['mobile'] ?? null,
-                'remarks' => $c['remarks'] ?? null,
+        DB::transaction(function () use ($request, $customerId, $userId, $reference, $type, $cart, $candidates) {
+            $screeningRequest = ScreeningRequest::create([
+                'customer_id' => $customerId,
+                'customer_user_id' => $userId,
+                'reference' => $reference,
                 'status' => 'new',
+                'type' => $type,
             ]);
 
-            $candidate->scopeTypes()->attach(
-                collect($scopeIds)->mapWithKeys(fn ($id) => [$id => ['status' => 'new']])->all()
-            );
-        }
+            $scopeIds = collect($cart)->pluck('id')->all();
+
+            foreach ($candidates as $c) {
+                $candidate = RequestCandidate::create([
+                    'screening_request_id' => $screeningRequest->id,
+                    'identity_type_id' => (int) $c['identity_type_id'],
+                    'name' => $c['name'],
+                    'identity_number' => $c['identity_number'],
+                    'mobile' => $c['mobile'] ?? null,
+                    'remarks' => $c['remarks'] ?? null,
+                    'status' => 'new',
+                ]);
+
+                $candidate->scopeTypes()->attach(
+                    collect($scopeIds)->mapWithKeys(fn ($id) => [
+                        $id => ['status' => 'new', 'assigned_at' => now()],
+                    ])->all()
+                );
+
+                $this->recordConsent($request, $candidate);
+            }
+        });
 
         return redirect()->route('client.request.success');
     }
 
     public function submitDueDiligence(Request $request)
     {
+        $request->validate([
+            'consent' => ['accepted'],
+        ], [
+            'consent.accepted' => 'PDPA consent must be accepted before submitting the request.',
+        ]);
+
         $customerId = session('client_customer_id', 1);
         $userId = session('client_user_id', 1);
         $type = $request->input('screening_type', 'kyc');
@@ -104,26 +124,45 @@ class CreateRequestController extends Controller
         $seq = ScreeningRequest::count() + 1;
         $reference = 'REQ-'.now()->format('Y').'-'.str_pad($seq, 4, '0', STR_PAD_LEFT);
 
-        $screeningRequest = ScreeningRequest::create([
-            'customer_id' => $customerId,
-            'customer_user_id' => $userId,
-            'reference' => $reference,
-            'status' => 'new',
-            'type' => $type,
-            'meta' => ['checks' => $checks, 'subject' => $subject],
-        ]);
+        DB::transaction(function () use ($request, $customerId, $userId, $reference, $type, $subject, $checks) {
+            $screeningRequest = ScreeningRequest::create([
+                'customer_id' => $customerId,
+                'customer_user_id' => $userId,
+                'reference' => $reference,
+                'status' => 'new',
+                'type' => $type,
+                'meta' => ['checks' => $checks, 'subject' => $subject],
+            ]);
 
-        RequestCandidate::create([
-            'screening_request_id' => $screeningRequest->id,
-            'identity_type_id' => (int) ($subject['identity_type_id'] ?? 1),
-            'name' => $subject['name'] ?? 'Unknown',
-            'identity_number' => $subject['identity_number'] ?? '',
-            'mobile' => $subject['mobile'] ?? null,
-            'remarks' => $subject['remarks'] ?? null,
-            'status' => 'new',
-        ]);
+            $candidate = RequestCandidate::create([
+                'screening_request_id' => $screeningRequest->id,
+                'identity_type_id' => (int) ($subject['identity_type_id'] ?? 1),
+                'name' => $subject['name'] ?? 'Unknown',
+                'identity_number' => $subject['identity_number'] ?? '',
+                'mobile' => $subject['mobile'] ?? null,
+                'remarks' => $subject['remarks'] ?? null,
+                'status' => 'new',
+            ]);
+
+            $this->recordConsent($request, $candidate);
+        });
 
         return redirect()->route('client.request.success');
+    }
+
+    protected function recordConsent(Request $request, RequestCandidate $candidate): void
+    {
+        ConsentRecord::create([
+            'request_candidate_id' => $candidate->id,
+            'consented_at' => now(),
+            'consent_version' => config('consent.current_version'),
+            'consent_text_snapshot' => config('consent.standard_text'),
+            'evidence_type' => 'digital_form',
+            'evidence_file_path' => null,
+            'captured_ip' => $request->ip(),
+            'captured_user_agent' => $request->userAgent(),
+            'captured_by_admin_id' => null,
+        ]);
     }
 
     public function successful()

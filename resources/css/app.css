@@ -1155,6 +1155,42 @@ body {
     .pkg-row .pkg-add { grid-column: 1 / -1; justify-self: stretch; }
 }
 
+/* ─── TAT cell (used inside check-row) ───────────────────── */
+.tat-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    min-width: 110px;
+    text-align: right;
+    font-family: var(--font-mono);
+}
+.tat-bar {
+    width: 110px;
+    height: 6px;
+    background: var(--paper-2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.tat-fill { height: 100%; transition: width 200ms; }
+.tat-bar[data-state="ok"]   .tat-fill { background: var(--emerald-600); }
+.tat-bar[data-state="warn"] .tat-fill { background: var(--gold-500); }
+.tat-bar[data-state="over"] .tat-fill { background: var(--danger); }
+.tat-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-700);
+}
+.tat-sub {
+    font-size: 10px;
+    color: var(--ink-400);
+}
+.tat-label.tat-running { color: var(--emerald-700); }
+.tat-label.tat-within  { color: var(--emerald-700); }
+.tat-label.tat-over    { color: var(--danger); }
+.tat-sub.tat-over      { color: var(--danger); }
+.tat-label.tat-muted   { color: var(--ink-300); }
+
 /* ─── Request detail (shipment-tracker style) ────────────── */
 .request-banner {
     background: var(--card);

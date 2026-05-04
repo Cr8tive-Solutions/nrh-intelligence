@@ -50,6 +50,22 @@ class ScreeningRequest extends Model
         return $this->hasMany(RequestCandidate::class);
     }
 
+    public function reportVersions(): HasMany
+    {
+        return $this->hasMany(ReportVersion::class);
+    }
+
+    /**
+     * Only the latest, non-superseded versions per type — the ones customers should see.
+     */
+    public function currentReportVersions(): HasMany
+    {
+        return $this->hasMany(ReportVersion::class)
+            ->whereNotIn('id', fn ($q) => $q->select('supersedes_id')->from('report_versions')->whereNotNull('supersedes_id'))
+            ->orderBy('type')
+            ->orderByDesc('version');
+    }
+
     /** @return Builder<static> */
     public function scopeActive(Builder $query): Builder
     {

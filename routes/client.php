@@ -10,6 +10,7 @@ use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\NotificationController;
 use App\Http\Controllers\Client\Request\CreateRequestController;
 use App\Http\Controllers\Client\Request\OldRequestController;
+use App\Http\Controllers\Client\Request\ReportDownloadController;
 use App\Http\Controllers\Client\Request\TrackRequestController;
 use App\Http\Controllers\Client\Request\ViewRequestController;
 use App\Http\Controllers\Client\Settings\AccountController;
@@ -81,6 +82,7 @@ Route::name('client.')->group(function () {
             Route::get('/track', [TrackRequestController::class, 'index'])->name('track');
             Route::get('/track/search', [TrackRequestController::class, 'search'])->name('track.search.get');
             Route::post('/track', [TrackRequestController::class, 'search'])->name('track.search');
+            Route::get('/{request}/reports/{version}/download', [ReportDownloadController::class, 'download'])->name('reports.download');
             Route::get('/{id}', [ViewRequestController::class, 'details'])->name('details');
         });
 

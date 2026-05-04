@@ -1,8 +1,11 @@
-<x-client.layouts.app pageTitle="{{ $candidate->name }}">
+<x-client.layouts.app pageTitle="{{ $candidate->isRedacted() ? 'Candidate erased' : $candidate->name }}">
 
     @php
         $req     = $candidate->screeningRequest;
-        $initials = collect(explode(' ', $candidate->name))->map(fn ($p) => strtoupper(substr($p, 0, 1)))->take(2)->implode('');
+        $isRedacted  = $candidate->isRedacted();
+        $displayName = $isRedacted ? 'Candidate erased' : $candidate->name;
+        $displayId   = $isRedacted ? '—' : $candidate->identity_number;
+        $initials = $isRedacted ? '··' : collect(explode(' ', $candidate->name))->map(fn ($p) => strtoupper(substr($p, 0, 1)))->take(2)->implode('');
         $pkgNames = ['Standard', 'Executive', 'Clinical', 'Basic'];
         $pkg      = $pkgNames[$candidate->id % 4];
 
@@ -28,7 +31,7 @@
             </a>
             <div>
                 <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-400);letter-spacing:0.1em;text-transform:uppercase;">Candidates</div>
-                <div style="font-size:14px;font-weight:600;color:var(--ink-900);">{{ $candidate->name }}</div>
+                <div style="font-size:14px;font-weight:600;color:var(--ink-900);">{{ $displayName }}</div>
             </div>
         </div>
         <div style="display:flex;gap:8px;">
@@ -47,9 +50,13 @@
                 <span>CASE · {{ $req->reference }}</span>
                 <span class="chip">{{ strtoupper($pkg) }} · TIER III</span>
             </div>
-            <div class="case-name">{{ $candidate->name }}</div>
+            <div class="case-name" @if($isRedacted) style="font-style:italic;color:var(--ink-400);" @endif>{{ $displayName }}</div>
             <div class="case-meta">
+                @if ($isRedacted)
+                    <span style="color:var(--ink-500);font-style:italic;">Data erased {{ $candidate->redacted_at->format('d M Y') }} · per data subject request</span>
+                @else
                 <span>IC No. <b>{{ $candidate->identity_number }}</b></span>
+                @endif
                 <span>Ordered <b>{{ $req->created_at->format('M d, Y') }}</b></span>
                 <span>Due <b>{{ $req->created_at->addDays(5)->format('M d, Y') }}</b></span>
                 <span>Consent on file · <b>{{ $candidate->mobile ? 'mobile' : 'on record' }}</b></span>
@@ -125,7 +132,8 @@
                 @if ($scopeTypes->count())
                     @foreach ($scopeTypes as $scope)
                         @php
-                            $checkStatus = $scope->pivot->status;
+                            $pivot = $scope->pivot;
+                            $checkStatus = $pivot->status;
                             $iconCls = match($checkStatus) {
                                 'flagged'  => 'flag',
                                 'review'   => 'review',
@@ -145,6 +153,12 @@
                                 'in_progress' => 'In progress',
                                 default       => 'Pending',
                             };
+
+                            $target = $scope->turnaround_hours;
+                            $tatHours = $pivot->tatHours();
+                            $isRunning = $pivot->isRunning();
+                            $pct = $target ? $pivot->slaProgressPct($target) : 0;
+                            $slaState = $pivot->slaState($target);
                         @endphp
                         <div class="check-row" data-idx="{{ $loop->index }}">
                             <div class="check-icon {{ $iconCls }}">
@@ -159,13 +173,33 @@
                             <div class="check-info">
                                 <div class="t">{{ $scope->name }}</div>
                                 <div class="s">
-                                    {{-- subtitle text --}}
                                     @if ($scope->description){{ $scope->description }} · @endif<span class="src">{{ strtoupper($scope->name) }}</span>
                                 </div>
                             </div>
                             <span class="pill {{ $pillCls }}"><span class="dot"></span>{{ $pillTxt }}</span>
                             <div style="display:flex;align-items:center;gap:14px;">
-                                <div class="check-time">{{ $candidate->updated_at->format('M d · H:i') }}<br>{{ $candidate->created_at->diffForHumans($candidate->updated_at, true) }}</div>
+                                <div class="tat-cell">
+                                    @if ($isRunning && $target)
+                                        <div class="tat-bar" data-state="{{ $pct >= 100 ? 'over' : ($pct >= 75 ? 'warn' : 'ok') }}">
+                                            <div class="tat-fill" style="width:{{ min($pct, 100) }}%;"></div>
+                                        </div>
+                                        <div class="tat-label">{{ rtrim(rtrim(number_format($tatHours, 1), '0'), '.') }}h / {{ $target }}h</div>
+                                    @elseif ($isRunning)
+                                        <div class="tat-label tat-running">Running</div>
+                                        <div class="tat-sub">{{ rtrim(rtrim(number_format($tatHours, 1), '0'), '.') }}h elapsed</div>
+                                    @elseif ($pivot->completed_at && $target && $tatHours > $target)
+                                        <div class="tat-label tat-over">{{ rtrim(rtrim(number_format($tatHours, 1), '0'), '.') }}h</div>
+                                        <div class="tat-sub tat-over">{{ rtrim(rtrim(number_format($tatHours - $target, 1), '0'), '.') }}h over SLA</div>
+                                    @elseif ($pivot->completed_at && $target)
+                                        <div class="tat-label tat-within">{{ rtrim(rtrim(number_format($tatHours, 1), '0'), '.') }}h ✓</div>
+                                        <div class="tat-sub">within SLA</div>
+                                    @elseif ($pivot->completed_at)
+                                        <div class="tat-label">{{ rtrim(rtrim(number_format($tatHours, 1), '0'), '.') }}h</div>
+                                        <div class="tat-sub">elapsed</div>
+                                    @else
+                                        <div class="tat-label tat-muted">—</div>
+                                    @endif
+                                </div>
                                 <div class="check-chev">
                                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
                                 </div>
@@ -187,6 +221,28 @@
                                         <div class="detail-value">{{ $scope->description }}</div>
                                     </div>
                                 @endif
+
+                                @php $findings = $pivot->findings ?? []; @endphp
+                                @if (! empty($findings['comment']))
+                                    <div style="grid-column:1/-1;">
+                                        <div class="detail-label">Analyst comment</div>
+                                        <div class="detail-value" style="white-space:pre-wrap;line-height:1.6;">{{ $findings['comment'] }}</div>
+                                    </div>
+                                @endif
+                                @if (! empty($findings['record']) && is_array($findings['record']))
+                                    <div style="grid-column:1/-1;">
+                                        <div class="detail-label">Findings</div>
+                                        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;">
+                                            @foreach ($findings['record'] as $k => $v)
+                                                <tr>
+                                                    <th style="text-align:left;font-weight:600;color:var(--ink-500);padding:4px 8px 4px 0;width:40%;border-bottom:1px solid var(--line);text-transform:capitalize;">{{ str_replace('_', ' ', (string) $k) }}</th>
+                                                    <td style="padding:4px 0;color:var(--ink-900);border-bottom:1px solid var(--line);">{{ is_scalar($v) ? $v : json_encode($v) }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </table>
+                                    </div>
+                                @endif
+
                                 @if ($checkStatus === 'flagged')
                                     <div class="detail-note">
                                         <b>Manual review required</b> — This check has been flagged and requires analyst review before the case can be closed.
@@ -385,8 +441,13 @@
             <div class="card">
                 <div class="card-head">
                     <h3>Identity</h3>
-                    <span class="count-pill">{{ $candidate->status === 'complete' ? 'VERIFIED' : 'PENDING' }}</span>
+                    <span class="count-pill">{{ $isRedacted ? 'ERASED' : ($candidate->status === 'complete' ? 'VERIFIED' : 'PENDING') }}</span>
                 </div>
+                @if ($isRedacted)
+                    <div style="padding:14px 18px;font-size:12px;color:var(--ink-500);line-height:1.6;">
+                        This candidate's personal data was erased on <b>{{ $candidate->redacted_at->format('d M Y') }}</b> in response to a data subject request. Identity details are no longer available in the system.
+                    </div>
+                @else
                 <div class="identity">
                     <div class="id-row">
                         <span class="k">Legal name</span>
@@ -423,6 +484,7 @@
                         <span class="match"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>
                     </div>
                 </div>
+                @endif
             </div>
 
             {{-- Case timeline --}}

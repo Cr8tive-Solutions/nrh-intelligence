@@ -561,9 +561,22 @@
                         <input type="hidden" name="screening_type" value="{{ $type }}">
                         <input type="hidden" name="subject_data" :value="JSON.stringify(subject)">
                         <input type="hidden" name="checks_data" :value="JSON.stringify(selectedChecks)">
-                        <button type="submit" :disabled="submitting" class="btn btn-primary"
+
+                        {{-- PDPA consent --}}
+                        <div x-data="{ showText: false }" style="margin-bottom:14px;padding:12px;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);">
+                            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                                <input type="checkbox" name="consent" value="1" x-model="consent" required style="margin-top:2px;flex-shrink:0;">
+                                <span style="font-size:12px;color:var(--ink-700);line-height:1.5;">
+                                    The subject has read and agreed to the <button type="button" @click.prevent="showText = !showText" style="background:none;border:none;color:var(--emerald-700);font-weight:600;cursor:pointer;padding:0;font-family:inherit;font-size:inherit;text-decoration:underline;" x-text="showText ? 'hide consent text' : 'PDPA consent terms'"></button>. By ticking this box, the requester confirms consent has been obtained.
+                                </span>
+                            </label>
+                            <div x-show="showText" x-cloak style="margin-top:10px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);max-height:240px;overflow-y:auto;font-size:11px;line-height:1.6;color:var(--ink-700);white-space:pre-wrap;">{{ config('consent.standard_text') }}</div>
+                            <div style="margin-top:6px;font-size:10px;color:var(--ink-400);font-family:var(--font-mono);">v {{ config('consent.current_version') }}</div>
+                        </div>
+
+                        <button type="submit" :disabled="submitting || !consent" class="btn btn-primary"
                             style="width:100%;justify-content:center;"
-                            :style="submitting ? 'opacity:0.5;cursor:not-allowed;' : ''">
+                            :style="(submitting || !consent) ? 'opacity:0.5;cursor:not-allowed;' : ''">
                             <span x-show="!submitting">Submit Request</span>
                             <span x-show="submitting">Submitting...</span>
                         </button>
@@ -598,6 +611,7 @@ function dueDiligence() {
         selectedChecks: [],
         docs: [],
         submitting: false,
+        consent: false,
 
         init() {},
 
