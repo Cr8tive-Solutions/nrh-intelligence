@@ -18,11 +18,14 @@
         }
         $progressPct = $totalChecks > 0 ? round($doneChecks / $totalChecks * 100) : 0;
 
-        $statusVerdict = match ($request->status) {
-            'complete' => ['text' => 'Complete', 'cls' => 'pill-clear'],
-            'flagged' => ['text' => 'Needs review', 'cls' => 'pill-flagged'],
-            'in_progress' => ['text' => 'In progress', 'cls' => 'pill-progress'],
-            'new' => ['text' => 'Awaiting consent', 'cls' => 'pill-pending'],
+        $isCashPaymentPending = $request->customer?->isCashBilled() && $request->status === 'new';
+
+        $statusVerdict = match (true) {
+            $isCashPaymentPending => ['text' => 'Awaiting payment', 'cls' => 'pill-flagged'],
+            $request->status === 'complete' => ['text' => 'Complete', 'cls' => 'pill-clear'],
+            $request->status === 'flagged' => ['text' => 'Needs review', 'cls' => 'pill-flagged'],
+            $request->status === 'in_progress' => ['text' => 'In progress', 'cls' => 'pill-progress'],
+            $request->status === 'new' => ['text' => 'Awaiting consent', 'cls' => 'pill-pending'],
             default => ['text' => ucwords(str_replace('_', ' ', $request->status)), 'cls' => 'pill-pending'],
         };
 
@@ -77,6 +80,118 @@
             @endif
         </div>
     </div>
+
+    @if (session('status'))
+        <div style="margin-bottom:16px;padding:10px 14px;background:var(--emerald-50);border:1px solid rgba(5,150,105,0.25);border-left:3px solid var(--emerald-600);border-radius:var(--radius);font-size:13px;color:var(--emerald-700);">
+            {{ session('status') }}
+        </div>
+    @endif
+
+    @if ($isCashPaymentPending && ! auth()->user()?->can('view-prices'))
+        <div style="margin-bottom:16px;padding:12px 16px;background:rgba(184,147,31,0.06);border:1px solid rgba(184,147,31,0.25);border-left:3px solid var(--gold-500);border-radius:var(--radius);font-size:13px;color:var(--gold-700);">
+            <b>Awaiting payment.</b> Processing will begin once your Accounts team completes the bank transfer.
+        </div>
+    @endif
+
+    @if ($isCashPaymentPending && auth()->user()?->can('view-prices'))
+        @php
+            $bank = config('billing.bank');
+            $currency = config('billing.currency', 'MYR');
+            $popEmail = config('billing.proof_of_payment_email');
+            $afterPaymentSla = config('billing.sla_after_payment', '1 business day');
+            $payTotal = $request->cashTotal();
+            $canUploadSlip = auth()->user()?->canAny(['view-prices', 'manage-billing']);
+            $hasSlip = $request->hasPaymentSlip();
+        @endphp
+        <div style="margin-bottom:16px;background:rgba(184,147,31,0.06);border:1px solid rgba(184,147,31,0.25);border-left:3px solid var(--gold-500);border-radius:var(--radius-lg);padding:18px 22px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <svg style="width:18px;height:18px;color:var(--gold-700);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"/>
+                </svg>
+                <div style="font-size:14px;font-weight:600;color:var(--ink-900);">Payment required to begin processing</div>
+            </div>
+            <p style="font-size:13px;color:var(--ink-700);line-height:1.6;margin:0 0 14px;">
+                Your account is on cash billing. Please transfer the amount below to the account on file. Once we confirm receipt, processing will begin within {{ $afterPaymentSla }}.
+            </p>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;">
+                <div>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-400);">Bank</div>
+                    <div style="font-size:13px;font-weight:600;color:var(--ink-900);margin-top:2px;">{{ $bank['name'] }}</div>
+                </div>
+                <div>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-400);">Account holder</div>
+                    <div style="font-size:13px;font-weight:600;color:var(--ink-900);margin-top:2px;">{{ $bank['account_holder'] }}</div>
+                </div>
+                <div>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-400);">Account number</div>
+                    <div style="font-size:13px;font-weight:600;color:var(--ink-900);font-family:var(--font-mono);margin-top:2px;">{{ $bank['account_number'] }}</div>
+                </div>
+                <div>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-400);">SWIFT</div>
+                    <div style="font-size:13px;font-weight:600;color:var(--ink-900);font-family:var(--font-mono);margin-top:2px;">{{ $bank['swift'] }}</div>
+                </div>
+                <div>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-400);">Amount payable</div>
+                    <div style="font-size:16px;font-weight:700;color:var(--emerald-800);font-family:var(--font-mono);margin-top:2px;">{{ $currency }} {{ number_format($payTotal, 2) }}</div>
+                </div>
+                <div>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-400);">Reference (must include)</div>
+                    <div style="font-size:13px;font-weight:700;color:var(--emerald-800);font-family:var(--font-mono);margin-top:2px;">{{ $request->reference }}</div>
+                </div>
+            </div>
+
+            @if ($hasSlip)
+                <div style="display:flex;align-items:center;gap:12px;background:var(--emerald-50);border:1px solid rgba(5,150,105,0.25);border-left:3px solid var(--emerald-600);border-radius:var(--radius);padding:12px 14px;">
+                    <svg style="width:18px;height:18px;color:var(--emerald-700);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                    <div style="flex:1;">
+                        <div style="font-size:13px;font-weight:600;color:var(--ink-900);">Payment slip uploaded</div>
+                        <div style="font-size:12px;color:var(--ink-600);margin-top:2px;">
+                            {{ $request->payment_slip_uploaded_at?->format('d M Y · H:i') }} — awaiting verification by our finance team.
+                        </div>
+                    </div>
+                    @if ($canUploadSlip)
+                        <a href="{{ route('client.requests.payment-slip.download', $request->id) }}" style="font-size:12px;color:var(--emerald-700);font-weight:600;text-decoration:none;">View</a>
+                        <form method="POST" action="{{ route('client.requests.payment-slip.destroy', $request->id) }}" style="margin:0;" onsubmit="return confirm('Remove the uploaded slip and re-upload?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" style="background:none;border:0;padding:0;cursor:pointer;font-size:12px;color:var(--gold-700);font-weight:600;">Replace</button>
+                        </form>
+                    @endif
+                </div>
+            @elseif ($canUploadSlip)
+                <form method="POST" action="{{ route('client.requests.payment-slip.store', $request->id) }}" enctype="multipart/form-data" style="margin:0;">
+                    @csrf
+                    <div style="font-size:12px;font-weight:600;color:var(--ink-900);margin-bottom:6px;">Upload proof of payment</div>
+                    <p style="font-size:12px;color:var(--ink-600);line-height:1.6;margin:0 0 10px;">
+                        Attach the bank-transfer slip (PDF, JPG or PNG, up to 5&nbsp;MB). Processing begins within {{ $afterPaymentSla }} of verification.
+                    </p>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <input type="file" name="payment_slip" accept=".pdf,.jpg,.jpeg,.png" required style="font-size:12px;flex:1;min-width:220px;">
+                        <button type="submit" class="btn btn-primary" style="white-space:nowrap;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 20h14"/></svg>
+                            Upload slip
+                        </button>
+                    </div>
+                    @error('payment_slip')
+                        <div style="margin-top:8px;font-size:12px;color:#c4453a;">{{ $message }}</div>
+                    @enderror
+                    <p style="font-size:11px;color:var(--ink-500);line-height:1.6;margin:10px 0 0;">
+                        Prefer email? You can still send your slip to
+                        <a href="mailto:{{ $popEmail }}?subject=Proof of payment — {{ $request->reference }}" style="color:var(--ink-600);text-decoration:underline;">{{ $popEmail }}</a>.
+                    </p>
+                </form>
+            @else
+                <p style="font-size:12px;color:var(--ink-600);line-height:1.6;margin:0;">
+                    After transfer, your team can upload the slip on this page or email it to
+                    <a href="mailto:{{ $popEmail }}?subject=Proof of payment — {{ $request->reference }}" style="color:var(--emerald-700);font-weight:600;text-decoration:none;">{{ $popEmail }}</a>
+                    with <b>{{ $request->reference }}</b> in the subject line.
+                </p>
+            @endif
+        </div>
+    @endif
 
     {{-- Banner --}}
     <div class="request-banner">

@@ -37,6 +37,19 @@ class Agreement extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    public function isCashBilled(): bool
+    {
+        $value = strtolower(trim((string) $this->billing));
+        $aliases = array_map('strtolower', (array) config('billing.cash_aliases', []));
+
+        return in_array($value, $aliases, true);
+    }
+
+    public function isCreditBilled(): bool
+    {
+        return ! $this->isCashBilled();
+    }
+
     public function getDaysLeftAttribute(): int
     {
         return (int) max(0, now()->diffInDays($this->expiry_date, false));

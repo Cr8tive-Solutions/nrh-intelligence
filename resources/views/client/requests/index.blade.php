@@ -12,12 +12,23 @@
         </a>
     </div>
 
+    @if (($awaitingPaymentCount ?? 0) > 0)
+        <div style="margin-bottom:16px;padding:12px 16px;background:rgba(184,147,31,0.06);border:1px solid rgba(184,147,31,0.25);border-left:3px solid var(--gold-500);border-radius:var(--radius);display:flex;align-items:center;gap:10px;font-size:13px;color:var(--gold-700);">
+            <svg style="width:16px;height:16px;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 8v4M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>
+            <span>
+                <b>{{ $awaitingPaymentCount }}</b> {{ Str::plural('request', $awaitingPaymentCount) }} awaiting payment.
+                Use the <b>Payment</b> filter below to upload your bank-transfer slips.
+            </span>
+        </div>
+    @endif
+
     {{-- Table card --}}
     <div class="card" x-data="{
         filter: 'all',
         search: '',
-        matches(status, ref) {
-            const filterOk = this.filter === 'all' || this.filter === status;
+        matches(status, ref, payment) {
+            const filterOk = this.filter === 'all'
+                || (this.filter === 'payment' ? payment === 'awaiting' : this.filter === status);
             const q = this.search.trim().toLowerCase();
             const searchOk = q === '' || ref.toLowerCase().includes(q);
             return filterOk && searchOk;
@@ -34,13 +45,19 @@
                 'in_progress' => $requests->where('status', 'in_progress')->count(),
                 'flagged' => $requests->where('status', 'flagged')->count(),
                 'complete' => $requests->where('status', 'complete')->count(),
+                'payment' => $awaitingPaymentCount ?? 0,
             ];
+
+            $tabs = ['all' => 'All', 'new' => 'New', 'in_progress' => 'In Progress', 'flagged' => 'Flagged', 'complete' => 'Completed'];
+            if (($isCashBilled ?? false)) {
+                $tabs = ['all' => 'All', 'payment' => 'Payment', 'new' => 'New', 'in_progress' => 'In Progress', 'flagged' => 'Flagged', 'complete' => 'Completed'];
+            }
         @endphp
 
         <div class="tab-bar">
             {{-- Tabs --}}
             <div class="tab-list" role="tablist">
-                @foreach (['all' => 'All', 'new' => 'New', 'in_progress' => 'In Progress', 'flagged' => 'Flagged', 'complete' => 'Completed'] as $val => $label)
+                @foreach ($tabs as $val => $label)
                     <button type="button" role="tab" class="tab-item"
                         @click="filter = '{{ $val }}'"
                         :class="{ 'is-active': filter === '{{ $val }}' }"
@@ -74,8 +91,11 @@
                 </thead>
                 <tbody>
                     @forelse ($requests as $req)
-                        <tr data-row data-status="{{ $req->status }}" data-ref="{{ $req->reference }}"
-                            x-show="matches('{{ $req->status }}', @js($req->reference))"
+                        @php
+                            $paymentState = (($isCashBilled ?? false) && $req->status === 'new' && ! $req->hasPaymentSlip()) ? 'awaiting' : 'none';
+                        @endphp
+                        <tr data-row data-status="{{ $req->status }}" data-ref="{{ $req->reference }}" data-payment="{{ $paymentState }}"
+                            x-show="matches('{{ $req->status }}', @js($req->reference), '{{ $paymentState }}')"
                             onclick="location.href='{{ route('client.requests.details', $req->id) }}'"
                             style="cursor:pointer;">
                             <td>
@@ -83,7 +103,7 @@
                             </td>
                             <td style="color:var(--ink-700);">{{ $req->candidates_count }}</td>
                             <td>
-                                @include('client.partials._status-badge', ['status' => $req->status])
+                                @include('client.partials._status-badge', ['status' => $req->status, 'request' => $req, 'isCashBilled' => $isCashBilled ?? false])
                             </td>
                             <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $req->created_at->format('d M Y') }}</td>
                             <td style="text-align:right;">

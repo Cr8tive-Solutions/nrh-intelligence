@@ -11,8 +11,12 @@ use App\Models\Package;
 use App\Models\RequestCandidate;
 use App\Models\ScopeType;
 use App\Models\ScreeningRequest;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class CreateRequestController extends Controller
@@ -55,23 +59,33 @@ class CreateRequestController extends Controller
 
     public function submit(Request $request)
     {
-        $request->validate([
-            'consent' => ['accepted'],
-        ], [
-            'consent.accepted' => 'PDPA consent must be accepted before submitting the request.',
-        ]);
+        $cart = json_decode($request->input('cart_data', '[]'), true) ?: [];
+        $candidates = json_decode($request->input('candidates_data', '[]'), true) ?: [];
+        $type = $request->input('screening_type', 'employment_global');
+
+        $scopeIds = collect($cart)->pluck('id')->filter()->values()->all();
+
+        // The admin portal owns this column. Until they ship it, signed-consent
+        // mode is impossible (column doesn't exist) — fall back to checkbox flow.
+        $signedConsentRequired = Schema::hasColumn('scope_types', 'requires_signed_consent')
+            && ScopeType::whereIn('id', $scopeIds)->where('requires_signed_consent', true)->exists();
+
+        // Either checkbox consent OR a complete set of uploaded signed forms — never both, never neither.
+        if ($signedConsentRequired) {
+            $this->validateSignedConsentUploads($request, count($candidates));
+        } else {
+            $request->validate(['consent' => ['accepted']], [
+                'consent.accepted' => 'PDPA consent must be accepted before submitting the request.',
+            ]);
+        }
 
         $customerId = session('client_customer_id', 1);
         $userId = session('client_user_id', 1);
 
-        $cart = json_decode($request->input('cart_data', '[]'), true);
-        $candidates = json_decode($request->input('candidates_data', '[]'), true);
-        $type = $request->input('screening_type', 'employment_global');
-
         $seq = ScreeningRequest::count() + 1;
         $reference = 'REQ-'.now()->format('Y').'-'.str_pad($seq, 4, '0', STR_PAD_LEFT);
 
-        DB::transaction(function () use ($request, $customerId, $userId, $reference, $type, $cart, $candidates) {
+        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $reference, $type, $scopeIds, $candidates, $signedConsentRequired) {
             $screeningRequest = ScreeningRequest::create([
                 'customer_id' => $customerId,
                 'customer_user_id' => $userId,
@@ -80,9 +94,7 @@ class CreateRequestController extends Controller
                 'type' => $type,
             ]);
 
-            $scopeIds = collect($cart)->pluck('id')->all();
-
-            foreach ($candidates as $c) {
+            foreach ($candidates as $idx => $c) {
                 $candidate = RequestCandidate::create([
                     'screening_request_id' => $screeningRequest->id,
                     'identity_type_id' => (int) $c['identity_type_id'],
@@ -99,11 +111,48 @@ class CreateRequestController extends Controller
                     ])->all()
                 );
 
-                $this->recordConsent($request, $candidate);
+                $consentFilePath = null;
+                if ($signedConsentRequired) {
+                    /** @var UploadedFile $upload */
+                    $upload = $request->file("consent_files.{$idx}");
+                    $consentFilePath = $upload->storeAs(
+                        "consent/{$customerId}/{$screeningRequest->reference}",
+                        "candidate-{$candidate->id}.".$upload->getClientOriginalExtension(),
+                        'local'
+                    );
+                }
+
+                $this->recordConsent($request, $candidate, $signedConsentRequired ? 'paper_signed' : 'digital_form', $consentFilePath);
             }
+
+            return $screeningRequest;
         });
 
-        return redirect()->route('client.request.success');
+        return $this->redirectAfterSubmit($createdRequest);
+    }
+
+    /**
+     * Enforce the "every candidate has a signed consent file" rule, throwing 422 if any are missing.
+     */
+    protected function validateSignedConsentUploads(Request $request, int $candidateCount): void
+    {
+        $rules = [];
+        $messages = [];
+        for ($i = 0; $i < $candidateCount; $i++) {
+            $rules["consent_files.{$i}"] = ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'];
+            $messages["consent_files.{$i}.required"] = 'Signed consent form is missing for candidate '.($i + 1).'.';
+            $messages["consent_files.{$i}.file"] = 'Signed consent form for candidate '.($i + 1).' must be a file.';
+            $messages["consent_files.{$i}.mimes"] = 'Signed consent form for candidate '.($i + 1).' must be a PDF, JPG, or PNG.';
+            $messages["consent_files.{$i}.max"] = 'Signed consent form for candidate '.($i + 1).' must not exceed 10MB.';
+        }
+
+        if (empty($rules)) {
+            throw ValidationException::withMessages([
+                'candidates' => 'At least one candidate is required.',
+            ]);
+        }
+
+        $request->validate($rules, $messages);
     }
 
     public function submitDueDiligence(Request $request)
@@ -124,7 +173,7 @@ class CreateRequestController extends Controller
         $seq = ScreeningRequest::count() + 1;
         $reference = 'REQ-'.now()->format('Y').'-'.str_pad($seq, 4, '0', STR_PAD_LEFT);
 
-        DB::transaction(function () use ($request, $customerId, $userId, $reference, $type, $subject, $checks) {
+        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $reference, $type, $subject, $checks) {
             $screeningRequest = ScreeningRequest::create([
                 'customer_id' => $customerId,
                 'customer_user_id' => $userId,
@@ -145,20 +194,35 @@ class CreateRequestController extends Controller
             ]);
 
             $this->recordConsent($request, $candidate);
+
+            return $screeningRequest;
         });
+
+        return $this->redirectAfterSubmit($createdRequest);
+    }
+
+    protected function redirectAfterSubmit(ScreeningRequest $screeningRequest): RedirectResponse
+    {
+        $customer = Customer::with('agreement')->find($screeningRequest->customer_id);
+
+        if ($customer?->isCashBilled()) {
+            return redirect()
+                ->route('client.requests.details', $screeningRequest->id)
+                ->with('status', 'Request created. Please complete payment to begin processing.');
+        }
 
         return redirect()->route('client.request.success');
     }
 
-    protected function recordConsent(Request $request, RequestCandidate $candidate): void
+    protected function recordConsent(Request $request, RequestCandidate $candidate, string $evidenceType = 'digital_form', ?string $evidenceFilePath = null): void
     {
         ConsentRecord::create([
             'request_candidate_id' => $candidate->id,
             'consented_at' => now(),
             'consent_version' => config('consent.current_version'),
             'consent_text_snapshot' => config('consent.standard_text'),
-            'evidence_type' => 'digital_form',
-            'evidence_file_path' => null,
+            'evidence_type' => $evidenceType,
+            'evidence_file_path' => $evidenceFilePath,
             'captured_ip' => $request->ip(),
             'captured_user_agent' => $request->userAgent(),
             'captured_by_admin_id' => null,
@@ -183,8 +247,10 @@ class CreateRequestController extends Controller
             ?->scopePrices()
             ->pluck('price', 'scope_type_id') ?? collect();
 
+        $hasSignedConsentColumn = Schema::hasColumn('scope_types', 'requires_signed_consent');
+
         $scopes = ScopeType::all()
-            ->map(function ($s) use ($customerPrices) {
+            ->map(function ($s) use ($customerPrices, $hasSignedConsentColumn) {
                 $hasCustomPrice = $customerPrices->has($s->id);
 
                 return [
@@ -196,6 +262,10 @@ class CreateRequestController extends Controller
                     'turnaround' => $s->turnaround,
                     'price' => $hasCustomPrice ? (float) $customerPrices->get($s->id) : (float) $s->price,
                     'price_on_request' => ! $hasCustomPrice && $s->price_on_request,
+                    // Scopes flagged by admin require an uploaded signed consent form per candidate
+                    // (PDPA — checkbox-only consent is not allowed for these). Falls back to false
+                    // until the admin portal ships the requires_signed_consent column.
+                    'requires_signed_consent' => $hasSignedConsentColumn ? (bool) ($s->requires_signed_consent ?? false) : false,
                 ];
             })
             ->reject(fn ($s) => $s['price_on_request'])

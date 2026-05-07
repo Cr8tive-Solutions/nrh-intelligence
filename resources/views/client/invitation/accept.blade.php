@@ -6,6 +6,7 @@
     stepLabel="ACTIVATION"
     footerText="Already activated?"
     footerLink="Sign in →"
+    :footerHref="route('client.login')"
 >
 
     {{-- Validation errors --}}

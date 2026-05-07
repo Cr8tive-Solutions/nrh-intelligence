@@ -15,11 +15,16 @@ class DashboardController extends Controller
 
         $requests = ScreeningRequest::where('customer_id', $customerId)->get();
 
+        $isCashBilled = $customer->isCashBilled();
+
         $stats = [
             'in_progress' => $requests->whereIn('status', ['new', 'in_progress'])->count(),
             'cleared' => $requests->where('status', 'complete')->count(),
             'needs_review' => $requests->where('status', 'flagged')->count(),
             'total' => $requests->count(),
+            'awaiting_payment' => $isCashBilled
+                ? $requests->where('status', 'new')->where('payment_slip_path', null)->count()
+                : 0,
         ];
 
         $recentRequests = ScreeningRequest::where('customer_id', $customerId)
@@ -35,6 +40,7 @@ class DashboardController extends Controller
             'agreementExpiry' => $customer->agreement?->expiry_date?->format('d M Y') ?? '—',
             'agreementDaysLeft' => $customer->agreement?->days_left ?? 0,
             'recentRequests' => $recentRequests,
+            'isCashBilled' => $isCashBilled,
         ]);
     }
 }

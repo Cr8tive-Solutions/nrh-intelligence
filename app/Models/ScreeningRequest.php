@@ -18,7 +18,7 @@ class ScreeningRequest extends Model
 
     use LogsActivity;
 
-    protected $fillable = ['customer_id', 'customer_user_id', 'reference', 'status', 'type', 'meta'];
+    protected $fillable = ['customer_id', 'customer_user_id', 'reference', 'status', 'type', 'meta', 'payment_slip_path', 'payment_slip_uploaded_at'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -32,7 +32,15 @@ class ScreeningRequest extends Model
 
     protected function casts(): array
     {
-        return ['meta' => 'array'];
+        return [
+            'meta' => 'array',
+            'payment_slip_uploaded_at' => 'datetime',
+        ];
+    }
+
+    public function hasPaymentSlip(): bool
+    {
+        return ! empty($this->payment_slip_path);
     }
 
     public function customer(): BelongsTo
@@ -53,6 +61,24 @@ class ScreeningRequest extends Model
     public function reportVersions(): HasMany
     {
         return $this->hasMany(ReportVersion::class);
+    }
+
+    /**
+     * Total cash-payable amount = sum of scope prices across every candidate's
+     * pivot rows. Customer-specific price overrides aren't reflected on
+     * scope_types.price, so this is a best-effort estimate; admin's invoice
+     * remains the source of truth.
+     */
+    public function cashTotal(): float
+    {
+        $total = 0.0;
+        foreach ($this->candidates as $candidate) {
+            foreach ($candidate->scopeTypes as $scope) {
+                $total += (float) ($scope->price ?? 0);
+            }
+        }
+
+        return round($total, 2);
     }
 
     /**

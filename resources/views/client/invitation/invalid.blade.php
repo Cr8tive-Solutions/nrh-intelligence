@@ -6,6 +6,7 @@
     stepLabel=""
     footerText="Have an account?"
     footerLink="Sign in →"
+    :footerHref="route('client.login')"
 >
 
     <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(184,147,31,0.08);border:1px solid rgba(184,147,31,0.25);border-left:3px solid var(--gold-600);border-radius:6px;padding:14px 16px;">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client\Request;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\ScreeningRequest;
 
 class ViewRequestController extends Controller
@@ -11,6 +12,8 @@ class ViewRequestController extends Controller
     {
         $customerId = session('client_customer_id', 1);
 
+        $customer = Customer::with('agreement')->findOrFail($customerId);
+
         $requests = ScreeningRequest::with('candidates')
             ->where('customer_id', $customerId)
             ->active()
@@ -18,7 +21,12 @@ class ViewRequestController extends Controller
             ->latest()
             ->get();
 
-        return view('client.requests.index', compact('requests'));
+        $isCashBilled = $customer->isCashBilled();
+        $awaitingPaymentCount = $isCashBilled
+            ? $requests->where('status', 'new')->where('payment_slip_path', null)->count()
+            : 0;
+
+        return view('client.requests.index', compact('requests', 'isCashBilled', 'awaitingPaymentCount'));
     }
 
     public function details(int $id)
@@ -30,6 +38,7 @@ class ViewRequestController extends Controller
             'candidates.scopeTypes',
             'submittedBy',
             'currentReportVersions',
+            'customer.agreement',
         ])
             ->where('customer_id', $customerId)
             ->findOrFail($id);

@@ -232,7 +232,7 @@
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                        <div class="scope-price">
+                                                        <div class="scope-price" x-show="canViewPrices">
                                                             <template x-if="scope.price_on_request">
                                                                 <span class="por">Price on request</span>
                                                             </template>
@@ -264,7 +264,7 @@
                                             <div class="pkg-name" x-text="pkg.name"></div>
                                             <div class="pkg-meta"><span x-text="pkg.scope_ids.length"></span> scopes included</div>
                                         </div>
-                                        <div class="pkg-price">
+                                        <div class="pkg-price" x-show="canViewPrices">
                                             <div class="amt"><span class="cur">MYR</span> <span x-text="pkg.price.toFixed(2)"></span></div>
                                             <div class="unit">per candidate</div>
                                         </div>
@@ -305,7 +305,7 @@
                                 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
                                     <div style="flex:1;min-width:0;">
                                         <p style="font-size:12px;font-weight:600;color:var(--ink-800);line-height:1.4;margin:0;" x-text="item.name"></p>
-                                        <p style="font-size:11px;color:var(--ink-400);margin:2px 0 0;font-family:var(--font-mono);">MYR <span x-text="item.price.toFixed(2)"></span></p>
+                                        <p x-show="canViewPrices" style="font-size:11px;color:var(--ink-400);margin:2px 0 0;font-family:var(--font-mono);">MYR <span x-text="item.price.toFixed(2)"></span></p>
                                     </div>
                                     <button @click="removeFromCart(item.id)"
                                         style="color:var(--ink-300);background:none;border:none;cursor:pointer;flex-shrink:0;padding:2px;"
@@ -319,7 +319,7 @@
                         </div>
                         <template x-if="cart.length > 0">
                             <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">
-                                <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);margin-bottom:6px;">
+                                <div x-show="canViewPrices" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);margin-bottom:6px;">
                                     <span>Per candidate</span>
                                     <span style="font-weight:600;font-family:var(--font-mono);color:var(--ink-900);">MYR <span x-text="cartTotal.toFixed(2)"></span></span>
                                 </div>
@@ -556,12 +556,12 @@
                         <template x-for="item in cart" :key="item.id">
                             <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:12px;gap:8px;">
                                 <span style="color:var(--ink-600);line-height:1.4;flex:1;min-width:0;" x-text="item.name"></span>
-                                <span style="color:var(--ink-500);flex-shrink:0;font-family:var(--font-mono);">MYR <span x-text="item.price.toFixed(2)"></span></span>
+                                <span x-show="canViewPrices" style="color:var(--ink-500);flex-shrink:0;font-family:var(--font-mono);">MYR <span x-text="item.price.toFixed(2)"></span></span>
                             </div>
                         </template>
                     </div>
                     <div style="border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px;">
-                        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
+                        <div x-show="canViewPrices" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
                             <span>Per candidate</span>
                             <span style="font-weight:600;color:var(--ink-900);font-family:var(--font-mono);">MYR <span x-text="cartTotal.toFixed(2)"></span></span>
                         </div>
@@ -569,7 +569,7 @@
                             <span>Candidates</span>
                             <span style="font-weight:600;color:var(--ink-900);" x-text="candidates.length || '—'"></span>
                         </div>
-                        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--ink-900);border-top:1px solid var(--line);padding-top:10px;margin-top:2px;">
+                        <div x-show="canViewPrices" style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--ink-900);border-top:1px solid var(--line);padding-top:10px;margin-top:2px;">
                             <span>Est. Total</span>
                             <span style="font-family:var(--font-mono);">MYR <span x-text="(cartTotal * (candidates.length || 0)).toFixed(2)"></span></span>
                         </div>
@@ -734,7 +734,7 @@
                                     <span x-text="item.turnaround"></span>
                                 </p>
                             </div>
-                            <p style="font-size:13px;font-weight:600;color:var(--ink-900);font-family:var(--font-mono);margin:0;flex-shrink:0;">MYR <span x-text="item.price.toFixed(2)"></span></p>
+                            <p x-show="canViewPrices" style="font-size:13px;font-weight:600;color:var(--ink-900);font-family:var(--font-mono);margin:0;flex-shrink:0;">MYR <span x-text="item.price.toFixed(2)"></span></p>
                         </div>
                     </template>
                 </div>
@@ -766,22 +766,27 @@
             {{-- Right: cost + submit --}}
             <div style="position:sticky;top:68px;display:flex;flex-direction:column;gap:12px;">
                 <div class="card" style="padding:20px;">
-                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:14px;">Cost Breakdown</div>
+                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:14px;">Order Summary</div>
                     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
-                        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
+                        <div x-show="canViewPrices" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
                             <span>Scopes per candidate</span>
                             <span style="font-family:var(--font-mono);font-weight:600;color:var(--ink-700);">MYR <span x-text="cartTotal.toFixed(2)"></span></span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
+                            <span>No. of scopes</span>
+                            <span style="font-weight:600;color:var(--ink-700);" x-text="cart.length"></span>
                         </div>
                         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
                             <span>No. of candidates</span>
                             <span style="font-weight:600;color:var(--ink-700);" x-text="candidates.length"></span>
                         </div>
                     </div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:14px;">
+                    <div x-show="canViewPrices" style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:14px;">
                         <span style="font-size:14px;font-weight:700;color:var(--ink-900);">Total</span>
                         <span style="font-size:16px;font-weight:700;color:var(--ink-900);font-family:var(--font-mono);">MYR <span x-text="(cartTotal * candidates.length).toFixed(2)"></span></span>
                     </div>
-                    <p style="font-size:11px;color:var(--ink-400);line-height:1.6;margin:0 0 16px;">Payment via monthly billing or direct bank transfer. Invoice issued at end of month.</p>
+                    <p x-show="canViewPrices" style="font-size:11px;color:var(--ink-400);line-height:1.6;margin:0 0 16px;">Payment via monthly billing or direct bank transfer. Invoice issued at end of month.</p>
+                    <p x-show="!canViewPrices" style="font-size:11px;color:var(--ink-400);line-height:1.6;margin:0 0 16px;">Pricing is handled by your Accounts team. Submit your order; the invoice will be issued separately.</p>
 
                     <form method="POST" action="{{ route('client.request.submit') }}" @submit.prevent="submitForm($event)">
                         @csrf
@@ -789,21 +794,44 @@
                         <input type="hidden" name="cart_data" :value="JSON.stringify(cart)">
                         <input type="hidden" name="candidates_data" :value="JSON.stringify(candidates)">
 
-                        {{-- PDPA consent --}}
-                        <div x-data="{ showText: false }" style="margin-bottom:14px;padding:12px;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);">
-                            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-                                <input type="checkbox" name="consent" value="1" x-model="consent" required style="margin-top:2px;flex-shrink:0;">
-                                <span style="font-size:12px;color:var(--ink-700);line-height:1.5;">
-                                    Each candidate has read and agreed to the <button type="button" @click.prevent="showText = !showText" style="background:none;border:none;color:var(--emerald-700);font-weight:600;cursor:pointer;padding:0;font-family:inherit;font-size:inherit;text-decoration:underline;" x-text="showText ? 'hide consent text' : 'PDPA consent terms'"></button>. By ticking this box, the requester confirms consent has been obtained from each candidate listed.
-                                </span>
-                            </label>
-                            <div x-show="showText" x-cloak style="margin-top:10px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);max-height:240px;overflow-y:auto;font-size:11px;line-height:1.6;color:var(--ink-700);white-space:pre-wrap;">{{ config('consent.standard_text') }}</div>
-                            <div style="margin-top:6px;font-size:10px;color:var(--ink-400);font-family:var(--font-mono);">v {{ config('consent.current_version') }}</div>
-                        </div>
+                        {{-- PDPA consent — checkbox mode (when no scope requires signed forms) --}}
+                        <template x-if="!signedConsentRequired">
+                            <div x-data="{ showText: false }" style="margin-bottom:14px;padding:12px;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);">
+                                <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                                    <input type="checkbox" name="consent" value="1" x-model="consent" required style="margin-top:2px;flex-shrink:0;">
+                                    <span style="font-size:12px;color:var(--ink-700);line-height:1.5;">
+                                        Each candidate has read and agreed to the <button type="button" @click.prevent="showText = !showText" style="background:none;border:none;color:var(--emerald-700);font-weight:600;cursor:pointer;padding:0;font-family:inherit;font-size:inherit;text-decoration:underline;" x-text="showText ? 'hide consent text' : 'PDPA consent terms'"></button>. By ticking this box, the requester confirms consent has been obtained from each candidate listed.
+                                    </span>
+                                </label>
+                                <div x-show="showText" x-cloak style="margin-top:10px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);max-height:240px;overflow-y:auto;font-size:11px;line-height:1.6;color:var(--ink-700);white-space:pre-wrap;">{{ config('consent.standard_text') }}</div>
+                                <div style="margin-top:6px;font-size:10px;color:var(--ink-400);font-family:var(--font-mono);">v {{ config('consent.current_version') }}</div>
+                            </div>
+                        </template>
 
-                        <button type="submit" :disabled="submitting || !consent" class="btn btn-primary"
+                        {{-- PDPA consent — signed-form mode (one or more selected scopes require it) --}}
+                        <template x-if="signedConsentRequired">
+                            <div style="margin-bottom:14px;padding:12px;border:1px solid rgba(184,147,31,0.3);border-left:3px solid var(--gold-500);border-radius:var(--radius);background:rgba(184,147,31,0.05);">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <svg style="width:16px;height:16px;color:var(--gold-700);flex-shrink:0;margin-top:1px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M9.75 3.104a48.554 48.554 0 0 0-4.5 4.5l4.5-4.5Zm-4.5 4.5L3 8.25l3 3-1.5-1.5-1.5-1.5Zm0 0L9.75 3.104"/></svg>
+                                    <div>
+                                        <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 4px;">Signed consent forms required</p>
+                                        <p style="font-size:12px;color:var(--ink-700);line-height:1.5;margin:0 0 6px;">
+                                            One or more selected scopes require an individually-signed consent form per candidate. The checkbox alone is not sufficient. Upload the signed form for each candidate in step 2 (under "Documents" → "Consent Form").
+                                        </p>
+                                        <p x-show="!signedConsentReady" style="font-size:12px;font-weight:600;color:var(--danger);margin:0;">
+                                            <span x-text="candidatesMissingSignedConsent.length"></span> candidate(s) still missing a signed consent form.
+                                        </p>
+                                        <p x-show="signedConsentReady" style="font-size:12px;font-weight:600;color:var(--emerald-700);margin:0;">
+                                            All candidates have signed consent forms uploaded. ✓
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <button type="submit" :disabled="submitting || (!signedConsentRequired && !consent) || (signedConsentRequired && !signedConsentReady)" class="btn btn-primary"
                             style="width:100%;justify-content:center;"
-                            :style="(submitting || !consent) ? 'opacity:0.5;cursor:not-allowed;' : ''">
+                            :style="(submitting || (!signedConsentRequired && !consent) || (signedConsentRequired && !signedConsentReady)) ? 'opacity:0.5;cursor:not-allowed;' : ''">
                             <template x-if="!submitting">
                                 <span style="display:flex;align-items:center;gap:8px;">
                                     <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/></svg>
@@ -855,6 +883,7 @@ function newRequest() {
         allScopes:     @json($scopes),
         allPackages:   @json($packages),
         identityTypes: @json($identityTypes),
+        canViewPrices: @json(auth('customer_user')->user()?->can('view-prices') ?? false),
 
         requiredDocTypes: [
             { id: 1, label: 'Consent Form',    required: true  },
@@ -891,6 +920,19 @@ function newRequest() {
         },
         get filteredPackages() { return this.allPackages.filter(p => p.country_id === this.selectedCountry); },
         get cartTotal()        { return this.cart.reduce((sum, i) => sum + i.price, 0); },
+
+        // True when any scope in the cart is admin-flagged as requiring a signed consent form.
+        // In that mode, the checkbox-only consent is disabled and every candidate must upload a file.
+        get signedConsentRequired() { return this.cart.some(s => s.requires_signed_consent); },
+        get signedConsentReady() {
+            if (!this.signedConsentRequired) { return true; }
+            // Doc type 1 is the Consent Form per requiredDocTypes config above.
+            return this.candidates.length > 0 && this.candidates.every(c => this.getUploadedFile(c._id, 1));
+        },
+        get candidatesMissingSignedConsent() {
+            if (!this.signedConsentRequired) { return []; }
+            return this.candidates.filter(c => !this.getUploadedFile(c._id, 1));
+        },
 
         isInCart(id) { return this.cart.some(i => i.id === id); },
 
@@ -1023,9 +1065,50 @@ function newRequest() {
         nextStep() { if (this.step < 4) { this.step++; } },
         prevStep() { if (this.step > 1) { this.step--; } },
 
-        submitForm(event) {
+        async submitForm(event) {
             this.submitting = true;
-            event.target.submit();
+            try {
+                const fd = new FormData(event.target);
+                // Index uploaded consent files by candidate index so the server can validate
+                // 1:1 (each candidate must have a consent form when signed mode is on).
+                if (this.signedConsentRequired) {
+                    this.candidates.forEach((c, idx) => {
+                        const upload = this.uploads.find(u => u.candidateId === c._id && u.docTypeId === 1);
+                        if (upload) {
+                            fd.append(`consent_files[${idx}]`, upload.file, upload.name);
+                        }
+                    });
+                    fd.append('signed_consent_required', '1');
+                }
+                const res = await fetch(event.target.action, {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html,application/json' },
+                    credentials: 'same-origin',
+                });
+                if (res.redirected) {
+                    window.location.href = res.url;
+                    return;
+                }
+                if (res.status === 422) {
+                    const data = await res.json().catch(() => null);
+                    const msg = data?.errors
+                        ? Object.values(data.errors).flat().join('\n')
+                        : 'Validation failed. Please check your inputs.';
+                    alert(msg);
+                    this.submitting = false;
+                    return;
+                }
+                if (res.ok) {
+                    window.location.href = res.url || '{{ route("client.requests.index") }}';
+                    return;
+                }
+                alert('Submission failed (' + res.status + '). Please try again.');
+                this.submitting = false;
+            } catch (e) {
+                alert('Network error: ' + e.message);
+                this.submitting = false;
+            }
         },
     };
 }

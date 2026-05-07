@@ -41,7 +41,8 @@
       "Bash(awk '{print $1, $2, $3}')",
       "Bash(nslookup mail.nrhintelligence.com)",
       "Bash(nc -vz -w 5 mail.nrhintelligence.com 465)",
-      "Bash(openssl s_client -connect mail.nrhintelligence.com:465 -servername mail.nrhintelligence.com -quiet)"
+      "Bash(openssl s_client -connect mail.nrhintelligence.com:465 -servername mail.nrhintelligence.com -quiet)",
+      "mcp__laravel-boost__search-docs"
     ]
   },
   "enableAllProjectMcpServers": true,

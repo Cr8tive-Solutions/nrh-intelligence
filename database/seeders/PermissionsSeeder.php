@@ -24,6 +24,8 @@ class PermissionsSeeder extends Seeder
             'manage-packages',
             'manage-settings',
             'view-audit-log',
+            'view-prices',
+            'download-invoices',
         ];
 
         DB::transaction(function () use ($permissions) {

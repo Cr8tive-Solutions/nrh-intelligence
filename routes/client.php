@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Client\Auth\InvitationController;
 use App\Http\Controllers\Client\Auth\LoginController;
-use App\Http\Controllers\Client\Auth\RegistrationController;
 use App\Http\Controllers\Client\Billing\InvoiceController;
 use App\Http\Controllers\Client\Billing\TransactionController;
 use App\Http\Controllers\Client\CandidatesController;
@@ -10,6 +9,7 @@ use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\NotificationController;
 use App\Http\Controllers\Client\Request\CreateRequestController;
 use App\Http\Controllers\Client\Request\OldRequestController;
+use App\Http\Controllers\Client\Request\PaymentSlipController;
 use App\Http\Controllers\Client\Request\ReportDownloadController;
 use App\Http\Controllers\Client\Request\TrackRequestController;
 use App\Http\Controllers\Client\Request\ViewRequestController;
@@ -37,10 +37,8 @@ Route::name('client.')->group(function () {
     Route::post('/reset-password', [LoginController::class, 'processReset'])->name('reset.process');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-    // Registration
-    Route::get('/register', [RegistrationController::class, 'index'])->name('register');
-    Route::post('/register', [RegistrationController::class, 'submit'])->name('register.submit');
-    Route::get('/register/success', [RegistrationController::class, 'success'])->name('register.success');
+    // Registration is invitation-only — see /invitation/{token}.
+    Route::view('/register', 'client.auth.invitation-only')->name('register');
 
     // Invitation acceptance (admin portal sends activation links here)
     Route::get('/invitation/{token}', [InvitationController::class, 'show'])->name('invitation.show');
@@ -83,6 +81,15 @@ Route::name('client.')->group(function () {
             Route::get('/track/search', [TrackRequestController::class, 'search'])->name('track.search.get');
             Route::post('/track', [TrackRequestController::class, 'search'])->name('track.search');
             Route::get('/{request}/reports/{version}/download', [ReportDownloadController::class, 'download'])->name('reports.download');
+
+            // Payment slip (cash-billed only — upload, replace, remove, download for verification).
+            // Gated by view-prices to match the visibility of the bank-details block on the request page.
+            Route::middleware('permission:view-prices|manage-billing')->group(function () {
+                Route::post('/{id}/payment-slip', [PaymentSlipController::class, 'store'])->name('payment-slip.store');
+                Route::delete('/{id}/payment-slip', [PaymentSlipController::class, 'destroy'])->name('payment-slip.destroy');
+                Route::get('/{id}/payment-slip', [PaymentSlipController::class, 'download'])->name('payment-slip.download');
+            });
+
             Route::get('/{id}', [ViewRequestController::class, 'details'])->name('details');
         });
 
@@ -95,10 +102,12 @@ Route::name('client.')->group(function () {
         // Billing
         Route::prefix('billing')->name('billing.')->middleware('permission:view-billing')->group(function () {
             Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions');
-            Route::get('/transactions/{id}/receipt', [TransactionController::class, 'receipt'])->name('transactions.receipt');
+            Route::get('/transactions/{id}/receipt', [TransactionController::class, 'receipt'])->middleware('permission:download-invoices')->name('transactions.receipt');
             Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices');
-            Route::get('/invoices/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
-            Route::get('/invoices/{id}/download', [InvoiceController::class, 'download'])->name('invoices.download');
+            Route::middleware('permission:download-invoices')->group(function () {
+                Route::get('/invoices/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
+                Route::get('/invoices/{id}/download', [InvoiceController::class, 'download'])->name('invoices.download');
+            });
         });
 
         // Notifications

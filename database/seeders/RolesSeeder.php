@@ -17,7 +17,25 @@ class RolesSeeder extends Seeder
         $roles = [
             'Owner' => $allPermissions,
             'Admin' => array_values(array_diff($allPermissions, ['manage-billing', 'manage-team'])),
-            // Note: view-audit-log is granted to Admin too (kept in the diff above by inclusion)
+            'HR' => [
+                'view-dashboard',
+                'view-candidates',
+                'view-requests',
+                'create-requests',
+                'view-reports',
+                'view-billing',
+            ],
+            'Accounts' => [
+                'view-dashboard',
+                'view-candidates',
+                'view-requests',
+                'view-reports',
+                'view-billing',
+                'manage-billing',
+                'view-prices',
+                'download-invoices',
+                'view-audit-log',
+            ],
             'Member' => [
                 'view-dashboard',
                 'view-candidates',

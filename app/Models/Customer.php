@@ -56,6 +56,19 @@ class Customer extends Model
         return $this->hasOne(Agreement::class);
     }
 
+    /**
+     * @return 'cash'|'credit' — defaults to credit when no agreement is on file.
+     */
+    public function paymentMode(): string
+    {
+        return $this->agreement?->isCashBilled() ? 'cash' : 'credit';
+    }
+
+    public function isCashBilled(): bool
+    {
+        return $this->paymentMode() === 'cash';
+    }
+
     public function screeningRequests(): HasMany
     {
         return $this->hasMany(ScreeningRequest::class);

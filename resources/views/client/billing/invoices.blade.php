@@ -26,8 +26,9 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @php $canDownload = auth()->user()?->can('download-invoices'); @endphp
                     @forelse ($invoices as $inv)
-                        <tr onclick="location.href='{{ route('client.billing.invoices.show', $inv->id) }}'">
+                        <tr @if($canDownload) onclick="location.href='{{ route('client.billing.invoices.show', $inv->id) }}'" style="cursor:pointer;" @endif>
                             <td>
                                 <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--emerald-700);">{{ $inv->number }}</span>
                             </td>
@@ -37,21 +38,29 @@
                             <td>
                                 <span class="pill {{ $inv->status === 'paid' ? 'pill-clear' : 'pill-review' }}">
                                     <span class="dot"></span>
-                                    {{ ucfirst($inv->status) }}
+                                    {{ $inv->status === 'paid' ? 'Closed' : 'Open' }}
                                 </span>
                             </td>
                             <td style="text-align:right;font-weight:600;font-family:var(--font-mono);font-size:13px;color:var(--ink-900);">
-                                MYR {{ number_format($inv->total, 2) }}
+                                @can('view-prices')
+                                    MYR {{ number_format($inv->total, 2) }}
+                                @else
+                                    <span style="color:var(--ink-300);">—</span>
+                                @endcan
                             </td>
                             <td style="text-align:right;">
-                                <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
-                                    <a href="{{ route('client.billing.invoices.show', $inv->id) }}"
-                                       class="btn btn-ghost" style="padding:5px 10px;font-size:12px;"
-                                       onclick="event.stopPropagation()">View</a>
-                                    <a href="{{ route('client.billing.invoices.download', $inv->id) }}"
-                                       style="font-size:12px;font-weight:500;color:var(--ink-400);text-decoration:none;transition:color 120ms;"
-                                       onclick="event.stopPropagation()">PDF</a>
-                                </div>
+                                @if ($canDownload)
+                                    <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
+                                        <a href="{{ route('client.billing.invoices.show', $inv->id) }}"
+                                           class="btn btn-ghost" style="padding:5px 10px;font-size:12px;"
+                                           onclick="event.stopPropagation()">View</a>
+                                        <a href="{{ route('client.billing.invoices.download', $inv->id) }}"
+                                           style="font-size:12px;font-weight:500;color:var(--ink-400);text-decoration:none;transition:color 120ms;"
+                                           onclick="event.stopPropagation()">PDF</a>
+                                    </div>
+                                @else
+                                    <span style="font-size:11px;color:var(--ink-300);">View access via Accounts</span>
+                                @endif
                             </td>
                         </tr>
                     @empty

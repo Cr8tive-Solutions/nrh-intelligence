@@ -773,6 +773,8 @@ body {
 .pill-flagged { color: var(--danger); background: #fbeeec; }
 .pill-progress { color: var(--info); background: #e7eff5; }
 .pill-pending  { color: var(--ink-500); background: var(--ink-100); }
+.pill-prelim   { color: #ffffff; background: var(--ink-900); }
+[data-theme="dark"] .pill-prelim { color: var(--ink-900); background: var(--ink-100); }
 [data-theme="dark"] .pill-clear   { color: var(--emerald-500); background: rgba(5,150,105,0.1); }
 [data-theme="dark"] .pill-review  { color: var(--gold-500); background: rgba(212,175,55,0.1); }
 [data-theme="dark"] .pill-flagged { background: rgba(196,69,58,0.15); }
