@@ -18,7 +18,7 @@ class ScreeningRequest extends Model
 
     use LogsActivity;
 
-    protected $fillable = ['customer_id', 'customer_user_id', 'reference', 'status', 'type', 'meta', 'payment_slip_path', 'payment_slip_uploaded_at'];
+    protected $fillable = ['customer_id', 'customer_user_id', 'reference', 'status', 'type', 'meta', 'payment_slip_path', 'payment_slip_uploaded_at', 'payment_verified_at', 'payment_verified_by'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -35,12 +35,18 @@ class ScreeningRequest extends Model
         return [
             'meta' => 'array',
             'payment_slip_uploaded_at' => 'datetime',
+            'payment_verified_at' => 'datetime',
         ];
     }
 
     public function hasPaymentSlip(): bool
     {
         return ! empty($this->payment_slip_path);
+    }
+
+    public function isPaymentVerified(): bool
+    {
+        return ! is_null($this->payment_verified_at);
     }
 
     public function customer(): BelongsTo

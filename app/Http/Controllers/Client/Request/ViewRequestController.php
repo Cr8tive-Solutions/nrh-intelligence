@@ -22,11 +22,17 @@ class ViewRequestController extends Controller
             ->get();
 
         $isCashBilled = $customer->isCashBilled();
+
+        // Banner: only "needs upload" — that's the call-to-action.
+        // Tab: "needs upload" + "uploaded but not yet verified" — full pre-processing pipeline.
         $awaitingPaymentCount = $isCashBilled
-            ? $requests->where('status', 'new')->where('payment_slip_path', null)->count()
+            ? $requests->where('status', 'new')->whereNull('payment_slip_path')->count()
+            : 0;
+        $paymentTabCount = $isCashBilled
+            ? $requests->where('status', 'new')->whereNull('payment_verified_at')->count()
             : 0;
 
-        return view('client.requests.index', compact('requests', 'isCashBilled', 'awaitingPaymentCount'));
+        return view('client.requests.index', compact('requests', 'isCashBilled', 'awaitingPaymentCount', 'paymentTabCount'));
     }
 
     public function details(int $id)

@@ -1,10 +1,10 @@
 # NRH Intelligence — Frontend Progress Log
 
-Last updated: 2026-04-21
+Last updated: 2026-05-07
 
 ---
 
-## Status: Responsive design complete & built
+## Status: Cash-billing payment workflow in progress (customer-side prep done)
 
 All changes have been compiled with `npm run build`. The app is served by Laravel Herd at `https://nrh-intelligence.test`.
 
@@ -124,8 +124,44 @@ Small mobile (≤480px):
 
 ---
 
-## Next Possible Tasks
+## Session — 2026-05-07 (Cash-billing payment workflow)
 
-- Further test and polish responsive behavior on real device
-- Any remaining UI pages not yet audited for responsiveness
-- Potential: profile page, settings page, notification UI
+### 1. Finance notification on slip upload (Step 0)
+- **File:** `app/Http/Controllers/Client/Request/PaymentSlipController.php`
+- `store()` now calls a new `notifyFinance()` method after the DB update succeeds.
+- Sends `Mail::raw()` to `config('billing.proof_of_payment_email')` with: request reference, customer, uploader (name + email), timestamp, original filename.
+- `Reply-To` set to the uploader so finance can hit reply with questions.
+- Subject distinguishes `uploaded` vs `replaced`.
+- Mail failure is logged at `payment_slip.finance_notification_failed`; the upload itself is not rolled back (slip stays in storage). Missing recipient config logs a warning and returns silently.
+
+### 2. Payment-verified schema + customer-side UI (Step 1 — customer half)
+
+The admin "Verify payment" UI lives in the sibling `~/Herd/nrh-admin` Laravel app (shared schema). This session shipped the schema migration and the customer-portal prep so that the moment the admin app sets `payment_verified_at`, the customer portal already reflects it.
+
+- **Migration:** `database/migrations/2026_05_07_130127_add_payment_verified_to_screening_requests_table.php`
+  - `payment_verified_at` (timestamp, nullable)
+  - `payment_verified_by` (unsigned bigint, nullable, **no FK** — left to admin portal to constrain since staff `users` table lives there)
+- **Model:** `App\Models\ScreeningRequest` — both columns added to `$fillable`, `payment_verified_at` cast to `datetime`, new `isPaymentVerified()` helper.
+- **Status badge partial** (`resources/views/client/partials/_status-badge.blade.php`): match ladder for cash + `status === 'new'`:
+  - no slip → "Awaiting payment" (red)
+  - slip + unverified → "Verifying payment" (muted gold)
+  - slip + verified → "Payment received" (green)
+- **Request detail page** (`resources/views/client/requests/details.blade.php`): split `$isCashPaymentPending` into separate pending vs verified flags. Verified state hides the bank-details + upload block and shows a slim green confirmation card with verification timestamp and slip-download link.
+- **Requests list** (`resources/views/client/requests/index.blade.php`): `$paymentState` is a 4-way `match` (`none/awaiting/verifying/verified`). Payment tab matches `awaiting OR verifying` (verified items drop out). Banner still counts only `awaiting upload` (the call-to-action). Tab counter uses a separate `$paymentTabCount` from the controller (`new` + `payment_verified_at IS NULL`).
+- **Dashboard** (`resources/views/client/dashboard/index.blade.php`): recent-requests pill ladder and activity feed `$feedText` both add a "Payment received" branch.
+- **Controllers:** `ViewRequestController::index` now exposes `$awaitingPaymentCount` (banner) **and** `$paymentTabCount` (tab); `DashboardController::index` uses `whereNull` instead of `where(..., null)`.
+
+### Verification
+- `vendor/bin/pint --dirty --format agent` → pass
+- `php artisan test --compact` → 2 passed, 2 assertions
+- Migration ran; columns confirmed via `Schema::getColumnListing("screening_requests")`.
+
+---
+
+## Next Up
+
+1. **Admin verification UI in `~/Herd/nrh-admin`.** Build the endpoint that writes `payment_verified_at = now()` + `payment_verified_by = Auth::id()` from the admin app, plus a "pending verification" queue/list so finance can find uploaded slips. Without this, today's email + customer-side prep are informational only — finance still can't actually verify anything in-system.
+
+2. **Step 2 — Customer email when admin verifies.** Observer on `ScreeningRequest::updated()` watching `payment_verified_at` transitioning null → non-null. ~30 min once the admin endpoint exists. Highest-signal customer email of the whole flow ("we received your payment, work has started").
+
+3. **Step 3 — Convert to Laravel Notification classes (foundation for in-app bell).** Refactor existing `Mail::raw()` call sites (login OTP, invitation email, finance-on-upload, customer-on-verify) to `Notification` classes with `via: ['mail', 'database']`. Adds DB persistence for free via the standard `notifications` table — that's the prerequisite for a customer top-bar bell. Don't build the bell UI itself until at least 2–3 customer-facing notification types exist (today: zero).

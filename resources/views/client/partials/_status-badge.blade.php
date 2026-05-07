@@ -25,11 +25,16 @@
         'flagged'     => ['label' => 'Flagged',     'pill' => 'pill-flagged'],
     ];
 
-    $cashOverride = (($isCashBilled ?? false) && $status === 'new')
-        ? (isset($request) && $request->hasPaymentSlip()
-            ? ['label' => 'Verifying payment', 'pill' => 'pill-pending']
-            : ['label' => 'Awaiting payment',  'pill' => 'pill-flagged'])
-        : null;
+    $cashOverride = null;
+    if (($isCashBilled ?? false) && $status === 'new' && isset($request)) {
+        $cashOverride = match (true) {
+            $request->isPaymentVerified() => ['label' => 'Payment received', 'pill' => 'pill-clear'],
+            $request->hasPaymentSlip()    => ['label' => 'Verifying payment', 'pill' => 'pill-pending'],
+            default                       => ['label' => 'Awaiting payment',  'pill' => 'pill-flagged'],
+        };
+    } elseif (($isCashBilled ?? false) && $status === 'new') {
+        $cashOverride = ['label' => 'Awaiting payment', 'pill' => 'pill-flagged'];
+    }
 
     $badge = $cashOverride ?? ($map[$status] ?? ['label' => ucwords(str_replace('_', ' ', $status)), 'pill' => 'pill-pending']);
 @endphp

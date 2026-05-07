@@ -18,9 +18,13 @@
         }
         $progressPct = $totalChecks > 0 ? round($doneChecks / $totalChecks * 100) : 0;
 
-        $isCashPaymentPending = $request->customer?->isCashBilled() && $request->status === 'new';
+        $isCashBilled = $request->customer?->isCashBilled();
+        $isCashCycleNew = $isCashBilled && $request->status === 'new';
+        $isCashPaymentVerified = $isCashCycleNew && $request->isPaymentVerified();
+        $isCashPaymentPending = $isCashCycleNew && ! $request->isPaymentVerified();
 
         $statusVerdict = match (true) {
+            $isCashPaymentVerified => ['text' => 'Payment received', 'cls' => 'pill-clear'],
             $isCashPaymentPending => ['text' => 'Awaiting payment', 'cls' => 'pill-flagged'],
             $request->status === 'complete' => ['text' => 'Complete', 'cls' => 'pill-clear'],
             $request->status === 'flagged' => ['text' => 'Needs review', 'cls' => 'pill-flagged'],
@@ -90,6 +94,10 @@
     @if ($isCashPaymentPending && ! auth()->user()?->can('view-prices'))
         <div style="margin-bottom:16px;padding:12px 16px;background:rgba(184,147,31,0.06);border:1px solid rgba(184,147,31,0.25);border-left:3px solid var(--gold-500);border-radius:var(--radius);font-size:13px;color:var(--gold-700);">
             <b>Awaiting payment.</b> Processing will begin once your Accounts team completes the bank transfer.
+        </div>
+    @elseif ($isCashPaymentVerified && ! auth()->user()?->can('view-prices'))
+        <div style="margin-bottom:16px;padding:12px 16px;background:var(--emerald-50);border:1px solid rgba(5,150,105,0.25);border-left:3px solid var(--emerald-600);border-radius:var(--radius);font-size:13px;color:var(--emerald-700);">
+            <b>Payment received.</b> Our finance team has confirmed your bank transfer. Processing will begin shortly.
         </div>
     @endif
 
@@ -189,6 +197,24 @@
                     <a href="mailto:{{ $popEmail }}?subject=Proof of payment — {{ $request->reference }}" style="color:var(--emerald-700);font-weight:600;text-decoration:none;">{{ $popEmail }}</a>
                     with <b>{{ $request->reference }}</b> in the subject line.
                 </p>
+            @endif
+        </div>
+    @elseif ($isCashPaymentVerified && auth()->user()?->can('view-prices'))
+        @php
+            $afterPaymentSla = config('billing.sla_after_payment', '1 business day');
+        @endphp
+        <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;background:var(--emerald-50);border:1px solid rgba(5,150,105,0.25);border-left:3px solid var(--emerald-600);border-radius:var(--radius-lg);padding:14px 18px;">
+            <svg style="width:20px;height:20px;color:var(--emerald-700);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+            </svg>
+            <div style="flex:1;">
+                <div style="font-size:14px;font-weight:600;color:var(--ink-900);">Payment received and verified</div>
+                <div style="font-size:12px;color:var(--ink-600);margin-top:2px;">
+                    Verified {{ $request->payment_verified_at->format('d M Y · H:i') }} — processing will begin within {{ $afterPaymentSla }}.
+                </div>
+            </div>
+            @if ($request->hasPaymentSlip())
+                <a href="{{ route('client.requests.payment-slip.download', $request->id) }}" style="font-size:12px;color:var(--emerald-700);font-weight:600;text-decoration:none;">View slip</a>
             @endif
         </div>
     @endif

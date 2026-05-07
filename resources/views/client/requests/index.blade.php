@@ -28,7 +28,9 @@
         search: '',
         matches(status, ref, payment) {
             const filterOk = this.filter === 'all'
-                || (this.filter === 'payment' ? payment === 'awaiting' : this.filter === status);
+                || (this.filter === 'payment'
+                    ? (payment === 'awaiting' || payment === 'verifying')
+                    : this.filter === status);
             const q = this.search.trim().toLowerCase();
             const searchOk = q === '' || ref.toLowerCase().includes(q);
             return filterOk && searchOk;
@@ -45,7 +47,7 @@
                 'in_progress' => $requests->where('status', 'in_progress')->count(),
                 'flagged' => $requests->where('status', 'flagged')->count(),
                 'complete' => $requests->where('status', 'complete')->count(),
-                'payment' => $awaitingPaymentCount ?? 0,
+                'payment' => $paymentTabCount ?? 0,
             ];
 
             $tabs = ['all' => 'All', 'new' => 'New', 'in_progress' => 'In Progress', 'flagged' => 'Flagged', 'complete' => 'Completed'];
@@ -92,7 +94,12 @@
                 <tbody>
                     @forelse ($requests as $req)
                         @php
-                            $paymentState = (($isCashBilled ?? false) && $req->status === 'new' && ! $req->hasPaymentSlip()) ? 'awaiting' : 'none';
+                            $paymentState = match (true) {
+                                ! ($isCashBilled ?? false) || $req->status !== 'new' => 'none',
+                                ! $req->hasPaymentSlip() => 'awaiting',
+                                ! $req->isPaymentVerified() => 'verifying',
+                                default => 'verified',
+                            };
                         @endphp
                         <tr data-row data-status="{{ $req->status }}" data-ref="{{ $req->reference }}" data-payment="{{ $paymentState }}"
                             x-show="matches('{{ $req->status }}', @js($req->reference), '{{ $paymentState }}')"

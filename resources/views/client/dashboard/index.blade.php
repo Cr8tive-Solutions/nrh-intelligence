@@ -149,8 +149,10 @@
                             <td>
                                 @if ($isCashBilled && $req->status === 'new' && ! $req->hasPaymentSlip())
                                     <span class="pill pill-flagged"><span class="dot"></span>Awaiting payment</span>
-                                @elseif ($isCashBilled && $req->status === 'new' && $req->hasPaymentSlip())
+                                @elseif ($isCashBilled && $req->status === 'new' && ! $req->isPaymentVerified())
                                     <span class="pill pill-pending"><span class="dot"></span>Verifying payment</span>
+                                @elseif ($isCashBilled && $req->status === 'new' && $req->isPaymentVerified())
+                                    <span class="pill pill-clear"><span class="dot"></span>Payment received</span>
                                 @elseif ($req->status === 'complete')
                                     <span class="pill pill-clear"><span class="dot"></span>Cleared</span>
                                 @elseif ($req->status === 'flagged')
@@ -236,10 +238,12 @@
                     @forelse ($recentRequests->take(5) as $req)
                         @php
                             $isCashNewNoSlip = $isCashBilled && $req->status === 'new' && ! $req->hasPaymentSlip();
-                            $isCashNewWithSlip = $isCashBilled && $req->status === 'new' && $req->hasPaymentSlip();
+                            $isCashNewUnverified = $isCashBilled && $req->status === 'new' && $req->hasPaymentSlip() && ! $req->isPaymentVerified();
+                            $isCashNewVerified = $isCashBilled && $req->status === 'new' && $req->isPaymentVerified();
                             $feedText = match (true) {
                                 $isCashNewNoSlip                => '<b>' . e($req->reference) . '</b> awaiting payment',
-                                $isCashNewWithSlip              => '<b>' . e($req->reference) . '</b> — verifying payment',
+                                $isCashNewUnverified            => '<b>' . e($req->reference) . '</b> — verifying payment',
+                                $isCashNewVerified              => 'Payment received — <b>' . e($req->reference) . '</b>',
                                 $req->status === 'complete'     => '<b>' . e($req->reference) . '</b> cleared all checks',
                                 $req->status === 'flagged'      => '<b>' . e($req->reference) . '</b> — flagged for review',
                                 $req->status === 'in_progress'  => 'Request in progress — <b>' . e($req->reference) . '</b>',

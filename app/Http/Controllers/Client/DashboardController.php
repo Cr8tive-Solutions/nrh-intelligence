@@ -23,7 +23,7 @@ class DashboardController extends Controller
             'needs_review' => $requests->where('status', 'flagged')->count(),
             'total' => $requests->count(),
             'awaiting_payment' => $isCashBilled
-                ? $requests->where('status', 'new')->where('payment_slip_path', null)->count()
+                ? $requests->where('status', 'new')->whereNull('payment_slip_path')->count()
                 : 0,
         ];
 
