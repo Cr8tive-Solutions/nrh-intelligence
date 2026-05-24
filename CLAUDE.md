@@ -1,3 +1,81 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+**NRH Intelligence** is a customer-facing portal for a background check / verification platform. Customers (companies) log in to submit screening requests, track progress, view reports, and manage billing. There is no admin panel in this repository — only the client portal.
+
+## Commands
+
+```bash
+# Run all tests
+php artisan test --compact
+
+# Run a single test or filter by name
+php artisan test --compact --filter=TestName
+
+# Lint / format PHP after edits
+vendor/bin/pint --dirty --format agent
+
+# Build frontend assets
+npm run build
+
+# Dev server (Herd serves the site — use npm run dev for hot reload only)
+npm run dev
+
+# Run everything together
+composer run dev
+```
+
+## Architecture
+
+### Auth & Guards
+
+The app uses a **custom `customer_user` guard** (not the default `web` guard). All client routes are protected by the `client.auth` middleware alias (`App\Http\Middleware\ClientAuth`). Never use `Auth::user()` — use `Auth::guard('customer_user')->user()` or rely on the middleware calling `Auth::shouldUse('customer_user')`.
+
+Permissions use **Spatie Laravel Permission** scoped to the `customer_user` guard. The `permission:` middleware alias is registered in `bootstrap/app.php`.
+
+### Routing
+
+All client routes live in `routes/client.php`, loaded via the `then:` callback in `bootstrap/app.php`. All route names are prefixed `client.*`. The entry point for unauthenticated users is `client.login`.
+
+### Core Domain Models
+
+```
+Customer (company)
+  └─ CustomerUser (individual, the authenticated user)
+  └─ Agreement (billing mode: cash or credit via Agreement::isCashBilled())
+  └─ Package (admin-defined scope bundles)
+  └─ CustomerScopePrice (per-customer price overrides for ScopeType)
+  └─ ScreeningRequest
+       └─ RequestCandidate
+            └─ CandidateScopeType (pivot — Eloquent Pivot class with TAT/SLA helpers)
+                 └─ ScopeType (the type of check, belongs to a Country)
+       └─ ReportVersion (read-only — owned by admin portal, never written here)
+```
+
+- **`ScreeningRequest::scopeActive()`** / **`scopeComplete()`** — standard Eloquent scopes for filtering by status.
+- **`ScreeningRequest::currentReportVersions()`** — returns only non-superseded report versions.
+- **`CandidateScopeType`** — custom Pivot class that tracks TAT (turnaround time) via `BusinessHours` service; provides `slaState()` and `slaProgressPct()`.
+- **`ReportVersion::$fillable`** is intentionally empty — client portal never writes to that table.
+
+### Billing Mode
+
+`Customer::paymentMode()` returns `'cash'` or `'credit'` based on `Agreement::isCashBilled()`, which reads from `config('billing.cash_aliases')`. Cash customers upload payment slips; credit customers are invoiced monthly.
+
+### Permissions
+
+Permissions checked in routes include: `view-dashboard`, `view-candidates`, `create-requests`, `view-requests`, `view-reports`, `view-billing`, `manage-billing`, `view-prices`, `download-invoices`, `manage-settings`, `manage-team`, `manage-packages`, `view-audit-log`. All permissions are seeded via migrations.
+
+### Activity Logging
+
+`Customer`, `CustomerUser`, `ScreeningRequest`, `RequestCandidate`, and `Package` use Spatie's `LogsActivity` trait. Each model defines its own `getActivitylogOptions()` with a specific log name.
+
+### Frontend
+
+Blade templates, Alpine.js v3, Tailwind CSS v4 (via Vite). Views live under `resources/views/client/`. Layout partials (`_navbar.blade.php`, `_sidebar.blade.php`) are in `resources/views/client/auth/` (auth layouts) and inline in the client views directory.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 
