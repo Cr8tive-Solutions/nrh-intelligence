@@ -27,6 +27,9 @@
             $isCashPaymentVerified => ['text' => 'Payment received', 'cls' => 'pill-clear'],
             $isCashPaymentPending => ['text' => 'Awaiting payment', 'cls' => 'pill-flagged'],
             $request->status === 'complete' => ['text' => 'Complete', 'cls' => 'pill-clear'],
+            $request->status === 'updated' => ['text' => 'Report Updated', 'cls' => 'pill-clear'],
+            $request->status === 'prelim' => ['text' => 'Prelim Report', 'cls' => 'pill-prelim'],
+            $request->status === 'rejected' => ['text' => 'Rejected', 'cls' => 'pill-flagged'],
             $request->status === 'flagged' => ['text' => 'Needs review', 'cls' => 'pill-flagged'],
             $request->status === 'in_progress' => ['text' => 'In progress', 'cls' => 'pill-progress'],
             $request->status === 'new' => ['text' => 'Awaiting consent', 'cls' => 'pill-pending'],
@@ -53,12 +56,14 @@
             'complete' => 5,
         ];
         $currentStage = match ($request->status) {
-            'new' => 2,           // submitted, awaiting consent
-            'in_progress' => 3,   // verifying
-            'flagged' => 4,       // analyst review
-            'complete' => 5,
+            'new' => 2,
+            'rejected' => 2,
+            'in_progress' => 3,
+            'flagged' => 4,
+            'complete', 'prelim', 'updated' => 5,
             default => 1,
         };
+        $isRejected = $request->status === 'rejected';
         $isFlagged = $request->status === 'flagged' || $flaggedChecks > 0;
     @endphp
 
@@ -74,12 +79,12 @@
             </div>
         </div>
         <div style="display:flex;gap:8px;">
-            @if ($request->status === 'complete')
+            @if (in_array($request->status, ['complete', 'updated', 'prelim']))
                 <button type="button" class="btn btn-primary">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>
                     Download report
                 </button>
-            @else
+            @elseif (! $isRejected)
                 <button type="button" class="btn btn-ghost">Request update</button>
             @endif
         </div>
@@ -284,6 +289,12 @@
             <div style="margin-top:18px;padding:10px 14px;background:var(--gold-100);border:1px solid rgba(184,147,31,0.2);border-left:3px solid var(--gold-500);border-radius:6px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--gold-700);">
                 <svg style="width:14px;height:14px;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M12 2L2 22h20z"/></svg>
                 <span><b>{{ $flaggedChecks > 0 ? $flaggedChecks : 'One or more' }} {{ Str::plural('check', max($flaggedChecks, 1)) }} flagged</b> — analyst review pending. You'll be notified once resolved.</span>
+            </div>
+        @endif
+        @if ($isRejected)
+            <div style="margin-top:18px;padding:10px 14px;background:#fbeeec;border:1px solid rgba(196,69,58,0.2);border-left:3px solid var(--danger);border-radius:6px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--danger);">
+                <svg style="width:14px;height:14px;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                <span><b>Request rejected</b> — {{ $request->rejection_reason ?? 'This request was rejected by our team.' }} Contact us if you need to resubmit.</span>
             </div>
         @endif
     </div>

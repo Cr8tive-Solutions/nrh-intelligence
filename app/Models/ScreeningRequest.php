@@ -18,7 +18,7 @@ class ScreeningRequest extends Model
 
     use LogsActivity;
 
-    protected $fillable = ['customer_id', 'customer_user_id', 'reference', 'status', 'type', 'meta', 'payment_slip_path', 'payment_slip_uploaded_at', 'payment_verified_at', 'payment_verified_by'];
+    protected $fillable = ['customer_id', 'customer_user_id', 'reference', 'status', 'type', 'meta', 'rejection_reason', 'payment_slip_path', 'payment_slip_uploaded_at', 'payment_verified_at', 'payment_verified_by'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -101,12 +101,12 @@ class ScreeningRequest extends Model
     /** @return Builder<static> */
     public function scopeActive(Builder $query): Builder
     {
-        return $query->whereIn('status', ['new', 'in_progress', 'flagged']);
+        return $query->whereIn('status', ['new', 'in_progress', 'flagged', 'prelim', 'complete', 'updated', 'rejected']);
     }
 
     /** @return Builder<static> */
     public function scopeComplete(Builder $query): Builder
     {
-        return $query->where('status', 'complete');
+        return $query->whereIn('status', ['complete', 'updated']);
     }
 }

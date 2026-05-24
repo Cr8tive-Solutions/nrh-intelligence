@@ -223,24 +223,76 @@
                                 @endif
 
                                 @php $findings = $pivot->findings ?? []; @endphp
-                                @if (! empty($findings['comment']))
-                                    <div style="grid-column:1/-1;">
-                                        <div class="detail-label">Analyst comment</div>
-                                        <div class="detail-value" style="white-space:pre-wrap;line-height:1.6;">{{ $findings['comment'] }}</div>
-                                    </div>
-                                @endif
-                                @if (! empty($findings['record']) && is_array($findings['record']))
-                                    <div style="grid-column:1/-1;">
-                                        <div class="detail-label">Findings</div>
-                                        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;">
-                                            @foreach ($findings['record'] as $k => $v)
-                                                <tr>
-                                                    <th style="text-align:left;font-weight:600;color:var(--ink-500);padding:4px 8px 4px 0;width:40%;border-bottom:1px solid var(--line);text-transform:capitalize;">{{ str_replace('_', ' ', (string) $k) }}</th>
-                                                    <td style="padding:4px 0;color:var(--ink-900);border-bottom:1px solid var(--line);">{{ is_scalar($v) ? $v : json_encode($v) }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </table>
-                                    </div>
+                                @if (! empty($findings['result_type']) || ! empty($findings['records']))
+                                    {{-- Structured findings format --}}
+                                    @if (! empty($findings['risk_status_text']))
+                                        <div style="grid-column:1/-1;">
+                                            <div class="detail-label">Risk assessment</div>
+                                            <div class="detail-value">{{ $findings['risk_status_text'] }}</div>
+                                        </div>
+                                    @endif
+                                    @if (! empty($findings['implication']))
+                                        <div style="grid-column:1/-1;">
+                                            <div class="detail-label">Implication</div>
+                                            <div class="detail-value">{{ $findings['implication'] }}</div>
+                                        </div>
+                                    @endif
+                                    @if (! empty($findings['verification_method']))
+                                        <div style="grid-column:1/-1;">
+                                            <div class="detail-label">Verification method</div>
+                                            <div class="detail-value" style="white-space:pre-wrap;line-height:1.6;">{{ $findings['verification_method'] }}</div>
+                                        </div>
+                                    @endif
+                                    @foreach (($findings['records'] ?? []) as $rec)
+                                        <div style="grid-column:1/-1;">
+                                            <div class="detail-label">{{ $rec['act'] ?? $rec['title'] ?? 'Record' }}</div>
+                                            <div style="border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:12px;">
+                                                @if (! empty($rec['section']))
+                                                    <div style="font-weight:600;color:var(--ink-900);margin-bottom:4px;">{{ $rec['section'] }}</div>
+                                                @endif
+                                                @if (! empty($rec['description']))
+                                                    <div style="color:var(--ink-700);margin-bottom:8px;">{{ $rec['description'] }}</div>
+                                                @endif
+                                                @if (! empty($rec['fields']) && is_array($rec['fields']))
+                                                    <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:4px;">
+                                                        @foreach ($rec['fields'] as $k => $v)
+                                                            <tr>
+                                                                <th style="text-align:left;font-weight:600;color:var(--ink-500);padding:3px 8px 3px 0;width:40%;border-bottom:1px solid var(--line);text-transform:capitalize;">{{ $k }}</th>
+                                                                <td style="padding:3px 0;color:var(--ink-900);border-bottom:1px solid var(--line);">{{ is_scalar($v) ? $v : json_encode($v) }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </table>
+                                                @endif
+                                                @if (! empty($rec['verdict']))
+                                                    <div style="margin-top:8px;font-size:11px;font-weight:700;color:{{ ($rec['risk_level'] ?? '') === 'high' ? 'var(--danger)' : 'var(--ink-600)' }};">{{ $rec['verdict'] }}</div>
+                                                @endif
+                                                @if (! empty($rec['penalty']))
+                                                    <div style="margin-top:4px;font-size:11px;color:var(--ink-500);">Penalty: {{ $rec['penalty'] }}</div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    {{-- Legacy findings format --}}
+                                    @if (! empty($findings['comment']))
+                                        <div style="grid-column:1/-1;">
+                                            <div class="detail-label">Analyst comment</div>
+                                            <div class="detail-value" style="white-space:pre-wrap;line-height:1.6;">{{ $findings['comment'] }}</div>
+                                        </div>
+                                    @endif
+                                    @if (! empty($findings['record']) && is_array($findings['record']))
+                                        <div style="grid-column:1/-1;">
+                                            <div class="detail-label">Findings</div>
+                                            <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;">
+                                                @foreach ($findings['record'] as $k => $v)
+                                                    <tr>
+                                                        <th style="text-align:left;font-weight:600;color:var(--ink-500);padding:4px 8px 4px 0;width:40%;border-bottom:1px solid var(--line);text-transform:capitalize;">{{ str_replace('_', ' ', (string) $k) }}</th>
+                                                        <td style="padding:4px 0;color:var(--ink-900);border-bottom:1px solid var(--line);">{{ is_scalar($v) ? $v : json_encode($v) }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </table>
+                                        </div>
+                                    @endif
                                 @endif
 
                                 @if ($checkStatus === 'flagged')

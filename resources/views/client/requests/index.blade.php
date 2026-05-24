@@ -27,10 +27,11 @@
         filter: 'all',
         search: '',
         matches(status, ref, payment) {
+            const effectiveStatus = status === 'updated' ? 'complete' : status;
             const filterOk = this.filter === 'all'
                 || (this.filter === 'payment'
                     ? (payment === 'awaiting' || payment === 'verifying')
-                    : this.filter === status);
+                    : this.filter === effectiveStatus);
             const q = this.search.trim().toLowerCase();
             const searchOk = q === '' || ref.toLowerCase().includes(q);
             return filterOk && searchOk;
@@ -46,13 +47,15 @@
                 'new' => $requests->where('status', 'new')->count(),
                 'in_progress' => $requests->where('status', 'in_progress')->count(),
                 'flagged' => $requests->where('status', 'flagged')->count(),
-                'complete' => $requests->where('status', 'complete')->count(),
+                'prelim' => $requests->where('status', 'prelim')->count(),
+                'complete' => $requests->whereIn('status', ['complete', 'updated'])->count(),
+                'rejected' => $requests->where('status', 'rejected')->count(),
                 'payment' => $paymentTabCount ?? 0,
             ];
 
-            $tabs = ['all' => 'All', 'new' => 'New', 'in_progress' => 'In Progress', 'flagged' => 'Flagged', 'complete' => 'Completed'];
+            $tabs = ['all' => 'All', 'new' => 'New', 'in_progress' => 'In Progress', 'flagged' => 'Flagged', 'prelim' => 'Prelim', 'complete' => 'Completed', 'rejected' => 'Rejected'];
             if (($isCashBilled ?? false)) {
-                $tabs = ['all' => 'All', 'payment' => 'Payment', 'new' => 'New', 'in_progress' => 'In Progress', 'flagged' => 'Flagged', 'complete' => 'Completed'];
+                $tabs = ['all' => 'All', 'payment' => 'Payment', 'new' => 'New', 'in_progress' => 'In Progress', 'flagged' => 'Flagged', 'prelim' => 'Prelim', 'complete' => 'Completed', 'rejected' => 'Rejected'];
             }
         @endphp
 
