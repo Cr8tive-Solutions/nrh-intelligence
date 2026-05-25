@@ -1,6 +1,6 @@
 # NRH Intelligence — Frontend Progress Log
 
-Last updated: 2026-05-25
+Last updated: 2026-05-25 (Session 3)
 
 ---
 
@@ -187,6 +187,53 @@ New feature for credit-billed customers to add extra candidates to an open (not 
   - Redirects back to `client.requests.details` with a flash success message.
 - **`ViewRequestController::details()`**: Now computes `$canAddCandidate`, `$identityTypes`, and `$availableScopeTypes` and passes them to the view.
 - **`requests/details.blade.php`**: "Add candidate" button shown next to the Candidates section header when `$canAddCandidate`. Alpine modal (`@open-add-candidate` event) with a form: name, identity type select (from `$identityTypes`), identity number, mobile, remarks, plus pre-checked scope checkboxes (from `$availableScopeTypes`). Error display inline.
+
+---
+
+## Session — 2026-05-25 Session 3 (Request detail UX simplification + Logo update)
+
+### 1. Request detail page — full UX redesign for non-technical users
+
+**File:** `resources/views/client/requests/details.blade.php`
+
+Goal: make the page readable for non-IT users (older executives, HR staff) without removing any functionality.
+
+**Hero status card** — replaces the old small pill + separate notification banners. A full-width colored card is now the first thing a user sees:
+- Icon (check / clock / alert / flag / progress / X) sized at 46px, color-coded to state
+- Plain-English title: "Your report is ready", "Action needed — payment required", "Background check in progress", etc.
+- One-sentence description with no jargon
+- Submitted-by and candidate count meta line inside the card
+- Download button embedded in the card when status is complete/updated (no hunting for it)
+- 8 distinct states covered: complete, updated, rejected, cash-pending (no slip), cash-pending (slip uploaded), cash-verified, flagged, in_progress, new (consent)
+
+**Simplified progress tracker** — reduced from 5 technical steps to 3–4 plain-English steps:
+- Credit billing: Submitted → Checking → Done
+- Cash billing: Submitted → Payment → Checking → Done
+- Uses `--steps: {{ $stepCount }}` CSS variable so existing tracker CSS works unchanged
+- `$simpleSteps` array computed in PHP with `done / current / flagged` flags per step
+
+**Language improvements throughout:**
+- "Reference" → "Your request number" (sidebar + page header)
+- "Order details" → "Request details"
+- "Scope of work" → "What we're checking"
+- Candidate pill: "In progress" → "Being checked", "Pending" → "Waiting", "Flagged" → "Flagged — needs review"
+- Candidate row: "X/Y checks" → "X/Y checks done"
+- Report labels: "FULL v1" → "Full report v1", "PRELIM" → "Preliminary report"
+- Payment block: amount displayed at 24px bold, reference label clarified with "Include this in your transfer"
+
+**PHP refactor** — all variables (`$hasSlip`, `$canUploadSlip`, `$payTotal`, `$canViewPrices`, `$bank`, etc.) moved to the top `@php` block so the hero card can access them. Previously some were only computed inside conditional blocks.
+
+**Removed:** the old `request-banner` div (ref + meta + verdict strip) and the old 5-step tracker. The hero card subsumes this content with better hierarchy.
+
+### 2. Logo replacement + background removal
+
+- Replaced `public/nrh-logo.png` with new HD logo (1254×1254 px, sourced from `nrh-logo-hd.png`)
+- Original file was RGB (no alpha) — white corners were opaque, not transparent
+- Used Python/Pillow BFS flood-fill from all four corners to make the white background transparent (496,677 pixels removed)
+- Result: clean transparent PNG; logo circle sits naturally on any background
+- No blade changes needed — all 8 logo references already use `asset('nrh-logo.png')`
+
+Covered locations: sidebar, top navbar (mobile), auth layout, email verification page, browser favicon (both layouts), invoice PDF header, transaction receipt header.
 
 ---
 
