@@ -19,10 +19,8 @@
         'new'         => ['label' => 'New',         'pill' => 'pill-progress'],
         'in_progress' => ['label' => 'In Progress', 'pill' => 'pill-review'],
         'rejected'    => ['label' => 'Rejected',    'pill' => 'pill-flagged'],
-        'prelim'      => ['label' => 'Prelim',      'pill' => 'pill-prelim'],
         'complete'    => ['label' => 'Complete',    'pill' => 'pill-clear'],
         'updated'     => ['label' => 'Updated',     'pill' => 'pill-clear'],
-        'flagged'     => ['label' => 'Flagged',     'pill' => 'pill-flagged'],
     ];
 
     $cashOverride = null;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client\Request;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\IdentityType;
 use App\Models\ScreeningRequest;
 
 class ViewRequestController extends Controller
@@ -49,6 +50,16 @@ class ViewRequestController extends Controller
             ->where('customer_id', $customerId)
             ->findOrFail($id);
 
-        return view('client.requests.details', compact('request'));
+        $blockedStatuses = ['complete', 'updated', 'rejected'];
+        $canAddCandidate = ! $request->customer->isCashBilled()
+            && is_null($request->invoice_id)
+            && ! in_array($request->status, $blockedStatuses);
+
+        $identityTypes = $canAddCandidate ? IdentityType::orderBy('name')->get() : collect();
+        $availableScopeTypes = $canAddCandidate
+            ? $request->candidates->flatMap(fn ($c) => $c->scopeTypes)->unique('id')->values()
+            : collect();
+
+        return view('client.requests.details', compact('request', 'canAddCandidate', 'identityTypes', 'availableScopeTypes'));
     }
 }

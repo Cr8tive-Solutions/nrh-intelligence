@@ -7,6 +7,7 @@ use App\Http\Controllers\Client\Billing\TransactionController;
 use App\Http\Controllers\Client\CandidatesController;
 use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\Client\NotificationController;
+use App\Http\Controllers\Client\Request\AddCandidateController;
 use App\Http\Controllers\Client\Request\CreateRequestController;
 use App\Http\Controllers\Client\Request\OldRequestController;
 use App\Http\Controllers\Client\Request\PaymentSlipController;
@@ -91,6 +92,7 @@ Route::name('client.')->group(function () {
             });
 
             Route::get('/{id}', [ViewRequestController::class, 'details'])->name('details');
+            Route::post('/{id}/candidates', [AddCandidateController::class, 'store'])->name('candidates.store')->middleware('permission:create-requests');
         });
 
         // History

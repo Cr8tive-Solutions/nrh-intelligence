@@ -28,9 +28,7 @@
             $isCashPaymentPending => ['text' => 'Awaiting payment', 'cls' => 'pill-flagged'],
             $request->status === 'complete' => ['text' => 'Complete', 'cls' => 'pill-clear'],
             $request->status === 'updated' => ['text' => 'Report Updated', 'cls' => 'pill-clear'],
-            $request->status === 'prelim' => ['text' => 'Prelim Report', 'cls' => 'pill-prelim'],
             $request->status === 'rejected' => ['text' => 'Rejected', 'cls' => 'pill-flagged'],
-            $request->status === 'flagged' => ['text' => 'Needs review', 'cls' => 'pill-flagged'],
             $request->status === 'in_progress' => ['text' => 'In progress', 'cls' => 'pill-progress'],
             $request->status === 'new' => ['text' => 'Awaiting consent', 'cls' => 'pill-pending'],
             default => ['text' => ucwords(str_replace('_', ' ', $request->status)), 'cls' => 'pill-pending'],
@@ -59,12 +57,11 @@
             'new' => 2,
             'rejected' => 2,
             'in_progress' => 3,
-            'flagged' => 4,
-            'complete', 'prelim', 'updated' => 5,
+            'complete', 'updated' => 5,
             default => 1,
         };
         $isRejected = $request->status === 'rejected';
-        $isFlagged = $request->status === 'flagged' || $flaggedChecks > 0;
+        $isFlagged = $flaggedChecks > 0;
     @endphp
 
     {{-- Page head --}}
@@ -79,7 +76,7 @@
             </div>
         </div>
         <div style="display:flex;gap:8px;">
-            @if (in_array($request->status, ['complete', 'updated', 'prelim']))
+            @if (in_array($request->status, ['complete', 'updated']))
                 <button type="button" class="btn btn-primary">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>
                     Download report
@@ -306,6 +303,13 @@
         <div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0 12px;">
                 <h2 style="font-size:14px;font-weight:600;color:var(--ink-900);margin:0;">Candidates <span style="color:var(--ink-400);font-weight:400;">· {{ $candidates->count() }}</span></h2>
+                @if ($canAddCandidate ?? false)
+                    <button type="button" class="btn btn-ghost" style="font-size:12px;padding:5px 12px;"
+                        @click="$dispatch('open-add-candidate')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                        Add candidate
+                    </button>
+                @endif
             </div>
 
             @if ($candidates->isEmpty())
@@ -415,7 +419,15 @@
                                     <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 12-3-3m0 0-3 3m3-3v6m1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
                                 </div>
                                 <div style="flex:1;min-width:0;">
-                                    <div style="font-size:13px;font-weight:600;color:var(--ink-900);">{{ ucfirst($rv->type) }} report <span style="color:var(--ink-400);font-family:var(--font-mono);font-weight:500;">v{{ $rv->version }}</span></div>
+                                    @php
+                                    $reportLabel = match(true) {
+                                        $rv->type === 'prelim' => 'PRELIM',
+                                        $rv->type === 'full' && $request->status === 'updated' => 'UPDATED',
+                                        $rv->type === 'full' => 'FULL',
+                                        default => strtoupper($rv->type),
+                                    };
+                                @endphp
+                                <div style="font-size:13px;font-weight:600;color:var(--ink-900);">{{ $reportLabel }} <span style="color:var(--ink-400);font-family:var(--font-mono);font-weight:500;">v{{ $rv->version }}</span></div>
                                     <div style="font-size:11px;color:var(--ink-500);margin-top:2px;">Issued {{ $rv->generated_at->diffForHumans() }} · {{ $rv->generated_at->format('d M Y') }}</div>
                                 </div>
                                 <svg style="width:14px;height:14px;color:var(--ink-400);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
@@ -426,5 +438,84 @@
             @endif
         </div>
     </div>
+
+
+@if ($canAddCandidate ?? false)
+    <div x-data="{ open: false }" @open-add-candidate.window="open = true" @keydown.escape.window="open = false">
+        <div x-show="open" x-cloak
+             style="position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;">
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);" @click="open = false"></div>
+            <div style="position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,0.2);z-index:1;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line);">
+                    <div style="font-size:14px;font-weight:600;color:var(--ink-900);">Add candidate</div>
+                    <button type="button" @click="open = false" style="background:none;border:0;cursor:pointer;color:var(--ink-400);padding:4px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <form method="POST" action="{{ route('client.requests.candidates.store', $request->id) }}" style="padding:20px 22px;display:flex;flex-direction:column;gap:14px;">
+                    @csrf
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div style="grid-column:1/-1;">
+                            <label style="font-size:11px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Full name *</label>
+                            <input type="text" name="name" required placeholder="e.g. Ahmad bin Ali"
+                                style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px;background:var(--card);color:var(--ink-900);font-family:var(--font-ui);">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Identity type *</label>
+                            <select name="identity_type_id" required
+                                style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px;background:var(--card);color:var(--ink-900);font-family:var(--font-ui);">
+                                <option value="">Select…</option>
+                                @foreach ($identityTypes as $it)
+                                    <option value="{{ $it->id }}">{{ $it->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:11px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Identity number *</label>
+                            <input type="text" name="identity_number" required placeholder="e.g. 900101-01-1234"
+                                style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px;background:var(--card);color:var(--ink-900);font-family:var(--font-ui);">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Mobile</label>
+                            <input type="text" name="mobile" placeholder="+60 12-345 6789"
+                                style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px;background:var(--card);color:var(--ink-900);font-family:var(--font-ui);">
+                        </div>
+                        <div style="grid-column:1/-1;">
+                            <label style="font-size:11px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Remarks</label>
+                            <input type="text" name="remarks" placeholder="Optional notes"
+                                style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px;background:var(--card);color:var(--ink-900);font-family:var(--font-ui);">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:8px;">Scope of checks *</label>
+                        <div style="display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius);max-height:160px;overflow-y:auto;">
+                            @foreach ($availableScopeTypes as $scope)
+                                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-800);cursor:pointer;">
+                                    <input type="checkbox" name="scope_type_ids[]" value="{{ $scope->id }}" checked
+                                        style="width:14px;height:14px;cursor:pointer;">
+                                    {{ $scope->name }}
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    @if ($errors->any())
+                        <div style="font-size:12px;color:var(--danger);">
+                            @foreach ($errors->all() as $error)
+                                <div>{{ $error }}</div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
+                        <button type="button" class="btn btn-ghost" @click="open = false">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add candidate</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endif
 
 </x-client.layouts.app>

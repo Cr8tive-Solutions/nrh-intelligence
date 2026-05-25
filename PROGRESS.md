@@ -1,6 +1,6 @@
 # NRH Intelligence — Frontend Progress Log
 
-Last updated: 2026-05-07
+Last updated: 2026-05-25
 
 ---
 
@@ -158,10 +158,46 @@ The admin "Verify payment" UI lives in the sibling `~/Herd/nrh-admin` Laravel ap
 
 ---
 
+## Session — 2026-05-25 (Status cleanup + Add Candidate feature)
+
+### 1. Removed `flagged` and `prelim` statuses from client portal
+
+These statuses were leaking into the customer-facing UI from the admin data model. Removed everywhere:
+
+- **`_status-badge.blade.php`**: Removed `prelim` and `flagged` entries from the badge match array.
+- **`requests/index.blade.php`**: Removed `flagged` and `prelim` from tab counts and tab label arrays (for both cash and credit variants).
+- **`requests/details.blade.php`**: Removed `prelim` and `flagged` from the status pill match, the step progress map, the download-report button guard, and the `$isFlagged` check. `$isFlagged` now derives purely from flagged candidate checks (not request-level status). Report label display improved: PRELIM / FULL / UPDATED based on `rv->type` + request status.
+- **`requests/track.blade.php`**: Removed `flagged` and `prelim` from the `$stepMap`.
+- **`dashboard/index.blade.php`**: Replaced `flagged` pill with `updated` pill in the recent-requests list. Removed the gold feed icon path for `flagged`; checkmark icon now covers both `complete` and `updated`. `$feedIconGold` hardcoded to `false`.
+- **`ScreeningRequest::scopeActive()`**: Removed `'flagged'` and `'prelim'` from the status whitelist.
+
+### 2. Fixed `needs_review` dashboard stat
+
+- **`DashboardController`**: Was counting requests with `status = 'flagged'`. Now counts requests that have at least one candidate with `status = 'flagged'` via `whereHas('candidates', ...)`. Correctly captures flagged checks regardless of overall request status.
+
+### 3. Add Candidate to existing request
+
+New feature for credit-billed customers to add extra candidates to an open (not yet invoiced, not complete/updated/rejected) request.
+
+- **Route:** `POST /requests/{id}/candidates` → `client.requests.candidates.store` (requires `create-requests` permission).
+- **Controller:** `app/Http/Controllers/Client/Request/AddCandidateController.php` (new file)
+  - Guards: cash-billed → 403, invoiced → 403, blocked status → 403.
+  - Validates name, identity number, identity type, scope type IDs (constrained to scopes already on the request), mobile, remarks.
+  - Wraps `RequestCandidate::create()` + `scopeTypes()->attach()` in a DB transaction.
+  - Redirects back to `client.requests.details` with a flash success message.
+- **`ViewRequestController::details()`**: Now computes `$canAddCandidate`, `$identityTypes`, and `$availableScopeTypes` and passes them to the view.
+- **`requests/details.blade.php`**: "Add candidate" button shown next to the Candidates section header when `$canAddCandidate`. Alpine modal (`@open-add-candidate` event) with a form: name, identity type select (from `$identityTypes`), identity number, mobile, remarks, plus pre-checked scope checkboxes (from `$availableScopeTypes`). Error display inline.
+
+---
+
 ## Next Up
 
 1. **Admin verification UI in `~/Herd/nrh-admin`.** Build the endpoint that writes `payment_verified_at = now()` + `payment_verified_by = Auth::id()` from the admin app, plus a "pending verification" queue/list so finance can find uploaded slips. Without this, today's email + customer-side prep are informational only — finance still can't actually verify anything in-system.
 
-2. **Step 2 — Customer email when admin verifies.** Observer on `ScreeningRequest::updated()` watching `payment_verified_at` transitioning null → non-null. ~30 min once the admin endpoint exists. Highest-signal customer email of the whole flow ("we received your payment, work has started").
+2. **Customer email when admin verifies payment.** Observer on `ScreeningRequest::updated()` watching `payment_verified_at` transitioning null → non-null. ~30 min once the admin endpoint exists.
 
-3. **Step 3 — Convert to Laravel Notification classes (foundation for in-app bell).** Refactor existing `Mail::raw()` call sites (login OTP, invitation email, finance-on-upload, customer-on-verify) to `Notification` classes with `via: ['mail', 'database']`. Adds DB persistence for free via the standard `notifications` table — that's the prerequisite for a customer top-bar bell. Don't build the bell UI itself until at least 2–3 customer-facing notification types exist (today: zero).
+3. **Add Candidate — activity log.** The new `AddCandidateController` doesn't log activity yet. Should fire `activity()->on($screeningRequest)->log('Candidate added')` after the transaction.
+
+4. **Add Candidate — admin visibility.** Admin app needs to handle requests where a candidate was added post-creation (the `RequestCandidate` will exist but may not have appeared in the original submission). Coordinate with admin portal team.
+
+5. **Convert to Laravel Notification classes (foundation for in-app bell).** Refactor `Mail::raw()` call sites to `Notification` classes with `via: ['mail', 'database']`. Prerequisite for a customer top-bar bell. Don't build the bell UI until at least 2–3 customer-facing notification types exist.

@@ -20,7 +20,9 @@ class DashboardController extends Controller
         $stats = [
             'in_progress' => $requests->whereIn('status', ['new', 'in_progress'])->count(),
             'cleared' => $requests->where('status', 'complete')->count(),
-            'needs_review' => $requests->where('status', 'flagged')->count(),
+            'needs_review' => ScreeningRequest::where('customer_id', $customerId)
+                ->whereHas('candidates', fn ($q) => $q->where('status', 'flagged'))
+                ->count(),
             'total' => $requests->count(),
             'awaiting_payment' => $isCashBilled
                 ? $requests->where('status', 'new')->whereNull('payment_slip_path')->count()

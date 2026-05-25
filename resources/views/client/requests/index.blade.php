@@ -46,16 +46,14 @@
                 'all' => $requests->count(),
                 'new' => $requests->where('status', 'new')->count(),
                 'in_progress' => $requests->where('status', 'in_progress')->count(),
-                'flagged' => $requests->where('status', 'flagged')->count(),
-                'prelim' => $requests->where('status', 'prelim')->count(),
                 'complete' => $requests->whereIn('status', ['complete', 'updated'])->count(),
                 'rejected' => $requests->where('status', 'rejected')->count(),
                 'payment' => $paymentTabCount ?? 0,
             ];
 
-            $tabs = ['all' => 'All', 'new' => 'New', 'in_progress' => 'In Progress', 'flagged' => 'Flagged', 'prelim' => 'Prelim', 'complete' => 'Completed', 'rejected' => 'Rejected'];
+            $tabs = ['all' => 'All', 'new' => 'New', 'in_progress' => 'In Progress', 'complete' => 'Completed', 'rejected' => 'Rejected'];
             if (($isCashBilled ?? false)) {
-                $tabs = ['all' => 'All', 'payment' => 'Payment', 'new' => 'New', 'in_progress' => 'In Progress', 'flagged' => 'Flagged', 'prelim' => 'Prelim', 'complete' => 'Completed', 'rejected' => 'Rejected'];
+                $tabs = ['all' => 'All', 'payment' => 'Payment', 'new' => 'New', 'in_progress' => 'In Progress', 'complete' => 'Completed', 'rejected' => 'Rejected'];
             }
         @endphp
 

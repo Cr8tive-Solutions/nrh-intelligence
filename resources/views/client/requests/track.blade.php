@@ -38,7 +38,7 @@
                 <div style="display:flex;flex-direction:column;gap:12px;">
                     @foreach ($results as $result)
                         @php
-                            $stepMap = ['new' => 1, 'rejected' => 1, 'in_progress' => 2, 'flagged' => 2, 'prelim' => 3, 'complete' => 3, 'updated' => 3];
+                            $stepMap = ['new' => 1, 'rejected' => 1, 'in_progress' => 2, 'complete' => 3, 'updated' => 3];
                             $currentStep = $stepMap[$result->status] ?? 1;
                             $trackSteps = [1 => 'Received', 2 => 'Processing', 3 => 'Complete'];
                         @endphp

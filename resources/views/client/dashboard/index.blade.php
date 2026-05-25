@@ -155,8 +155,8 @@
                                     <span class="pill pill-clear"><span class="dot"></span>Payment received</span>
                                 @elseif ($req->status === 'complete')
                                     <span class="pill pill-clear"><span class="dot"></span>Cleared</span>
-                                @elseif ($req->status === 'flagged')
-                                    <span class="pill pill-review"><span class="dot"></span>Needs review</span>
+                                @elseif ($req->status === 'updated')
+                                    <span class="pill pill-clear"><span class="dot"></span>Updated</span>
                                 @elseif ($req->status === 'in_progress')
                                     <span class="pill pill-progress"><span class="dot"></span>In progress</span>
                                 @else
@@ -245,19 +245,17 @@
                                 $isCashNewUnverified            => '<b>' . e($req->reference) . '</b> — verifying payment',
                                 $isCashNewVerified              => 'Payment received — <b>' . e($req->reference) . '</b>',
                                 $req->status === 'complete'     => '<b>' . e($req->reference) . '</b> cleared all checks',
-                                $req->status === 'flagged'      => '<b>' . e($req->reference) . '</b> — flagged for review',
+                                $req->status === 'updated'      => 'Report updated — <b>' . e($req->reference) . '</b>',
                                 $req->status === 'in_progress'  => 'Request in progress — <b>' . e($req->reference) . '</b>',
                                 default                          => 'New order submitted — <b>' . e($req->reference) . '</b>',
                             };
                             $feedMeta = strtoupper($req->created_at->diffForHumans()) . ' · ' . $req->candidates_count . ' ' . strtoupper(Str::plural('candidate', $req->candidates_count));
-                            $feedIconGold = $req->status === 'flagged';
+                            $feedIconGold = false;
                         @endphp
                         <div class="feed-item">
-                            <div class="feed-icon {{ $feedIconGold ? 'gold' : '' }}">
-                                @if ($req->status === 'complete')
+                            <div class="feed-icon">
+                                @if (in_array($req->status, ['complete', 'updated']))
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>
-                                @elseif ($req->status === 'flagged')
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M12 2L2 22h20z"/></svg>
                                 @elseif ($req->status === 'in_progress')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
                                 @else
