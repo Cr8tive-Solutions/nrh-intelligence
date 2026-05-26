@@ -49,7 +49,7 @@
                                     <p style="font-size:14px;font-weight:700;color:var(--ink-900);margin:0;">{{ $result->name }}</p>
                                     <p style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);margin:3px 0 0;">{{ $result->identity_number }}</p>
                                 </div>
-                                <a href="{{ route('client.requests.details', $result->screeningRequest->id) }}"
+                                <a href="{{ route('client.requests.details', hid($result->screeningRequest->id)) }}"
                                    style="font-size:12px;font-weight:600;color:var(--emerald-700);text-decoration:none;white-space:nowrap;flex-shrink:0;">
                                     {{ $result->screeningRequest->reference }} →
                                 </a>

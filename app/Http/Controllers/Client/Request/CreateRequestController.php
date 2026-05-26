@@ -100,6 +100,8 @@ class CreateRequestController extends Controller
                     'identity_type_id' => (int) $c['identity_type_id'],
                     'name' => $c['name'],
                     'identity_number' => $c['identity_number'],
+                    'nationality' => $c['nationality'] ?? null,
+                    'date_of_birth' => ! empty($c['date_of_birth']) ? $c['date_of_birth'] : null,
                     'mobile' => $c['mobile'] ?? null,
                     'remarks' => $c['remarks'] ?? null,
                     'status' => 'new',
@@ -188,6 +190,8 @@ class CreateRequestController extends Controller
                 'identity_type_id' => (int) ($subject['identity_type_id'] ?? 1),
                 'name' => $subject['name'] ?? 'Unknown',
                 'identity_number' => $subject['identity_number'] ?? '',
+                'nationality' => $subject['nationality'] ?? null,
+                'date_of_birth' => ! empty($subject['dob']) ? $subject['dob'] : null,
                 'mobile' => $subject['mobile'] ?? null,
                 'remarks' => $subject['remarks'] ?? null,
                 'status' => 'new',
@@ -207,9 +211,12 @@ class CreateRequestController extends Controller
 
         if ($customer?->isCashBilled()) {
             return redirect()
-                ->route('client.requests.details', $screeningRequest->id)
+                ->route('client.requests.details', hid($screeningRequest->id))
                 ->with('status', 'Request created. Please complete payment to begin processing.');
         }
+
+        // Monthly-billed customers start immediately — no payment gate.
+        $screeningRequest->update(['status' => 'in_progress']);
 
         return redirect()->route('client.request.success');
     }

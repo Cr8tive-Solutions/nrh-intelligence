@@ -36,8 +36,9 @@ class ViewRequestController extends Controller
         return view('client.requests.index', compact('requests', 'isCashBilled', 'awaitingPaymentCount', 'paymentTabCount'));
     }
 
-    public function details(int $id)
+    public function details(string $id)
     {
+        $id = hdecode($id);
         $customerId = session('client_customer_id', 1);
 
         $request = ScreeningRequest::with([

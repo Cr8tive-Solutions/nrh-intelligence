@@ -9,8 +9,9 @@ use Illuminate\View\View;
 
 class CandidatesController extends Controller
 {
-    public function show(int $id): View|RedirectResponse
+    public function show(string $id): View|RedirectResponse
     {
+        $id = hdecode($id);
         $customerId = session('client_customer_id', 1);
 
         $candidate = RequestCandidate::whereHas(

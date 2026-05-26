@@ -104,12 +104,18 @@ Route::name('client.')->group(function () {
         // Billing
         Route::prefix('billing')->name('billing.')->middleware('permission:view-billing')->group(function () {
             Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions');
-            Route::get('/transactions/{id}/receipt', [TransactionController::class, 'receipt'])->middleware('permission:download-invoices')->name('transactions.receipt');
+            Route::middleware('permission:download-invoices')->group(function () {
+                Route::get('/transactions/{id}/receipt', [TransactionController::class, 'receipt'])->name('transactions.receipt');
+                Route::get('/transactions/{id}/receipt/pdf', [TransactionController::class, 'receiptPdf'])->name('transactions.receipt.pdf');
+            });
             Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices');
             Route::middleware('permission:download-invoices')->group(function () {
                 Route::get('/invoices/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
                 Route::get('/invoices/{id}/download', [InvoiceController::class, 'download'])->name('invoices.download');
             });
+            Route::post('/invoices/{id}/receipts', [InvoiceController::class, 'uploadReceipt'])
+                ->middleware('permission:manage-billing')
+                ->name('invoices.receipts.store');
         });
 
         // Notifications

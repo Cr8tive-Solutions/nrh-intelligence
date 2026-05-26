@@ -272,8 +272,8 @@
                         </div>
                     </div>
                     @if ($canUploadSlip)
-                        <a href="{{ route('client.requests.payment-slip.download', $request->id) }}" style="font-size:13px;color:var(--emerald-700);font-weight:600;text-decoration:none;">View</a>
-                        <form method="POST" action="{{ route('client.requests.payment-slip.destroy', $request->id) }}" style="margin:0;" onsubmit="return confirm('Remove the uploaded slip and re-upload?');">
+                        <a href="{{ route('client.requests.payment-slip.download', hid($request->id)) }}" style="font-size:13px;color:var(--emerald-700);font-weight:600;text-decoration:none;">View</a>
+                        <form method="POST" action="{{ route('client.requests.payment-slip.destroy', hid($request->id)) }}" style="margin:0;" onsubmit="return confirm('Remove the uploaded slip and re-upload?');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" style="background:none;border:0;padding:0;cursor:pointer;font-size:13px;color:var(--gold-700);font-weight:600;">Replace</button>
@@ -286,7 +286,7 @@
                     <p style="font-size:13px;color:var(--ink-600);line-height:1.6;margin:0 0 12px;">
                         Attach the bank-transfer confirmation (PDF, JPG or PNG, max 5&nbsp;MB). Processing begins within {{ $afterPaymentSla }} of verification.
                     </p>
-                    <form method="POST" action="{{ route('client.requests.payment-slip.store', $request->id) }}" enctype="multipart/form-data" style="margin:0;">
+                    <form method="POST" action="{{ route('client.requests.payment-slip.store', hid($request->id)) }}" enctype="multipart/form-data" style="margin:0;">
                         @csrf
                         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                             <input type="file" name="payment_slip" accept=".pdf,.jpg,.jpeg,.png" required style="font-size:13px;flex:1;min-width:200px;">
@@ -325,7 +325,7 @@
                 </div>
             </div>
             @if ($request->hasPaymentSlip())
-                <a href="{{ route('client.requests.payment-slip.download', $request->id) }}" style="font-size:13px;color:var(--emerald-700);font-weight:600;text-decoration:none;">View slip</a>
+                <a href="{{ route('client.requests.payment-slip.download', hid($request->id)) }}" style="font-size:13px;color:var(--emerald-700);font-weight:600;text-decoration:none;">View slip</a>
             @endif
         </div>
     @endif
@@ -367,7 +367,7 @@
                                 default       => ['cls' => 'pill-pending',  'txt' => 'Waiting'],
                             };
                         @endphp
-                        <a href="{{ route('client.candidates.show', $candidate->id) }}" class="cand-card {{ $candidate->status === 'flagged' ? 'is-flagged' : '' }}">
+                        <a href="{{ route('client.candidates.show', hid($candidate->id)) }}" class="cand-card {{ $candidate->status === 'flagged' ? 'is-flagged' : '' }}">
                             @php
                                 $isRedacted = $candidate->isRedacted();
                                 $avatarTxt  = $isRedacted ? '··' : strtoupper(substr($candidate->name, 0, 2));
@@ -492,7 +492,7 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M18 6 6 18M6 6l12 12"/></svg>
                         </button>
                     </div>
-                    <form method="POST" action="{{ route('client.requests.candidates.store', $request->id) }}" style="padding:20px 22px;display:flex;flex-direction:column;gap:14px;">
+                    <form method="POST" action="{{ route('client.requests.candidates.store', hid($request->id)) }}" style="padding:20px 22px;display:flex;flex-direction:column;gap:14px;">
                         @csrf
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                             <div style="grid-column:1/-1;">
@@ -516,11 +516,21 @@
                                     style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px;background:var(--card);color:var(--ink-900);font-family:var(--font-ui);">
                             </div>
                             <div>
+                                <label style="font-size:11px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Nationality</label>
+                                <input type="text" name="nationality" placeholder="e.g. Malaysian"
+                                    style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px;background:var(--card);color:var(--ink-900);font-family:var(--font-ui);">
+                            </div>
+                            <div>
+                                <label style="font-size:11px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Date of Birth</label>
+                                <input type="date" name="date_of_birth"
+                                    style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px;background:var(--card);color:var(--ink-900);font-family:var(--font-ui);">
+                            </div>
+                            <div>
                                 <label style="font-size:11px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Mobile</label>
                                 <input type="text" name="mobile" placeholder="+60 12-345 6789"
                                     style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px;background:var(--card);color:var(--ink-900);font-family:var(--font-ui);">
                             </div>
-                            <div style="grid-column:1/-1;">
+                            <div>
                                 <label style="font-size:11px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Remarks</label>
                                 <input type="text" name="remarks" placeholder="Optional notes"
                                     style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px;background:var(--card);color:var(--ink-900);font-family:var(--font-ui);">

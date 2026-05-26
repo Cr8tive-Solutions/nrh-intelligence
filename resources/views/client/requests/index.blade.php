@@ -104,7 +104,7 @@
                         @endphp
                         <tr data-row data-status="{{ $req->status }}" data-ref="{{ $req->reference }}" data-payment="{{ $paymentState }}"
                             x-show="matches('{{ $req->status }}', @js($req->reference), '{{ $paymentState }}')"
-                            onclick="location.href='{{ route('client.requests.details', $req->id) }}'"
+                            onclick="location.href='{{ route('client.requests.details', hid($req->id)) }}'"
                             style="cursor:pointer;">
                             <td>
                                 <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--emerald-700);">{{ $req->reference }}</span>
@@ -115,7 +115,7 @@
                             </td>
                             <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $req->created_at->format('d M Y') }}</td>
                             <td style="text-align:right;">
-                                <a href="{{ route('client.requests.details', $req->id) }}"
+                                <a href="{{ route('client.requests.details', hid($req->id)) }}"
                                    class="btn btn-ghost" style="padding:5px 12px;font-size:12px;"
                                    onclick="event.stopPropagation()">View</a>
                             </td>

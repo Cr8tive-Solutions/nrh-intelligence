@@ -121,7 +121,7 @@
                                 3 => 'Basic',
                             };
                         @endphp
-                        <tr onclick="location.href='{{ route('client.requests.details', $req->id) }}'">
+                        <tr onclick="location.href='{{ route('client.requests.details', hid($req->id)) }}'">
                             <td>
                                 <div class="cand">
                                     <div class="av">{{ $initials }}</div>

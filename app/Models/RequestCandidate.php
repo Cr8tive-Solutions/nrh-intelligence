@@ -23,12 +23,15 @@ class RequestCandidate extends Model
         'identity_type_id',
         'name',
         'identity_number',
+        'nationality',
+        'date_of_birth',
         'mobile',
         'remarks',
         'status',
     ];
 
     protected $casts = [
+        'date_of_birth' => 'date',
         'redacted_at' => 'datetime',
     ];
 

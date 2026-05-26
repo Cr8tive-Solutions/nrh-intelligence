@@ -46,7 +46,7 @@
                                 MYR {{ number_format($txn->amount, 2) }}
                             </td>
                             <td style="text-align:right;">
-                                <a href="{{ route('client.billing.transactions.receipt', $txn->id) }}"
+                                <a href="{{ route('client.billing.transactions.receipt', hid($txn->id)) }}"
                                    class="btn btn-ghost" style="padding:5px 12px;font-size:12px;">View</a>
                             </td>
                         </tr>

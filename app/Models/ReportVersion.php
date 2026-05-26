@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasHashid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ReportVersion extends Model
 {
+    use HasHashid;
+
     protected $table = 'report_versions';
 
     /**

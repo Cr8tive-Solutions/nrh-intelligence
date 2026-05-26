@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Agreement;
 use App\Models\Invoice;
+use App\Models\InvoicePaymentReceipt;
 use App\Models\ScreeningRequest;
 use App\Models\Transaction;
 
@@ -96,6 +97,74 @@ class NotificationController extends Controller
                     'read' => true,
                     'link' => route('client.requests.details', $req->id),
                 ]);
+            });
+
+        // Preliminary report ready
+        ScreeningRequest::where('customer_id', $customerId)
+            ->where('status', 'prelim')
+            ->latest('updated_at')
+            ->limit(3)
+            ->get()
+            ->each(function ($req) use (&$notifications) {
+                $notifications->push([
+                    'type' => 'info',
+                    'icon' => 'check',
+                    'title' => 'Preliminary report ready — '.$req->reference,
+                    'body' => 'A preliminary screening report has been issued for this request. Full report to follow.',
+                    'time' => $req->updated_at,
+                    'read' => false,
+                    'link' => route('client.history.details', $req->id),
+                ]);
+            });
+
+        // Updated (re-issued) reports
+        ScreeningRequest::where('customer_id', $customerId)
+            ->where('status', 'updated')
+            ->latest('updated_at')
+            ->limit(3)
+            ->get()
+            ->each(function ($req) use (&$notifications) {
+                $notifications->push([
+                    'type' => 'success',
+                    'icon' => 'check',
+                    'title' => 'Report updated — '.$req->reference,
+                    'body' => 'A revised screening report has been issued for this request.',
+                    'time' => $req->updated_at,
+                    'read' => false,
+                    'link' => route('client.history.details', $req->id),
+                ]);
+            });
+
+        // Payment slip status — verified or rejected in the last 30 days
+        InvoicePaymentReceipt::whereHas('invoice', fn ($q) => $q->where('customer_id', $customerId))
+            ->whereIn('status', ['verified', 'rejected'])
+            ->where('verified_at', '>=', now()->subDays(30))
+            ->latest('verified_at')
+            ->limit(5)
+            ->get()
+            ->each(function ($receipt) use (&$notifications) {
+                $invoice = $receipt->invoice;
+                if ($receipt->isVerified()) {
+                    $notifications->push([
+                        'type' => 'success',
+                        'icon' => 'invoice',
+                        'title' => 'Payment slip verified — '.($invoice?->number ?? ''),
+                        'body' => 'Your payment of MYR '.number_format($receipt->amount_claimed, 2).' has been verified. Your account has been updated.',
+                        'time' => $receipt->verified_at,
+                        'read' => false,
+                        'link' => $invoice ? route('client.billing.invoices.show', $invoice->id) : null,
+                    ]);
+                } else {
+                    $notifications->push([
+                        'type' => 'danger',
+                        'icon' => 'invoice',
+                        'title' => 'Payment slip rejected — '.($invoice?->number ?? ''),
+                        'body' => 'Your payment slip could not be verified. Please upload a new slip or contact support.',
+                        'time' => $receipt->verified_at,
+                        'read' => false,
+                        'link' => $invoice ? route('client.billing.invoices.show', $invoice->id) : null,
+                    ]);
+                }
             });
 
         $notifications = $notifications->sortByDesc(fn ($n) => $n['time'])->values();

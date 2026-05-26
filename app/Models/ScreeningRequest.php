@@ -2,17 +2,21 @@
 
 namespace App\Models;
 
+use App\Traits\HasHashid;
 use Database\Factories\ScreeningRequestFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
 class ScreeningRequest extends Model
 {
+    use HasHashid;
+
     /** @use HasFactory<ScreeningRequestFactory> */
     use HasFactory;
 
@@ -77,11 +81,31 @@ class ScreeningRequest extends Model
      */
     public function cashTotal(): float
     {
+        $candidateIds = $this->candidates()->pluck('id');
+        if ($candidateIds->isEmpty()) {
+            return 0.0;
+        }
+
+        $scopeIds = DB::table('candidate_scope_type')
+            ->whereIn('request_candidate_id', $candidateIds)
+            ->pluck('scope_type_id');
+
+        if ($scopeIds->isEmpty()) {
+            return 0.0;
+        }
+
+        $customerPrices = DB::table('customer_scope_prices')
+            ->where('customer_id', $this->customer_id)
+            ->whereIn('scope_type_id', $scopeIds)
+            ->pluck('price', 'scope_type_id');
+
+        $defaultPrices = DB::table('scope_types')
+            ->whereIn('id', $scopeIds)
+            ->pluck('price', 'id');
+
         $total = 0.0;
-        foreach ($this->candidates as $candidate) {
-            foreach ($candidate->scopeTypes as $scope) {
-                $total += (float) ($scope->price ?? 0);
-            }
+        foreach ($scopeIds as $sid) {
+            $total += (float) ($customerPrices[$sid] ?? $defaultPrices[$sid] ?? 0);
         }
 
         return round($total, 2);

@@ -403,6 +403,14 @@
                                     @keydown.enter.prevent="addCandidate()" />
                             </div>
                             <div class="field">
+                                <label>Nationality</label>
+                                <input x-model="newCandidate.nationality" type="text" placeholder="e.g. Malaysian" />
+                            </div>
+                            <div class="field">
+                                <label>Date of Birth</label>
+                                <input x-model="newCandidate.date_of_birth" type="date" />
+                            </div>
+                            <div class="field">
                                 <label>Mobile Number</label>
                                 <input x-model="newCandidate.mobile" type="tel" placeholder="+60 12 345 6789" />
                             </div>
@@ -442,7 +450,7 @@
 
                         {{-- Template + format hint --}}
                         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);font-size:12px;">
-                            <span style="color:var(--ink-500);">Columns: <b style="color:var(--ink-700);">Name, Identity Type, Identity Number, Mobile, Remarks</b></span>
+                            <span style="color:var(--ink-500);">Columns: <b style="color:var(--ink-700);">Name, Identity Type, Identity Number, Nationality, Date of Birth, Mobile, Remarks</b></span>
                             <button @click.prevent="downloadTemplate()"
                                 style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--emerald-700);background:none;border:none;cursor:pointer;font-family:var(--font-ui);flex-shrink:0;margin-left:12px;">
                                 <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
@@ -871,7 +879,7 @@ function newRequest() {
         cart: [],
         candidates: [],
         uploads: [],
-        newCandidate: { name: '', identity_type_id: '', identity_number: '', mobile: '', remarks: '' },
+        newCandidate: { name: '', identity_type_id: '', identity_number: '', nationality: '', date_of_birth: '', mobile: '', remarks: '' },
         candidateError: '',
         submitting: false,
         consent: false,
@@ -958,7 +966,7 @@ function newRequest() {
                 this.candidateError = 'A candidate with this identity number already exists.'; return;
             }
             this.candidates.push({ ...this.newCandidate, _id: Date.now() });
-            this.newCandidate = { name: '', identity_type_id: '', identity_number: '', mobile: '', remarks: '' };
+            this.newCandidate = { name: '', identity_type_id: '', identity_number: '', nationality: '', date_of_birth: '', mobile: '', remarks: '' };
         },
         removeCandidate(id) { this.candidates = this.candidates.filter(c => c._id !== id); },
 
@@ -1040,13 +1048,13 @@ function newRequest() {
         },
 
         rowToCandidate(cols, rowNum) {
-            const [name, idType, idNumber, mobile, remarks] = cols.map(c => (c || '').trim());
+            const [name, idType, idNumber, nationality, date_of_birth, mobile, remarks] = cols.map(c => (c || '').trim());
             if (!name && !idNumber) { return null; } // skip blank rows
             if (!name || !idNumber) { this.bulkError = `Row ${rowNum}: Name and Identity Number are required.`; return null; }
             const typeMatch = this.identityTypes.find(t => t.name.toLowerCase().includes((idType || '').toLowerCase()) || (idType || '').toLowerCase().includes(t.name.toLowerCase()));
             const typeId = String(typeMatch ? typeMatch.id : (this.identityTypes[0]?.id ?? 1));
             const typeName = typeMatch ? typeMatch.name : (this.identityTypes[0]?.name ?? '');
-            return { name, identity_type_id: typeId, _typeName: typeName, identity_number: idNumber, mobile: mobile || '', remarks: remarks || '' };
+            return { name, identity_type_id: typeId, _typeName: typeName, identity_number: idNumber, nationality: nationality || '', date_of_birth: date_of_birth || '', mobile: mobile || '', remarks: remarks || '' };
         },
 
         importBulk() {

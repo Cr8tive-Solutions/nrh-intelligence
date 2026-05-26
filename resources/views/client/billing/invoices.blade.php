@@ -28,7 +28,7 @@
                 <tbody>
                     @php $canDownload = auth()->user()?->can('download-invoices'); @endphp
                     @forelse ($invoices as $inv)
-                        <tr @if($canDownload) onclick="location.href='{{ route('client.billing.invoices.show', $inv->id) }}'" style="cursor:pointer;" @endif>
+                        <tr @if($canDownload) onclick="location.href='{{ route('client.billing.invoices.show', hid($inv->id)) }}'" style="cursor:pointer;" @endif>
                             <td>
                                 <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--emerald-700);">{{ $inv->number }}</span>
                             </td>
@@ -51,10 +51,10 @@
                             <td style="text-align:right;">
                                 @if ($canDownload)
                                     <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
-                                        <a href="{{ route('client.billing.invoices.show', $inv->id) }}"
+                                        <a href="{{ route('client.billing.invoices.show', hid($inv->id)) }}"
                                            class="btn btn-ghost" style="padding:5px 10px;font-size:12px;"
                                            onclick="event.stopPropagation()">View</a>
-                                        <a href="{{ route('client.billing.invoices.download', $inv->id) }}"
+                                        <a href="{{ route('client.billing.invoices.download', hid($inv->id)) }}"
                                            style="font-size:12px;font-weight:500;color:var(--ink-400);text-decoration:none;transition:color 120ms;"
                                            onclick="event.stopPropagation()">PDF</a>
                                     </div>

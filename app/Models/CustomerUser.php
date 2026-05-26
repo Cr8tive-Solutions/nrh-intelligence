@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasHashid;
 use Database\Factories\CustomerUserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class CustomerUser extends Authenticatable
 {
+    use HasHashid;
+
     /** @use HasFactory<CustomerUserFactory> */
     use HasFactory;
 

@@ -14,9 +14,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PaymentSlipController extends Controller
 {
-    public function store(Request $request, int $id): RedirectResponse
+    public function store(Request $request, string $id): RedirectResponse
     {
-        $screeningRequest = $this->resolveCashRequest($id);
+        $screeningRequest = $this->resolveCashRequest(hdecode($id));
 
         $validated = $request->validate([
             'payment_slip' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
@@ -42,13 +42,13 @@ class PaymentSlipController extends Controller
         $this->notifyFinance($screeningRequest, $originalFilename, $isReplacement);
 
         return redirect()
-            ->route('client.requests.details', $screeningRequest->id)
+            ->route('client.requests.details', hid($screeningRequest->id))
             ->with('status', 'Payment slip uploaded. Our finance team will verify it shortly.');
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(string $id): RedirectResponse
     {
-        $screeningRequest = $this->resolveCashRequest($id);
+        $screeningRequest = $this->resolveCashRequest(hdecode($id));
 
         if ($screeningRequest->payment_slip_path) {
             Storage::disk('local')->delete($screeningRequest->payment_slip_path);
@@ -60,13 +60,13 @@ class PaymentSlipController extends Controller
         ]);
 
         return redirect()
-            ->route('client.requests.details', $screeningRequest->id)
+            ->route('client.requests.details', hid($screeningRequest->id))
             ->with('status', 'Payment slip removed. You can upload a new one.');
     }
 
-    public function download(int $id): StreamedResponse
+    public function download(string $id): StreamedResponse
     {
-        $screeningRequest = $this->resolveCashRequest($id);
+        $screeningRequest = $this->resolveCashRequest(hdecode($id));
 
         abort_unless($screeningRequest->hasPaymentSlip(), 404);
 
@@ -133,7 +133,7 @@ class PaymentSlipController extends Controller
         }
     }
 
-    private function resolveCashRequest(int $id): ScreeningRequest
+    private function resolveCashRequest(int|string $id): ScreeningRequest
     {
         $customerId = session('client_customer_id', 1);
 

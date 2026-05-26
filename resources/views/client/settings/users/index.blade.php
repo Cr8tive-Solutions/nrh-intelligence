@@ -69,7 +69,7 @@
                             <td style="text-align:right;">
                                 <div style="display:inline-flex;gap:6px;">
                                     @if ($user->status !== 'active')
-                                        <form method="POST" action="{{ route('client.settings.users.resend-invitation', $user->id) }}" style="display:inline;">
+                                        <form method="POST" action="{{ route('client.settings.users.resend-invitation', hid($user->id)) }}" style="display:inline;">
                                             @csrf
                                             <button type="submit" class="btn btn-ghost" style="padding:5px 12px;font-size:12px;">Resend invite</button>
                                         </form>

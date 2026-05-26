@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Client\Request;
 
 use App\Http\Controllers\Controller;
-use App\Models\IdentityType;
 use App\Models\RequestCandidate;
 use App\Models\ScreeningRequest;
 use Illuminate\Http\Request;
@@ -13,8 +12,9 @@ class AddCandidateController extends Controller
 {
     private const BLOCKED_STATUSES = ['complete', 'updated', 'rejected'];
 
-    public function store(Request $request, int $requestId)
+    public function store(Request $request, string $requestId)
     {
+        $requestId = hdecode($requestId);
         $customerId = session('client_customer_id');
 
         $screeningRequest = ScreeningRequest::with(['candidates.scopeTypes', 'customer.agreement'])
@@ -32,24 +32,28 @@ class AddCandidateController extends Controller
             ->all();
 
         $data = $request->validate([
-            'name'             => 'required|string|max:255',
-            'identity_number'  => 'required|string|max:100',
+            'name' => 'required|string|max:255',
+            'identity_number' => 'required|string|max:100',
             'identity_type_id' => 'required|integer|exists:identity_types,id',
-            'scope_type_ids'   => 'required|array|min:1',
+            'scope_type_ids' => 'required|array|min:1',
             'scope_type_ids.*' => 'integer|in:'.implode(',', $existingScopeIds ?: [0]),
-            'mobile'           => 'nullable|string|max:30',
-            'remarks'          => 'nullable|string|max:500',
+            'nationality' => 'nullable|string|max:100',
+            'date_of_birth' => 'nullable|date|before:today',
+            'mobile' => 'nullable|string|max:30',
+            'remarks' => 'nullable|string|max:500',
         ]);
 
         DB::transaction(function () use ($screeningRequest, $data) {
             $candidate = RequestCandidate::create([
                 'screening_request_id' => $screeningRequest->id,
-                'identity_type_id'     => $data['identity_type_id'],
-                'name'                 => $data['name'],
-                'identity_number'      => $data['identity_number'],
-                'mobile'               => $data['mobile'] ?? null,
-                'remarks'              => $data['remarks'] ?? null,
-                'status'               => 'new',
+                'identity_type_id' => $data['identity_type_id'],
+                'name' => $data['name'],
+                'identity_number' => $data['identity_number'],
+                'nationality' => $data['nationality'] ?? null,
+                'date_of_birth' => $data['date_of_birth'] ?? null,
+                'mobile' => $data['mobile'] ?? null,
+                'remarks' => $data['remarks'] ?? null,
+                'status' => 'new',
             ]);
 
             $candidate->scopeTypes()->attach(
@@ -59,7 +63,7 @@ class AddCandidateController extends Controller
             );
         });
 
-        return redirect()->route('client.requests.details', $requestId)
+        return redirect()->route('client.requests.details', hid($requestId))
             ->with('success', "Candidate {$data['name']} added to request.");
     }
 }

@@ -21,14 +21,16 @@ class OldRequestController extends Controller
         return view('client.history.index', compact('requests'));
     }
 
-    public function details(int $id)
+    public function details(string $id)
     {
+        $id = hdecode($id);
         $customerId = session('client_customer_id', 1);
 
         $request = ScreeningRequest::with([
             'candidates.identityType',
-            'candidates.scopeTypes',
+            'candidates.scopeTypes' => fn ($q) => $q->orderBy('scope_types.id'),
             'submittedBy',
+            'currentReportVersions',
         ])
             ->where('customer_id', $customerId)
             ->complete()

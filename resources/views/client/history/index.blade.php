@@ -31,7 +31,7 @@
                 </thead>
                 <tbody>
                     @forelse ($requests as $req)
-                        <tr onclick="location.href='{{ route('client.history.details', $req->id) }}'">
+                        <tr onclick="location.href='{{ route('client.history.details', hid($req->id)) }}'">
                             <td>
                                 <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--emerald-700);">{{ $req->reference }}</span>
                             </td>
@@ -44,7 +44,7 @@
                                 </span>
                             </td>
                             <td style="text-align:right;">
-                                <a href="{{ route('client.history.details', $req->id) }}"
+                                <a href="{{ route('client.history.details', hid($req->id)) }}"
                                    class="btn btn-ghost" style="padding:5px 12px;font-size:12px;"
                                    onclick="event.stopPropagation()">View</a>
                             </td>

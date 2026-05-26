@@ -1,6 +1,6 @@
 # NRH Intelligence — Frontend Progress Log
 
-Last updated: 2026-05-25 (Session 3)
+Last updated: 2026-05-26
 
 ---
 
@@ -234,6 +234,42 @@ Goal: make the page readable for non-IT users (older executives, HR staff) witho
 - No blade changes needed — all 8 logo references already use `asset('nrh-logo.png')`
 
 Covered locations: sidebar, top navbar (mobile), auth layout, email verification page, browser favicon (both layouts), invoice PDF header, transaction receipt header.
+
+---
+
+## Session — 2026-05-26 (Candidate scope order + History detail redesign)
+
+### 1. Candidate page — scope checks sorted by ID ascending
+
+- **File:** `app/Http/Controllers/Client/CandidatesController.php`
+- The `scopeTypes` eager load on the `show()` method previously had no order, resulting in arbitrary check display order.
+- Fixed: added `fn ($q) => $q->orderBy('scope_types.id')` constraint to the `scopeTypes` with clause.
+- Checks on `/candidates/{id}` now render consistently in ascending scope type ID order.
+
+### 2. History detail page redesign (`/history/{id}`)
+
+**Files:**
+- `resources/views/client/history/details.blade.php` — full rewrite
+- `app/Http/Controllers/Client/Request/OldRequestController.php` — added `currentReportVersions` + scope order to eager load
+
+**What was wrong:** The page was nearly empty — a thin green "completed" banner, a flat candidates table (name, IC, status only), scope names as unformatted badges, and a minimal sidebar. No report downloads, no check findings, no turnaround data.
+
+**What was built:**
+
+- **Completion hero card** — colour-coded (green if all cleared, gold if flagged). Shows: verdict title ("All checks cleared" / "Completed with flags"), candidate + check counts, completion date, human-readable turnaround time (e.g. "12.7 hrs"), submitted-by, and report count. Dynamic — adapts to flagged requests.
+
+- **Per-candidate check breakdown** — one card per candidate with:
+  - Avatar initials, full name, identity type + number, cleared/flagged pill
+  - One row per scope check showing: status icon (✓ / ⚠ / ○), check name, analyst comment from `findings['comment']` if present, per-check turnaround time, status pill
+  - Remarks footer if candidate has remarks
+
+- **Sidebar — Request details** — expanded to include: request number, type, submitted by, submitted timestamp, completed timestamp, turnaround (bold green), candidate count, total checks with flagged count note.
+
+- **Sidebar — Reports** — uses `currentReportVersions` (non-superseded only); each report shows type label ("Full report", "Preliminary report", "Basic report"), version, and generation timestamp with a download link.
+
+- **Page header** — now shows reference number, type badge, and a "Download report" button pointing to the latest full report (when reports exist).
+
+- **Controller update** — `OldRequestController::details()` now eager-loads `currentReportVersions` and orders `candidates.scopeTypes` by `scope_types.id`.
 
 ---
 
