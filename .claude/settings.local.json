@@ -48,7 +48,11 @@
       "Bash(identify /Users/anwarsaad/Herd/nrh-intelligence/public/nrh-logo.png)",
       "Bash(sips -g pixelWidth -g pixelHeight /Users/anwarsaad/Herd/nrh-intelligence/public/nrh-logo.png)",
       "Bash(python3 *)",
-      "Bash(pip3 install *)"
+      "Bash(pip3 install *)",
+      "Bash(grep -rn 'file_\\\\|$refs\\\\|docType' resources/views/client/request/)",
+      "Bash(grep *)",
+      "Bash(export TMPDIR=/Users/anwarsaad/Herd/nrh-intelligence/.tmp)",
+      "Bash(php -i)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -647,9 +647,8 @@
                                     }"
                                     @mouseenter="hovered = true"
                                     @mouseleave="hovered = false"
-                                    @click="$refs['file_' + candidate._id + '_' + docType.id].click()">
+                                    @click="$event.currentTarget.querySelector('input[type=file]').click()">
                                     <input type="file" style="display:none;"
-                                        :ref="'file_' + candidate._id + '_' + docType.id"
                                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                         @change="handleFileUpload($event, candidate._id, docType.id)" />
 
@@ -990,8 +989,8 @@ function newRequest() {
 
         // ── Bulk upload ──────────────────────────────────────────────────
         downloadTemplate() {
-            const header = 'Name,Identity Type,Identity Number,Mobile,Remarks\n';
-            const example = 'John Doe,NRIC,900101-14-5678,+60123456789,Optional note\n';
+            const header = 'Name,Identity Type,Identity Number,Nationality,Date of Birth,Mobile,Remarks\n';
+            const example = 'John Doe,NRIC,900101-14-5678,Malaysian,1990-01-01,+60123456789,Optional note\n';
             const blob = new Blob([header + example], { type: 'text/csv' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -1051,6 +1050,9 @@ function newRequest() {
             const [name, idType, idNumber, nationality, date_of_birth, mobile, remarks] = cols.map(c => (c || '').trim());
             if (!name && !idNumber) { return null; } // skip blank rows
             if (!name || !idNumber) { this.bulkError = `Row ${rowNum}: Name and Identity Number are required.`; return null; }
+            if (date_of_birth && Number.isNaN(Date.parse(date_of_birth))) {
+                this.bulkError = `Row ${rowNum}: Date of Birth "${date_of_birth}" is not a valid date (use YYYY-MM-DD).`; return null;
+            }
             const typeMatch = this.identityTypes.find(t => t.name.toLowerCase().includes((idType || '').toLowerCase()) || (idType || '').toLowerCase().includes(t.name.toLowerCase()));
             const typeId = String(typeMatch ? typeMatch.id : (this.identityTypes[0]?.id ?? 1));
             const typeName = typeMatch ? typeMatch.name : (this.identityTypes[0]?.name ?? '');

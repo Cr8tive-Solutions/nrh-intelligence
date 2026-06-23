@@ -256,7 +256,7 @@ class CreateRequestController extends Controller
 
         $hasSignedConsentColumn = Schema::hasColumn('scope_types', 'requires_signed_consent');
 
-        $scopes = ScopeType::all()
+        $scopes = ScopeType::orderBy('id')->get()
             ->map(function ($s) use ($customerPrices, $hasSignedConsentColumn) {
                 $hasCustomPrice = $customerPrices->has($s->id);
 
