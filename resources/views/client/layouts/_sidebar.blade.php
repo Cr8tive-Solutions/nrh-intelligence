@@ -62,13 +62,13 @@
                     @php $active = request()->routeIs('client.request.malaysia*'); @endphp
                     <a href="{{ route('client.request.malaysia') }}" class="nav-item nav-sub-item {{ $active ? 'active' : '' }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-                        Malaysia Screening
+                        Malaysia
                     </a>
 
                     @php $active = request()->routeIs('client.request.global*') || request()->routeIs('client.request.new'); @endphp
                     <a href="{{ route('client.request.global') }}" class="nav-item nav-sub-item {{ $active ? 'active' : '' }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><circle cx="12" cy="12" r="9"/><path d="M12 3a15 15 0 0 1 0 18M3 12h18"/></svg>
-                        Global Screening
+                        Global
                     </a>
 
                     {{-- Due Diligence --}}

@@ -71,4 +71,9 @@ class RequestCandidate extends Model
     {
         return $this->hasMany(ConsentRecord::class);
     }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(CandidateDocument::class);
+    }
 }

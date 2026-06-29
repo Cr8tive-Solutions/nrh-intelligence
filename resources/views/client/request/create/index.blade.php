@@ -637,23 +637,23 @@
                             </span>
                         </div>
                         <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
-                            <template x-for="docType in requiredDocTypes" :key="docType.id">
+                            <template x-for="docType in requiredDocTypes" :key="docType.key">
                                 <div x-data="{ hovered: false }"
                                     style="border-radius:var(--radius);border:2px dashed var(--line);padding:20px 12px;text-align:center;cursor:pointer;transition:border-color 120ms,background 120ms;"
                                     :style="{
-                                        'border-color': getUploadedFile(candidate._id, docType.id) ? 'rgba(5,150,105,0.45)' : (hovered ? 'var(--emerald-500)' : 'var(--line)'),
-                                        'background':   getUploadedFile(candidate._id, docType.id) ? 'rgba(5,150,105,0.04)' : (hovered ? 'rgba(5,150,105,0.02)' : ''),
-                                        'border-style': getUploadedFile(candidate._id, docType.id) ? 'solid' : 'dashed'
+                                        'border-color': getUploadedFile(candidate._id, docType.key) ? 'rgba(5,150,105,0.45)' : (hovered ? 'var(--emerald-500)' : 'var(--line)'),
+                                        'background':   getUploadedFile(candidate._id, docType.key) ? 'rgba(5,150,105,0.04)' : (hovered ? 'rgba(5,150,105,0.02)' : ''),
+                                        'border-style': getUploadedFile(candidate._id, docType.key) ? 'solid' : 'dashed'
                                     }"
                                     @mouseenter="hovered = true"
                                     @mouseleave="hovered = false"
                                     @click="$event.currentTarget.querySelector('input[type=file]').click()">
                                     <input type="file" style="display:none;"
                                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                        @change="handleFileUpload($event, candidate._id, docType.id)" />
+                                        @change="handleFileUpload($event, candidate._id, docType.key)" />
 
                                     {{-- Empty state --}}
-                                    <div x-show="!getUploadedFile(candidate._id, docType.id)">
+                                    <div x-show="!getUploadedFile(candidate._id, docType.key)">
                                         <svg style="width:22px;height:22px;color:var(--ink-300);margin:0 auto 8px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
                                         </svg>
@@ -663,14 +663,14 @@
                                     </div>
 
                                     {{-- Uploaded state --}}
-                                    <div x-show="getUploadedFile(candidate._id, docType.id)">
+                                    <div x-show="getUploadedFile(candidate._id, docType.key)">
                                         <div style="width:36px;height:36px;border-radius:50%;background:rgba(5,150,105,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;">
                                             <svg style="width:18px;height:18px;color:var(--emerald-600);" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
                                             </svg>
                                         </div>
-                                        <p style="font-size:12px;font-weight:600;color:var(--emerald-700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;" x-text="getUploadedFile(candidate._id, docType.id)?.name ?? ''"></p>
-                                        <button @click.stop="removeFile(candidate._id, docType.id)"
+                                        <p style="font-size:12px;font-weight:600;color:var(--emerald-700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;" x-text="getUploadedFile(candidate._id, docType.key)?.name ?? ''"></p>
+                                        <button @click.stop="removeFile(candidate._id, docType.key)"
                                             x-data="{ btnHov: false }"
                                             :style="{ color: btnHov ? 'var(--danger)' : 'var(--ink-400)' }"
                                             @mouseenter="btnHov = true" @mouseleave="btnHov = false"
@@ -821,15 +821,17 @@
                                 <div style="display:flex;align-items:flex-start;gap:10px;">
                                     <svg style="width:16px;height:16px;color:var(--gold-700);flex-shrink:0;margin-top:1px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M9.75 3.104a48.554 48.554 0 0 0-4.5 4.5l4.5-4.5Zm-4.5 4.5L3 8.25l3 3-1.5-1.5-1.5-1.5Zm0 0L9.75 3.104"/></svg>
                                     <div>
-                                        <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 4px;">Signed consent forms required</p>
+                                        <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 4px;">Supporting documents required</p>
                                         <p style="font-size:12px;color:var(--ink-700);line-height:1.5;margin:0 0 6px;">
-                                            One or more selected scopes require an individually-signed consent form per candidate. The checkbox alone is not sufficient. Upload the signed form for each candidate in step 2 (under "Documents" → "Consent Form").
+                                            The selected scopes require these documents per candidate:
+                                            <span style="font-weight:600;" x-text="requiredDocTypes.map(d => d.label).join(', ')"></span>.
+                                            A PDPA checkbox alone is not sufficient — upload each document for every candidate in the Documents step.
                                         </p>
                                         <p x-show="!signedConsentReady" style="font-size:12px;font-weight:600;color:var(--danger);margin:0;">
-                                            <span x-text="candidatesMissingSignedConsent.length"></span> candidate(s) still missing a signed consent form.
+                                            <span x-text="candidatesMissingSignedConsent.length"></span> candidate(s) still missing required documents.
                                         </p>
                                         <p x-show="signedConsentReady" style="font-size:12px;font-weight:600;color:var(--emerald-700);margin:0;">
-                                            All candidates have signed consent forms uploaded. ✓
+                                            All candidates have the required documents uploaded. ✓
                                         </p>
                                     </div>
                                 </div>
@@ -892,13 +894,19 @@ function newRequest() {
         identityTypes: @json($identityTypes),
         canViewPrices: @json(auth('customer_user')->user()?->can('view-prices') ?? false),
 
-        requiredDocTypes: [
-            { id: 1, label: 'Consent Form',    required: true  },
-            { id: 2, label: 'CV / Resume',     required: false },
-            { id: 3, label: 'Extra Document',  required: false },
-        ],
+        // Labels for each document key the admin can require on a scope.
+        docLabels: { consent: 'Consent Form', nric: 'NRIC / ID Copy', resume: 'Resume / CV', certificate: 'Certificate Copy' },
 
         init() {},
+
+        // Documents required for this request = the union of required_documents across
+        // every scope in the cart, in a stable order. Each is mandatory to upload.
+        get requiredDocTypes() {
+            const order = ['consent', 'nric', 'resume', 'certificate'];
+            const keys = new Set();
+            this.cart.forEach(s => (s.required_documents || []).forEach(k => keys.add(k)));
+            return order.filter(k => keys.has(k)).map(k => ({ key: k, label: this.docLabels[k] || k, required: true }));
+        },
 
         get selectedCountryObj() {
             return this.allCountries.find(c => c.id === this.selectedCountry) ?? null;
@@ -928,17 +936,16 @@ function newRequest() {
         get filteredPackages() { return this.allPackages.filter(p => p.country_id === this.selectedCountry); },
         get cartTotal()        { return this.cart.reduce((sum, i) => sum + i.price, 0); },
 
-        // True when any scope in the cart is admin-flagged as requiring a signed consent form.
-        // In that mode, the checkbox-only consent is disabled and every candidate must upload a file.
-        get signedConsentRequired() { return this.cart.some(s => s.requires_signed_consent); },
+        // True when the selected scopes require document uploads. In that mode the
+        // checkbox-only consent is disabled and every candidate must upload each required doc.
+        get signedConsentRequired() { return this.requiredDocTypes.length > 0; },
         get signedConsentReady() {
             if (!this.signedConsentRequired) { return true; }
-            // Doc type 1 is the Consent Form per requiredDocTypes config above.
-            return this.candidates.length > 0 && this.candidates.every(c => this.getUploadedFile(c._id, 1));
+            return this.candidates.length > 0 && this.candidates.every(c => this.candidateDocsComplete(c._id));
         },
         get candidatesMissingSignedConsent() {
             if (!this.signedConsentRequired) { return []; }
-            return this.candidates.filter(c => !this.getUploadedFile(c._id, 1));
+            return this.candidates.filter(c => !this.candidateDocsComplete(c._id));
         },
 
         isInCart(id) { return this.cart.some(i => i.id === id); },
@@ -969,22 +976,22 @@ function newRequest() {
         },
         removeCandidate(id) { this.candidates = this.candidates.filter(c => c._id !== id); },
 
-        handleFileUpload(event, candidateId, docTypeId) {
+        handleFileUpload(event, candidateId, docKey) {
             const file = event.target.files[0];
             if (!file) { return; }
-            this.uploads = this.uploads.filter(u => !(u.candidateId === candidateId && u.docTypeId === docTypeId));
-            this.uploads.push({ candidateId, docTypeId, file, name: file.name });
+            this.uploads = this.uploads.filter(u => !(u.candidateId === candidateId && u.docKey === docKey));
+            this.uploads.push({ candidateId, docKey, file, name: file.name });
         },
-        getUploadedFile(candidateId, docTypeId) {
-            return this.uploads.find(u => u.candidateId === candidateId && u.docTypeId === docTypeId) || null;
+        getUploadedFile(candidateId, docKey) {
+            return this.uploads.find(u => u.candidateId === candidateId && u.docKey === docKey) || null;
         },
-        removeFile(candidateId, docTypeId) {
-            this.uploads = this.uploads.filter(u => !(u.candidateId === candidateId && u.docTypeId === docTypeId));
+        removeFile(candidateId, docKey) {
+            this.uploads = this.uploads.filter(u => !(u.candidateId === candidateId && u.docKey === docKey));
         },
         candidateDocsComplete(candidateId) {
             return this.requiredDocTypes
                 .filter(dt => dt.required)
-                .every(dt => this.getUploadedFile(candidateId, dt.id));
+                .every(dt => this.getUploadedFile(candidateId, dt.key));
         },
 
         // ── Bulk upload ──────────────────────────────────────────────────
@@ -1079,16 +1086,19 @@ function newRequest() {
             this.submitting = true;
             try {
                 const fd = new FormData(event.target);
-                // Index uploaded consent files by candidate index so the server can validate
-                // 1:1 (each candidate must have a consent form when signed mode is on).
+                // Append every required document, keyed by candidate index + document key,
+                // so the server can validate each candidate has each required upload.
                 if (this.signedConsentRequired) {
+                    const keys = this.requiredDocTypes.map(d => d.key);
                     this.candidates.forEach((c, idx) => {
-                        const upload = this.uploads.find(u => u.candidateId === c._id && u.docTypeId === 1);
-                        if (upload) {
-                            fd.append(`consent_files[${idx}]`, upload.file, upload.name);
-                        }
+                        keys.forEach(key => {
+                            const upload = this.uploads.find(u => u.candidateId === c._id && u.docKey === key);
+                            if (upload) {
+                                fd.append(`documents[${idx}][${key}]`, upload.file, upload.name);
+                            }
+                        });
                     });
-                    fd.append('signed_consent_required', '1');
+                    fd.append('docs_required', '1');
                 }
                 const res = await fetch(event.target.action, {
                     method: 'POST',

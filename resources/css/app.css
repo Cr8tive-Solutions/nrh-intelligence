@@ -855,6 +855,31 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--ink-200); border-radius: 5px; border: 2px solid var(--paper); }
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-300); }
 
+/* Sidebar nav: slim, unobtrusive scrollbar that fades in on hover */
+.nrh-sidebar nav {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 200ms ease;
+}
+.nrh-sidebar:hover nav,
+.nrh-sidebar nav:focus-within {
+    scrollbar-color: var(--ink-200) transparent;
+}
+.nrh-sidebar nav::-webkit-scrollbar { width: 6px; }
+.nrh-sidebar nav::-webkit-scrollbar-track { background: transparent; }
+.nrh-sidebar nav::-webkit-scrollbar-thumb {
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    transition: background 200ms ease;
+}
+.nrh-sidebar:hover nav::-webkit-scrollbar-thumb {
+    background: var(--ink-200);
+}
+.nrh-sidebar nav::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-300);
+}
+
 /* ─── Custom checkbox ────────────────────────────────────── */
 .cbox { display: inline-flex; align-items: center; cursor: pointer; }
 .cbox input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }

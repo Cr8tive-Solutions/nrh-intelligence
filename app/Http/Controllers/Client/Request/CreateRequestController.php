@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client\Request;
 
 use App\Http\Controllers\Controller;
+use App\Models\CandidateDocument;
 use App\Models\ConsentRecord;
 use App\Models\Country;
 use App\Models\Customer;
@@ -65,14 +66,14 @@ class CreateRequestController extends Controller
 
         $scopeIds = collect($cart)->pluck('id')->filter()->values()->all();
 
-        // The admin portal owns this column. Until they ship it, signed-consent
-        // mode is impossible (column doesn't exist) — fall back to checkbox flow.
-        $signedConsentRequired = Schema::hasColumn('scope_types', 'requires_signed_consent')
-            && ScopeType::whereIn('id', $scopeIds)->where('requires_signed_consent', true)->exists();
+        // Per-scope required documents (set by admin). The union across all selected
+        // scopes is what every candidate must upload. Falls back to the legacy
+        // consent flow when no scope declares any required documents.
+        $requiredDocs = $this->requiredDocsFor($scopeIds);
 
-        // Either checkbox consent OR a complete set of uploaded signed forms — never both, never neither.
-        if ($signedConsentRequired) {
-            $this->validateSignedConsentUploads($request, count($candidates));
+        // Either checkbox consent OR a complete set of uploaded documents — never both, never neither.
+        if (! empty($requiredDocs)) {
+            $this->validateDocumentUploads($request, count($candidates), $requiredDocs);
         } else {
             $request->validate(['consent' => ['accepted']], [
                 'consent.accepted' => 'PDPA consent must be accepted before submitting the request.',
@@ -85,7 +86,7 @@ class CreateRequestController extends Controller
         $seq = ScreeningRequest::count() + 1;
         $reference = 'REQ-'.now()->format('Y').'-'.str_pad($seq, 4, '0', STR_PAD_LEFT);
 
-        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $reference, $type, $scopeIds, $candidates, $signedConsentRequired) {
+        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $reference, $type, $scopeIds, $candidates, $requiredDocs) {
             $screeningRequest = ScreeningRequest::create([
                 'customer_id' => $customerId,
                 'customer_user_id' => $userId,
@@ -113,18 +114,11 @@ class CreateRequestController extends Controller
                     ])->all()
                 );
 
-                $consentFilePath = null;
-                if ($signedConsentRequired) {
-                    /** @var UploadedFile $upload */
-                    $upload = $request->file("consent_files.{$idx}");
-                    $consentFilePath = $upload->storeAs(
-                        "consent/{$customerId}/{$screeningRequest->reference}",
-                        "candidate-{$candidate->id}.".$upload->getClientOriginalExtension(),
-                        'local'
-                    );
+                if (! empty($requiredDocs)) {
+                    $this->storeCandidateDocuments($request, $screeningRequest, $candidate, $idx, $requiredDocs, $customerId);
+                } else {
+                    $this->recordConsent($request, $candidate, 'digital_form', null);
                 }
-
-                $this->recordConsent($request, $candidate, $signedConsentRequired ? 'paper_signed' : 'digital_form', $consentFilePath);
             }
 
             return $screeningRequest;
@@ -134,27 +128,121 @@ class CreateRequestController extends Controller
     }
 
     /**
-     * Enforce the "every candidate has a signed consent file" rule, throwing 422 if any are missing.
+     * The ordered union of required documents across the selected scopes.
+     * Returns [] when the column is absent or no scope requires any document.
+     *
+     * @param  array<int, int|string>  $scopeIds
+     * @return list<string>
      */
-    protected function validateSignedConsentUploads(Request $request, int $candidateCount): void
+    protected function requiredDocsFor(array $scopeIds): array
     {
-        $rules = [];
-        $messages = [];
-        for ($i = 0; $i < $candidateCount; $i++) {
-            $rules["consent_files.{$i}"] = ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'];
-            $messages["consent_files.{$i}.required"] = 'Signed consent form is missing for candidate '.($i + 1).'.';
-            $messages["consent_files.{$i}.file"] = 'Signed consent form for candidate '.($i + 1).' must be a file.';
-            $messages["consent_files.{$i}.mimes"] = 'Signed consent form for candidate '.($i + 1).' must be a PDF, JPG, or PNG.';
-            $messages["consent_files.{$i}.max"] = 'Signed consent form for candidate '.($i + 1).' must not exceed 10MB.';
+        if (empty($scopeIds) || ! Schema::hasColumn('scope_types', 'required_documents')) {
+            return [];
         }
 
-        if (empty($rules)) {
+        $union = ScopeType::whereIn('id', $scopeIds)->get()
+            ->flatMap(function ($s) {
+                $docs = $s->required_documents;
+                if (is_string($docs)) {
+                    $docs = json_decode($docs, true) ?: [];
+                }
+
+                return is_array($docs) ? $docs : [];
+            })
+            ->unique()
+            ->all();
+
+        // Canonical display/validation order.
+        return array_values(array_filter(
+            ['consent', 'nric', 'resume', 'certificate'],
+            fn ($key) => in_array($key, $union, true)
+        ));
+    }
+
+    /**
+     * Require every candidate to have uploaded each required document, throwing 422 if any are missing.
+     *
+     * @param  list<string>  $requiredDocs
+     */
+    protected function validateDocumentUploads(Request $request, int $candidateCount, array $requiredDocs): void
+    {
+        if ($candidateCount < 1) {
             throw ValidationException::withMessages([
                 'candidates' => 'At least one candidate is required.',
             ]);
         }
 
+        $labels = $this->documentLabels();
+        $rules = [];
+        $messages = [];
+
+        for ($i = 0; $i < $candidateCount; $i++) {
+            foreach ($requiredDocs as $key) {
+                $field = "documents.{$i}.{$key}";
+                $rules[$field] = ['required', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:10240'];
+                $label = $labels[$key] ?? $key;
+                $messages["{$field}.required"] = "{$label} is missing for candidate ".($i + 1).'.';
+                $messages["{$field}.file"] = "{$label} for candidate ".($i + 1).' must be a file.';
+                $messages["{$field}.mimes"] = "{$label} for candidate ".($i + 1).' must be a PDF, DOC, DOCX, JPG, or PNG.';
+                $messages["{$field}.max"] = "{$label} for candidate ".($i + 1).' must not exceed 10MB.';
+            }
+        }
+
         $request->validate($rules, $messages);
+    }
+
+    /**
+     * Persist a candidate's uploaded documents: consent → consent_records (PDPA),
+     * everything else → candidate_documents.
+     *
+     * @param  list<string>  $requiredDocs
+     */
+    protected function storeCandidateDocuments(Request $request, ScreeningRequest $screeningRequest, RequestCandidate $candidate, int $idx, array $requiredDocs, int $customerId): void
+    {
+        $dir = "candidate-documents/{$customerId}/{$screeningRequest->reference}/candidate-{$candidate->id}";
+        $consentFilePath = null;
+
+        foreach ($requiredDocs as $key) {
+            /** @var UploadedFile|null $upload */
+            $upload = $request->file("documents.{$idx}.{$key}");
+            if (! $upload) {
+                continue;
+            }
+
+            $storedPath = $upload->storeAs($dir, $key.'.'.$upload->getClientOriginalExtension(), 'local');
+
+            if ($key === 'consent') {
+                $consentFilePath = $storedPath;
+
+                continue;
+            }
+
+            CandidateDocument::create([
+                'request_candidate_id' => $candidate->id,
+                'screening_request_id' => $screeningRequest->id,
+                'type' => $key,
+                'file_path' => $storedPath,
+                'original_name' => $upload->getClientOriginalName(),
+            ]);
+        }
+
+        $this->recordConsent(
+            $request,
+            $candidate,
+            in_array('consent', $requiredDocs, true) ? 'paper_signed' : 'digital_form',
+            $consentFilePath
+        );
+    }
+
+    /** @return array<string, string> */
+    protected function documentLabels(): array
+    {
+        return [
+            'consent' => 'Signed consent form',
+            'nric' => 'NRIC / ID copy',
+            'resume' => 'Resume / CV',
+            'certificate' => 'Certificate copy',
+        ];
     }
 
     public function submitDueDiligence(Request $request)
@@ -255,9 +343,10 @@ class CreateRequestController extends Controller
             ->pluck('price', 'scope_type_id') ?? collect();
 
         $hasSignedConsentColumn = Schema::hasColumn('scope_types', 'requires_signed_consent');
+        $hasRequiredDocsColumn = Schema::hasColumn('scope_types', 'required_documents');
 
         $scopes = ScopeType::orderBy('id')->get()
-            ->map(function ($s) use ($customerPrices, $hasSignedConsentColumn) {
+            ->map(function ($s) use ($customerPrices, $hasSignedConsentColumn, $hasRequiredDocsColumn) {
                 $hasCustomPrice = $customerPrices->has($s->id);
 
                 return [
@@ -273,6 +362,9 @@ class CreateRequestController extends Controller
                     // (PDPA — checkbox-only consent is not allowed for these). Falls back to false
                     // until the admin portal ships the requires_signed_consent column.
                     'requires_signed_consent' => $hasSignedConsentColumn ? (bool) ($s->requires_signed_consent ?? false) : false,
+                    // Documents the customer must upload for this scope (consent/nric/resume/certificate).
+                    // The request form renders an upload slot per document and blocks submission if any are missing.
+                    'required_documents' => $hasRequiredDocsColumn ? (array) ($s->required_documents ?? []) : [],
                 ];
             })
             ->reject(fn ($s) => $s['price_on_request'])
