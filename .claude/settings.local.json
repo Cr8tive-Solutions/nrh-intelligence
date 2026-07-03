@@ -52,7 +52,8 @@
       "Bash(grep -rn 'file_\\\\|$refs\\\\|docType' resources/views/client/request/)",
       "Bash(grep *)",
       "Bash(export TMPDIR=/Users/anwarsaad/Herd/nrh-intelligence/.tmp)",
-      "Bash(php -i)"
+      "Bash(php -i)",
+      "Bash(xargs grep:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
