@@ -15,10 +15,10 @@ use Spatie\Activitylog\Support\LogOptions;
 
 class ScreeningRequest extends Model
 {
-    use HasHashid;
-
     /** @use HasFactory<ScreeningRequestFactory> */
     use HasFactory;
+
+    use HasHashid;
 
     use LogsActivity;
 
@@ -125,7 +125,7 @@ class ScreeningRequest extends Model
     /** @return Builder<static> */
     public function scopeActive(Builder $query): Builder
     {
-        return $query->whereIn('status', ['new', 'in_progress', 'complete', 'updated', 'rejected']);
+        return $query->whereIn('status', ['new', 'in_progress', 'complete', 'updated', 'rejected', 'prelim', 'flagged']);
     }
 
     /** @return Builder<static> */

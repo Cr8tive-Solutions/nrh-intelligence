@@ -18,20 +18,6 @@
         </div>
     @endif
 
-    {{-- SSO buttons --}}
-    <div class="sso-row">
-        <button type="button" class="sso-btn">
-            <svg viewBox="0 0 24 24" style="width:16px;height:16px;flex-shrink:0;"><path fill="#4285F4" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z"/></svg>
-            Google Workspace
-        </button>
-        <button type="button" class="sso-btn">
-            <svg viewBox="0 0 24 24" style="width:16px;height:16px;flex-shrink:0;"><path fill="#0A2540" d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.2l7.5 3.8L12 11.8 4.5 8 12 4.2z"/><path fill="#D4AF37" d="M4 10l8 4v8l-8-4v-8zm16 0v8l-8 4v-8l8-4z" opacity="0.4"/></svg>
-            Okta SSO
-        </button>
-    </div>
-
-    <div class="auth-divider">or continue with email</div>
-
     {{-- Form --}}
     <form method="POST" action="{{ route('client.login.submit') }}" style="display:flex;flex-direction:column;gap:18px;">
         @csrf

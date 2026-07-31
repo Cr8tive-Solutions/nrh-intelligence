@@ -5,11 +5,11 @@
      *   Red    — rejected   — insufficient documents, no TAT
      *   Yellow — in_progress — TAT begins
      *   Black  — prelim
+     *   Red    — flagged    — needs attention
      *   Green  — complete
      *   Green  — updated
      *
-     * "rejected", "prelim", "updated" depend on admin-side schema support.
-     * Until they ship, unknown statuses fall back to a muted "Pending" pill.
+     * Unmapped/unknown statuses fall back to a muted "Pending" pill.
      *
      * For cash-billed customers, "new" is overridden to surface payment state
      * so the list answers "which request is awaiting payment?" without a click-in.
@@ -19,6 +19,8 @@
         'new'         => ['label' => 'New',         'pill' => 'pill-progress'],
         'in_progress' => ['label' => 'In Progress', 'pill' => 'pill-review'],
         'rejected'    => ['label' => 'Rejected',    'pill' => 'pill-flagged'],
+        'prelim'      => ['label' => 'Preliminary Report', 'pill' => 'pill-prelim'],
+        'flagged'     => ['label' => 'Flagged',     'pill' => 'pill-flagged'],
         'complete'    => ['label' => 'Complete',    'pill' => 'pill-clear'],
         'updated'     => ['label' => 'Updated',     'pill' => 'pill-clear'],
     ];
