@@ -28,14 +28,14 @@ Route::name('client.')->group(function () {
 
     // Auth (unauthenticated)
     Route::get('/login', [LoginController::class, 'index'])->name('login');
-    Route::post('/login', [LoginController::class, 'submit'])->name('login.submit');
+    Route::post('/login', [LoginController::class, 'submit'])->name('login.submit')->middleware('throttle:5,1');
     Route::get('/verification', [LoginController::class, 'verification'])->name('verification');
-    Route::post('/verification', [LoginController::class, 'verifyCode'])->name('verification.submit');
-    Route::post('/verification/resend', [LoginController::class, 'resend'])->name('verification.resend');
+    Route::post('/verification', [LoginController::class, 'verifyCode'])->name('verification.submit')->middleware('throttle:5,1');
+    Route::post('/verification/resend', [LoginController::class, 'resend'])->name('verification.resend')->middleware('throttle:3,1');
     Route::get('/forgot-password', [LoginController::class, 'forgot'])->name('forgot');
-    Route::post('/forgot-password', [LoginController::class, 'sendReset'])->name('forgot.submit');
+    Route::post('/forgot-password', [LoginController::class, 'sendReset'])->name('forgot.submit')->middleware('throttle:5,1');
     Route::get('/reset-password/{token}', [LoginController::class, 'reset'])->name('reset');
-    Route::post('/reset-password', [LoginController::class, 'processReset'])->name('reset.process');
+    Route::post('/reset-password', [LoginController::class, 'processReset'])->name('reset.process')->middleware('throttle:5,1');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     // Registration is invitation-only — see /invitation/{token}.

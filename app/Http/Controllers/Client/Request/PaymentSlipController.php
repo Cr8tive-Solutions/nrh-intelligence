@@ -135,7 +135,7 @@ class PaymentSlipController extends Controller
 
     private function resolveCashRequest(int|string $id): ScreeningRequest
     {
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $screeningRequest = ScreeningRequest::with('customer.agreement')
             ->where('customer_id', $customerId)

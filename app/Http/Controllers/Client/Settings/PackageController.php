@@ -10,7 +10,7 @@ class PackageController extends Controller
 {
     public function index()
     {
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $packages = Package::with(['country', 'scopeTypes'])
             ->where('customer_id', $customerId)

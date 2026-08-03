@@ -12,7 +12,7 @@ class CandidatesController extends Controller
     public function show(string $id): View|RedirectResponse
     {
         $id = hdecode($id);
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $candidate = RequestCandidate::whereHas(
             'screeningRequest',
@@ -26,7 +26,7 @@ class CandidatesController extends Controller
 
     public function index(): View
     {
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $allCandidates = RequestCandidate::whereHas(
             'screeningRequest',

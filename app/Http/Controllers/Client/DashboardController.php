@@ -10,7 +10,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
         $customer = Customer::with('agreement')->findOrFail($customerId);
 
         $requests = ScreeningRequest::where('customer_id', $customerId)->get();

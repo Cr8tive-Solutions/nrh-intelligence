@@ -10,7 +10,7 @@ class TransactionController extends Controller
 {
     public function index()
     {
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $transactions = Transaction::where('customer_id', $customerId)
             ->latest()
@@ -22,7 +22,7 @@ class TransactionController extends Controller
     public function receipt(string $id)
     {
         $id = hdecode($id);
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $transaction = Transaction::with('customer')
             ->where('customer_id', $customerId)
@@ -34,7 +34,7 @@ class TransactionController extends Controller
     public function receiptPdf(string $id)
     {
         $id = hdecode($id);
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $transaction = Transaction::with('customer')
             ->where('customer_id', $customerId)

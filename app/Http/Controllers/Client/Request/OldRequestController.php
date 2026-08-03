@@ -9,7 +9,7 @@ class OldRequestController extends Controller
 {
     public function index()
     {
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $requests = ScreeningRequest::with('candidates')
             ->where('customer_id', $customerId)
@@ -24,7 +24,7 @@ class OldRequestController extends Controller
     public function details(string $id)
     {
         $id = hdecode($id);
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $request = ScreeningRequest::with([
             'candidates.identityType',

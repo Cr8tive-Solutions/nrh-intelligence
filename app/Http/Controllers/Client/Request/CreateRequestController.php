@@ -80,8 +80,8 @@ class CreateRequestController extends Controller
             ]);
         }
 
-        $customerId = session('client_customer_id', 1);
-        $userId = session('client_user_id', 1);
+        $customerId = session('client_customer_id');
+        $userId = session('client_user_id');
 
         $seq = ScreeningRequest::count() + 1;
         $reference = 'REQ-'.now()->format('Y').'-'.str_pad($seq, 4, '0', STR_PAD_LEFT);
@@ -253,8 +253,8 @@ class CreateRequestController extends Controller
             'consent.accepted' => 'PDPA consent must be accepted before submitting the request.',
         ]);
 
-        $customerId = session('client_customer_id', 1);
-        $userId = session('client_user_id', 1);
+        $customerId = session('client_customer_id');
+        $userId = session('client_user_id');
         $type = $request->input('screening_type', 'kyc');
 
         $subject = json_decode($request->input('subject_data', '{}'), true);
@@ -333,7 +333,7 @@ class CreateRequestController extends Controller
 
     private function employmentView(?int $lockedCountryId, string $type)
     {
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $countries = Country::withCount('scopeTypes')->get();
 

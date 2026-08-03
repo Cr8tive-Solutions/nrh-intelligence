@@ -9,7 +9,7 @@ class AgreementController extends Controller
 {
     public function index()
     {
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $agreement = Agreement::where('customer_id', $customerId)->firstOrFail();
 

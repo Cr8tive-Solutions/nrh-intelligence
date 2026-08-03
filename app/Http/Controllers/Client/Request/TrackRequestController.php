@@ -16,7 +16,7 @@ class TrackRequestController extends Controller
 
     public function search(Request $request)
     {
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
         $query = trim($request->input('q', ''));
 
         if ($query === '') {

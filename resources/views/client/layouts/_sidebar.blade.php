@@ -71,26 +71,7 @@
                         Global
                     </a>
 
-                    {{-- Due Diligence --}}
-                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:var(--ink-400);padding:10px 10px 4px;font-weight:600;">Due Diligence</div>
-
-                    @php $active = request()->routeIs('client.request.kyc*'); @endphp
-                    <a href="{{ route('client.request.kyc') }}" class="nav-item nav-sub-item {{ $active ? 'active' : '' }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
-                        KYC <span style="color:var(--ink-400);">· Customer</span>
-                    </a>
-
-                    @php $active = request()->routeIs('client.request.kyb*'); @endphp
-                    <a href="{{ route('client.request.kyb') }}" class="nav-item nav-sub-item {{ $active ? 'active' : '' }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-                        KYB <span style="color:var(--ink-400);">· Business</span>
-                    </a>
-
-                    @php $active = request()->routeIs('client.request.kys*'); @endphp
-                    <a href="{{ route('client.request.kys') }}" class="nav-item nav-sub-item {{ $active ? 'active' : '' }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                        KYS <span style="color:var(--ink-400);">· Supplier</span>
-                    </a>
+                    {{-- Due Diligence (KYC/KYB/KYS) hidden until client confirms — routes still exist, just not linked here --}}
 
                 </div>
             </div>

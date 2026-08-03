@@ -10,14 +10,14 @@ class AccountController extends Controller
 {
     public function index()
     {
-        $customer = Customer::findOrFail(session('client_customer_id', 1));
+        $customer = Customer::findOrFail(session('client_customer_id'));
 
         return view('client.settings.account', compact('customer'));
     }
 
     public function update(Request $request)
     {
-        $customer = Customer::findOrFail(session('client_customer_id', 1));
+        $customer = Customer::findOrFail(session('client_customer_id'));
 
         $validated = $request->validate([
             'company_name' => ['required', 'string', 'max:255'],

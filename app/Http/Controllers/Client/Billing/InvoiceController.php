@@ -13,7 +13,7 @@ class InvoiceController extends Controller
 {
     public function index()
     {
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $invoices = Invoice::where('customer_id', $customerId)
             ->latest('issued_at')
@@ -25,7 +25,7 @@ class InvoiceController extends Controller
     public function show(string $id)
     {
         $id = hdecode($id);
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $invoice = Invoice::with(['items', 'customer', 'receipts'])
             ->where('customer_id', $customerId)
@@ -37,7 +37,7 @@ class InvoiceController extends Controller
     public function uploadReceipt(Request $request, string $id): RedirectResponse
     {
         $id = hdecode($id);
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $invoice = Invoice::where('customer_id', $customerId)->findOrFail($id);
 
@@ -76,7 +76,7 @@ class InvoiceController extends Controller
     public function download(string $id)
     {
         $id = hdecode($id);
-        $customerId = session('client_customer_id', 1);
+        $customerId = session('client_customer_id');
 
         $invoice = Invoice::with(['items', 'customer'])
             ->where('customer_id', $customerId)
