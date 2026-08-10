@@ -1,7 +1,6 @@
 <?php
 
-test('the application returns a successful response', function () {
-    $response = $this->get('/');
-
-    $response->assertStatus(200);
+// The client portal has no public landing page for guests — "/" bounces to login.
+test('an unauthenticated visitor is redirected away from the root', function () {
+    $this->get('/')->assertRedirect();
 });
