@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client\Request;
 use App\Http\Controllers\Controller;
 use App\Models\RequestCandidate;
 use App\Models\ScreeningRequest;
+use App\Support\Pii;
 use Illuminate\Http\Request;
 
 class TrackRequestController extends Controller
@@ -36,8 +37,16 @@ class TrackRequestController extends Controller
             ->whereHas('screeningRequest', fn ($q) => $q->where('customer_id', $customerId))
             ->where(function ($q) use ($query) {
                 $q->where('name', 'ilike', "%{$query}%")
-                    ->orWhere('identity_number', 'ilike', "%{$query}%")
                     ->orWhereHas('screeningRequest', fn ($r) => $r->where('reference', 'ilike', "%{$query}%"));
+
+                // identity_number is encrypted at rest, so substring search is
+                // impossible — match the full IC exactly via the blind index.
+                // When encryption is off, keep the legacy substring behaviour.
+                if (Pii::enabled()) {
+                    $q->orWhere(fn ($m) => $m->whereIdentityNumber($query));
+                } else {
+                    $q->orWhere('identity_number', 'ilike', "%{$query}%");
+                }
             })
             ->get();
 

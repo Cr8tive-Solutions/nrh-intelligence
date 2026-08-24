@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\EncryptsIdentityNumber;
 use Database\Factories\RequestCandidateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,9 +14,10 @@ use Spatie\Activitylog\Support\LogOptions;
 
 class RequestCandidate extends Model
 {
+    use EncryptsIdentityNumber;
+
     /** @use HasFactory<RequestCandidateFactory> */
     use HasFactory;
-
     use LogsActivity;
 
     protected $fillable = [
