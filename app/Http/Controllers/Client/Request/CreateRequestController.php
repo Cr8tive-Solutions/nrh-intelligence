@@ -83,14 +83,11 @@ class CreateRequestController extends Controller
         $customerId = session('client_customer_id');
         $userId = session('client_user_id');
 
-        $seq = ScreeningRequest::count() + 1;
-        $reference = 'REQ-'.now()->format('Y').'-'.str_pad($seq, 4, '0', STR_PAD_LEFT);
-
-        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $reference, $type, $scopeIds, $candidates, $requiredDocs) {
+        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $type, $scopeIds, $candidates, $requiredDocs) {
             $screeningRequest = ScreeningRequest::create([
                 'customer_id' => $customerId,
                 'customer_user_id' => $userId,
-                'reference' => $reference,
+                'reference' => ScreeningRequest::generateReference(),
                 'status' => 'new',
                 'type' => $type,
             ]);
@@ -260,14 +257,11 @@ class CreateRequestController extends Controller
         $subject = json_decode($request->input('subject_data', '{}'), true);
         $checks = json_decode($request->input('checks_data', '[]'), true);
 
-        $seq = ScreeningRequest::count() + 1;
-        $reference = 'REQ-'.now()->format('Y').'-'.str_pad($seq, 4, '0', STR_PAD_LEFT);
-
-        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $reference, $type, $subject, $checks) {
+        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $type, $subject, $checks) {
             $screeningRequest = ScreeningRequest::create([
                 'customer_id' => $customerId,
                 'customer_user_id' => $userId,
-                'reference' => $reference,
+                'reference' => ScreeningRequest::generateReference(),
                 'status' => 'new',
                 'type' => $type,
                 'meta' => ['checks' => $checks, 'subject' => $subject],

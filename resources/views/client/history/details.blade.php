@@ -42,7 +42,7 @@
         @if ($reports->isNotEmpty())
             <div style="display:flex;gap:8px;">
                 @php $latestFull = $reports->firstWhere('type', 'full') ?? $reports->first(); @endphp
-                <a href="{{ route('client.requests.reports.download', [$request->id, $latestFull->id]) }}" class="btn btn-primary">
+                <a href="{{ route('client.requests.reports.download', [$request, $latestFull]) }}" class="btn btn-primary">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>
                     Download report
                 </a>
@@ -146,7 +146,8 @@
                                         $tatMins < 1440       => round($tatMins / 60, 1) . ' hrs',
                                         default               => round($tatMins / 1440, 1) . ' days',
                                     };
-                                    $comment = $findings['comment'] ?? null;
+                                    // Structured findings carry risk_status_text; legacy findings carry comment.
+                                    $comment = $findings['risk_status_text'] ?? $findings['comment'] ?? null;
                                 @endphp
                                 <div style="padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;">
                                     {{-- Status icon --}}
@@ -256,7 +257,7 @@
                                     default                                            => ucfirst($rv->type) . ' report',
                                 };
                             @endphp
-                            <a href="{{ route('client.requests.reports.download', [$request->id, $rv->id]) }}"
+                            <a href="{{ route('client.requests.reports.download', [$request, $rv]) }}"
                                style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;transition:background 120ms;"
                                onmouseover="this.style.background='var(--paper)'"
                                onmouseout="this.style.background='transparent'">

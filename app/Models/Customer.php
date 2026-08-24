@@ -56,12 +56,45 @@ class Customer extends Model
         return $this->hasOne(Agreement::class);
     }
 
+    public function agreements(): HasMany
+    {
+        return $this->hasMany(Agreement::class);
+    }
+
+    private ?Agreement $currentAgreementMemo = null;
+
+    private bool $currentAgreementResolved = false;
+
+    /**
+     * The agreement that governs billing right now: the unexpired agreement
+     * with the latest expiry date, falling back to the most recently expired
+     * one so a lapsed customer keeps their billing mode instead of silently
+     * flipping to credit. Same rule as the admin portal's
+     * Customer::activeAgreement() — keep the two in sync, or cash requests
+     * get stranded (client accepts a payment slip the admin refuses to verify).
+     */
+    public function currentAgreement(): ?Agreement
+    {
+        if (! $this->currentAgreementResolved) {
+            $agreements = $this->relationLoaded('agreements') ? $this->agreements : $this->agreements()->get();
+
+            $this->currentAgreementMemo = $agreements
+                ->filter(fn ($a) => $a->expiry_date && $a->expiry_date->isFuture())
+                ->sortByDesc('expiry_date')
+                ->first()
+                ?? $agreements->sortByDesc('expiry_date')->first();
+            $this->currentAgreementResolved = true;
+        }
+
+        return $this->currentAgreementMemo;
+    }
+
     /**
      * @return 'cash'|'credit' — defaults to credit when no agreement is on file.
      */
     public function paymentMode(): string
     {
-        return $this->agreement?->isCashBilled() ? 'cash' : 'credit';
+        return $this->currentAgreement()?->isCashBilled() ? 'cash' : 'credit';
     }
 
     public function isCashBilled(): bool

@@ -222,8 +222,37 @@
                                     </div>
                                 @endif
 
-                                @php $findings = $pivot->findings ?? []; @endphp
-                                @if (! empty($findings['result_type']) || ! empty($findings['records']))
+                                @php
+                                    $findings = $pivot->findings ?? [];
+
+                                    // Structured shapes written by the admin findings editor:
+                                    // generic (result_type/records), employment (employer/validation),
+                                    // academic (credentials[], or legacy top-level institution/validation),
+                                    // referee (referees[], or legacy top-level referee_name/questions).
+                                    $credentials = ! empty($findings['credentials']) && is_array($findings['credentials'])
+                                        ? array_values(array_filter($findings['credentials'], 'is_array'))
+                                        : ((! empty($findings['institution']) && ! empty($findings['validation'])) ? [$findings] : []);
+                                    $referees = ! empty($findings['referees']) && is_array($findings['referees'])
+                                        ? array_values(array_filter($findings['referees'], 'is_array'))
+                                        : (! empty($findings['referee_name']) ? [$findings] : []);
+                                    $employmentRows = (empty($credentials) && ! empty($findings['validation']) && is_array($findings['validation']))
+                                        ? $findings['validation']
+                                        : [];
+
+                                    $overallRiskChip = function ($r) {
+                                        return match (strtolower((string) $r)) {
+                                            'low'                => ['Low risk', 'var(--emerald-700)', 'var(--emerald-50)'],
+                                            'moderate', 'medium' => ['Moderate risk', 'var(--gold-700, #b8860b)', 'rgba(184,147,31,0.12)'],
+                                            'high'               => ['High risk', 'var(--danger)', 'rgba(196,69,58,0.08)'],
+                                            'critical'           => ['Critical risk', '#fff', 'var(--danger)'],
+                                            default              => [null, null, null],
+                                        };
+                                    };
+
+                                    $isStructured = ! empty($findings['result_type']) || ! empty($findings['records'])
+                                        || $employmentRows || $credentials || $referees;
+                                @endphp
+                                @if ($isStructured)
                                     {{-- Structured findings format --}}
                                     @if (! empty($findings['risk_status_text']))
                                         <div style="grid-column:1/-1;">
@@ -268,6 +297,103 @@
                                                 @endif
                                                 @if (! empty($rec['penalty']))
                                                     <div style="margin-top:4px;font-size:11px;color:var(--ink-500);">Penalty: {{ $rec['penalty'] }}</div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+
+                                    {{-- Employment verification matrix --}}
+                                    @if ($employmentRows)
+                                        <div style="grid-column:1/-1;">
+                                            <div class="detail-label">Employment verification{{ ! empty($findings['employer']) ? ' — '.$findings['employer'] : '' }}</div>
+                                            @if (! empty($findings['verifier']))
+                                                <div style="font-size:11px;color:var(--ink-500);margin:2px 0 4px;">Verified with: {{ $findings['verifier'] }}</div>
+                                            @endif
+                                            @include('client.candidates._findings-validation', ['rows' => $employmentRows])
+                                            @php [$orTxt, $orFg, $orBg] = $overallRiskChip($findings['overall_risk'] ?? null); @endphp
+                                            @if ($orTxt || ! empty($findings['overall_action']))
+                                                <div style="margin-top:8px;font-size:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                                    @if ($orTxt)
+                                                        <span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:{{ $orFg }};background:{{ $orBg }};">{{ $orTxt }}</span>
+                                                    @endif
+                                                    @if (! empty($findings['overall_action']))
+                                                        <span style="color:var(--ink-700);">{{ $findings['overall_action'] }}</span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    {{-- Academic credentials --}}
+                                    @foreach ($credentials as $cred)
+                                        <div style="grid-column:1/-1;">
+                                            <div class="detail-label">Academic credential — {{ $cred['institution'] ?? 'Institution' }}</div>
+                                            @include('client.candidates._findings-validation', ['rows' => $cred['validation'] ?? []])
+                                            @if (! empty($cred['recognition']) && is_array($cred['recognition']))
+                                                @php $rec = $cred['recognition']; @endphp
+                                                <div style="border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;font-size:11px;margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;color:var(--ink-700);">
+                                                    @if (! empty($rec['scenario']))<span><b>Recognition:</b> {{ $rec['scenario'] }}</span>@endif
+                                                    @if (! empty($rec['institution_recognition']))<span>{{ $rec['institution_recognition'] }}</span>@endif
+                                                    @if (! empty($rec['program_accreditation']))<span>{{ $rec['program_accreditation'] }}</span>@endif
+                                                </div>
+                                            @endif
+                                            @php [$orTxt, $orFg, $orBg] = $overallRiskChip($cred['overall_risk'] ?? null); @endphp
+                                            @if ($orTxt || ! empty($cred['overall_action']))
+                                                <div style="margin-top:8px;font-size:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                                    @if ($orTxt)
+                                                        <span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:{{ $orFg }};background:{{ $orBg }};">{{ $orTxt }}</span>
+                                                    @endif
+                                                    @if (! empty($cred['overall_action']))
+                                                        <span style="color:var(--ink-700);">{{ $cred['overall_action'] }}</span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+
+                                    {{-- Referee interviews --}}
+                                    @foreach ($referees as $ref)
+                                        <div style="grid-column:1/-1;">
+                                            <div class="detail-label">Referee — {{ $ref['referee_name'] ?? '—' }}</div>
+                                            <div style="border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:12px;">
+                                                <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--ink-500);margin-bottom:8px;">
+                                                    @if (! empty($ref['designation']))<span><b style="color:var(--ink-700);">{{ $ref['designation'] }}</b></span>@endif
+                                                    @if (! empty($ref['affiliated_org']))<span>{{ $ref['affiliated_org'] }}</span>@endif
+                                                    @if (! empty($ref['relationship']))<span>Relationship: {{ $ref['relationship'] }}</span>@endif
+                                                    @if (isset($ref['credibility_weight']))<span>Credibility: {{ (int) $ref['credibility_weight'] }}/5</span>@endif
+                                                    @if (! empty($ref['contact_established']))<span>Contact: {{ ucfirst((string) $ref['contact_established']) }}</span>@endif
+                                                    @if (! empty($ref['consent']))<span>{{ ucfirst((string) $ref['consent']) }}</span>@endif
+                                                </div>
+                                                @foreach (array_filter($ref['questions'] ?? [], 'is_array') as $q)
+                                                    <div style="padding:6px 0;border-top:1px solid var(--line);">
+                                                        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;">
+                                                            <span style="font-size:10px;font-weight:700;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.05em;">{{ $q['category'] ?? 'Question' }}</span>
+                                                            @if (isset($q['rating']))
+                                                                <span style="font-family:var(--font-mono);font-size:11px;color:{{ (int) $q['rating'] >= 4 ? 'var(--emerald-700)' : ((int) $q['rating'] <= 2 ? 'var(--danger)' : 'var(--ink-700)') }};">{{ (int) $q['rating'] }}/5</span>
+                                                            @endif
+                                                        </div>
+                                                        @if (! empty($q['reply']))
+                                                            <div style="color:var(--ink-700);margin-top:2px;line-height:1.5;">{{ $q['reply'] }}</div>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
+                                                @php
+                                                    $overallGroups = array_filter([
+                                                        'Strong' => $ref['overall_strong'] ?? [],
+                                                        'Moderate' => $ref['overall_moderate'] ?? [],
+                                                        'Weak' => $ref['overall_weak'] ?? [],
+                                                    ]);
+                                                @endphp
+                                                @if ($overallGroups)
+                                                    <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);">
+                                                        @foreach ($overallGroups as $grpLabel => $items)
+                                                            @if (is_array($items) && $items)
+                                                                <span style="color:{{ $grpLabel === 'Strong' ? 'var(--emerald-700)' : ($grpLabel === 'Weak' ? 'var(--danger)' : 'var(--ink-700)') }};">
+                                                                    <b>{{ $grpLabel }}:</b> {{ implode(', ', array_filter($items, 'is_scalar')) }}
+                                                                </span>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
                                                 @endif
                                             </div>
                                         </div>

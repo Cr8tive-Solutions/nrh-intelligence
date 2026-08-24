@@ -20,7 +20,8 @@
             @elseif ($reason === 'expired')
                 <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0 0 4px;">This invitation has expired</p>
                 <p style="font-size:13px;color:var(--ink-700);margin:0;">
-                    Ask your administrator@if (! empty($companyName)) at <b>{{ $companyName }}</b>@endif to resend it.
+                    {{-- Keep a space before @if — Blade ignores a directive glued to a preceding word, leaving an orphaned @endif. --}}
+                    Ask your administrator @if (! empty($companyName)) at <b>{{ $companyName }}</b> @endif to resend it.
                 </p>
             @endif
         </div>

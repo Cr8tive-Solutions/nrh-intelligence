@@ -14,7 +14,8 @@
         }
 
         $isCashBilled        = $request->customer?->isCashBilled();
-        $isCashCycleNew      = $isCashBilled && $request->status === 'new';
+        // Invoiced requests are paid via the invoice receipt flow, not a per-request slip.
+        $isCashCycleNew      = $isCashBilled && $request->status === 'new' && $request->invoice_id === null;
         $isCashPaymentVerified = $isCashCycleNew && $request->isPaymentVerified();
         $isCashPaymentPending  = $isCashCycleNew && ! $request->isPaymentVerified();
 
@@ -464,7 +465,8 @@
                                     default                                            => ucfirst($rv->type) . ' report',
                                 };
                             @endphp
-                            <a href="{{ route('client.requests.reports.download', [$request->id, $rv->id]) }}"
+                            {{-- Pass model instances so route() emits hashids — raw IDs fail the hashid route binding. --}}
+                            <a href="{{ route('client.requests.reports.download', [$request, $rv]) }}"
                                style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;transition:background 120ms;"
                                onmouseover="this.style.background='var(--paper)'"
                                onmouseout="this.style.background='transparent'">

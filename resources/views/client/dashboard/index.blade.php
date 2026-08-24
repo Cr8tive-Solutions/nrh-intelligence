@@ -96,22 +96,23 @@
                     @forelse ($recentRequests as $req)
                         @php
                             $initials = strtoupper(substr($req->reference ?? 'NR', 0, 2));
+                            // 'updated' means a report was re-issued on a finished request — still 100%.
                             $pct = match($req->status) {
-                                'complete'    => 100,
+                                'complete', 'updated' => 100,
                                 'in_progress' => rand(40, 80),
-                                'flagged'     => rand(60, 85),
+                                'rejected'    => 0,
                                 default       => rand(5, 15),
                             };
                             $fillCls = match($req->status) {
-                                'flagged' => 'red',
-                                'new'     => 'gold',
-                                default   => '',
+                                'rejected' => 'red',
+                                'new'      => 'gold',
+                                default    => '',
                             };
                             $totalChecks = 5;
                             $doneChecks = match($req->status) {
-                                'complete'    => 5,
+                                'complete', 'updated' => 5,
                                 'in_progress' => rand(2, 4),
-                                'flagged'     => rand(3, 4),
+                                'rejected'    => 0,
                                 default       => rand(0, 1),
                             };
                             $pkg = match($req->candidates_count % 4) {

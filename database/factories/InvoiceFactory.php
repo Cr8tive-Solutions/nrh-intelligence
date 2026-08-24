@@ -18,7 +18,7 @@ class InvoiceFactory extends Factory
 
         return [
             'customer_id' => Customer::factory(),
-            'number' => 'INV-'.now()->format('Y').'-'.fake()->unique()->numerify('###'),
+            'number' => 'INV-'.now()->format('Y').'-'.fake()->unique()->numerify('####'),
             'period' => Carbon::instance($issued)->format('F Y'),
             'status' => fake()->randomElement(['paid', 'paid', 'paid', 'unpaid']),
             'issued_at' => $issued,

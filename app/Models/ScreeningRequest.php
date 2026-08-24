@@ -19,10 +19,12 @@ class ScreeningRequest extends Model
     use HasFactory;
 
     use HasHashid;
-
     use LogsActivity;
 
-    protected $fillable = ['customer_id', 'customer_user_id', 'reference', 'status', 'type', 'meta', 'rejection_reason', 'payment_slip_path', 'payment_slip_uploaded_at', 'payment_verified_at', 'payment_verified_by'];
+    /** Canonical status set — keep in sync with nrh-admin ScreeningRequest::STATUSES. */
+    public const STATUSES = ['new', 'in_progress', 'rejected', 'complete', 'updated'];
+
+    protected $fillable = ['customer_id', 'customer_user_id', 'invoice_id', 'reference', 'status', 'type', 'meta', 'rejection_reason', 'payment_slip_path', 'payment_slip_uploaded_at', 'payment_verified_at', 'payment_verified_by'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -53,9 +55,35 @@ class ScreeningRequest extends Model
         return ! is_null($this->payment_verified_at);
     }
 
+    /**
+     * Next request reference (REQ-YYYY-NNNN), year-scoped like the admin
+     * portal's invoice numbering. Serialised with a transaction-scoped
+     * advisory lock — a plain read-then-increment races under concurrent
+     * submissions and trips the unique constraint on `reference`. Must be
+     * called inside DB::transaction().
+     */
+    public static function generateReference(): string
+    {
+        DB::select('SELECT pg_advisory_xact_lock(hashtext(?))', ['screening_requests.reference']);
+
+        $year = now()->format('Y');
+        // Order by numeric tail so any legacy mixed-width references sort correctly.
+        $last = self::where('reference', 'like', "REQ-{$year}-%")
+            ->orderByRaw('LENGTH(reference) DESC, reference DESC')
+            ->first();
+        $seq = $last ? ((int) substr(strrchr($last->reference, '-'), 1)) + 1 : 1;
+
+        return "REQ-{$year}-".str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+    }
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
     }
 
     public function submittedBy(): BelongsTo
@@ -75,9 +103,9 @@ class ScreeningRequest extends Model
 
     /**
      * Total cash-payable amount = sum of scope prices across every candidate's
-     * pivot rows. Customer-specific price overrides aren't reflected on
-     * scope_types.price, so this is a best-effort estimate; admin's invoice
-     * remains the source of truth.
+     * pivot rows, honouring customer-specific overrides (customer_scope_prices)
+     * before falling back to scope_types.price — the same resolution the admin
+     * portal uses (nrh-admin ScreeningRequest::calculateTotal).
      */
     public function cashTotal(): float
     {
@@ -125,7 +153,9 @@ class ScreeningRequest extends Model
     /** @return Builder<static> */
     public function scopeActive(Builder $query): Builder
     {
-        return $query->whereIn('status', ['new', 'in_progress', 'complete', 'updated', 'rejected', 'prelim', 'flagged']);
+        // 'prelim'/'flagged' were never valid request statuses (they belong to
+        // report types / candidate statuses) — only the canonical set exists.
+        return $query->whereIn('status', self::STATUSES);
     }
 
     /** @return Builder<static> */

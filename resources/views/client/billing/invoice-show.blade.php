@@ -93,6 +93,18 @@
                         <span>Total Due</span>
                         <span style="font-family:var(--font-mono);">MYR {{ number_format($invoice->total, 2) }}</span>
                     </div>
+                    @php $paidToDate = $invoice->verifiedReceiptsTotal(); @endphp
+                    @if ($invoice->status !== 'paid' && $paidToDate > 0)
+                        {{-- Partial payment: mirror the admin portal's coverage view so the customer sees the true outstanding amount. --}}
+                        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--emerald-700);">
+                            <span>Paid to date</span>
+                            <span style="font-family:var(--font-mono);">MYR {{ number_format($paidToDate, 2) }}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--ink-900);">
+                            <span>Outstanding</span>
+                            <span style="font-family:var(--font-mono);">MYR {{ number_format($invoice->outstandingTotal(), 2) }}</span>
+                        </div>
+                    @endif
                 </div>
             </div>
 

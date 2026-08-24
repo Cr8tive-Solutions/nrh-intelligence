@@ -16,7 +16,7 @@ class PaymentSlipController extends Controller
 {
     public function store(Request $request, string $id): RedirectResponse
     {
-        $screeningRequest = $this->resolveCashRequest(hdecode($id));
+        $screeningRequest = $this->resolveCashRequest(hdecode($id), mutating: true);
 
         $validated = $request->validate([
             'payment_slip' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
@@ -48,7 +48,7 @@ class PaymentSlipController extends Controller
 
     public function destroy(string $id): RedirectResponse
     {
-        $screeningRequest = $this->resolveCashRequest(hdecode($id));
+        $screeningRequest = $this->resolveCashRequest(hdecode($id), mutating: true);
 
         if ($screeningRequest->payment_slip_path) {
             Storage::disk('local')->delete($screeningRequest->payment_slip_path);
@@ -133,7 +133,7 @@ class PaymentSlipController extends Controller
         }
     }
 
-    private function resolveCashRequest(int|string $id): ScreeningRequest
+    private function resolveCashRequest(int|string $id, bool $mutating = false): ScreeningRequest
     {
         $customerId = session('client_customer_id');
 
@@ -142,6 +142,14 @@ class PaymentSlipController extends Controller
             ->findOrFail($id);
 
         abort_unless($screeningRequest->customer?->isCashBilled(), 403, 'Payment slips are only accepted for cash-billed accounts.');
+
+        if ($mutating) {
+            // Mirror the admin portal's verify guards: invoiced requests are
+            // paid via the invoice receipt flow, and slips on requests already
+            // past 'new' can never be actioned by finance.
+            abort_if($screeningRequest->invoice_id !== null, 403, 'This request is billed via an invoice — upload your payment receipt on the invoice page instead.');
+            abort_unless($screeningRequest->status === 'new', 403, 'Payment for this request has already been processed.');
+        }
 
         return $screeningRequest;
     }

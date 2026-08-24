@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agreement;
 use App\Models\Invoice;
 use App\Models\InvoicePaymentReceipt;
+use App\Models\ReportVersion;
 use App\Models\ScreeningRequest;
 use App\Models\Transaction;
 
@@ -60,7 +61,7 @@ class NotificationController extends Controller
                     'body' => 'All verifications have been finalised. View the report for details.',
                     'time' => $req->updated_at,
                     'read' => true,
-                    'link' => route('client.history.details', $req->id),
+                    'link' => route('client.history.details', hid($req->id)),
                 ]);
             });
 
@@ -77,7 +78,7 @@ class NotificationController extends Controller
                     'body' => $txn->reference ? 'Reference: '.$txn->reference.'.' : 'Processed via '.$txn->method.'.',
                     'time' => $txn->created_at,
                     'read' => true,
-                    'link' => route('client.billing.transactions.receipt', $txn->id),
+                    'link' => route('client.billing.transactions.receipt', hid($txn->id)),
                 ]);
             });
 
@@ -95,25 +96,29 @@ class NotificationController extends Controller
                     'body' => 'Your request is being processed by our verification team.',
                     'time' => $req->created_at,
                     'read' => true,
-                    'link' => route('client.requests.details', $req->id),
+                    'link' => route('client.requests.details', hid($req->id)),
                 ]);
             });
 
-        // Preliminary report ready
-        ScreeningRequest::where('customer_id', $customerId)
-            ->where('status', 'prelim')
-            ->latest('updated_at')
+        // Preliminary report ready — keyed off issued prelim report versions.
+        // ('prelim' was never a screening_requests.status; preliminary reports
+        // are report_versions rows with type = 'prelim'.)
+        ReportVersion::where('type', 'prelim')
+            ->whereHas('screeningRequest', fn ($q) => $q->where('customer_id', $customerId))
+            ->with('screeningRequest')
+            ->latest('generated_at')
             ->limit(3)
             ->get()
-            ->each(function ($req) use (&$notifications) {
+            ->each(function ($rv) use (&$notifications) {
+                $req = $rv->screeningRequest;
                 $notifications->push([
                     'type' => 'info',
                     'icon' => 'check',
                     'title' => 'Preliminary report ready — '.$req->reference,
                     'body' => 'A preliminary screening report has been issued for this request. Full report to follow.',
-                    'time' => $req->updated_at,
+                    'time' => $rv->generated_at,
                     'read' => false,
-                    'link' => route('client.history.details', $req->id),
+                    'link' => route('client.requests.details', hid($req->id)),
                 ]);
             });
 
@@ -131,7 +136,7 @@ class NotificationController extends Controller
                     'body' => 'A revised screening report has been issued for this request.',
                     'time' => $req->updated_at,
                     'read' => false,
-                    'link' => route('client.history.details', $req->id),
+                    'link' => route('client.history.details', hid($req->id)),
                 ]);
             });
 
@@ -152,7 +157,7 @@ class NotificationController extends Controller
                         'body' => 'Your payment of MYR '.number_format($receipt->amount_claimed, 2).' has been verified. Your account has been updated.',
                         'time' => $receipt->verified_at,
                         'read' => false,
-                        'link' => $invoice ? route('client.billing.invoices.show', $invoice->id) : null,
+                        'link' => $invoice ? route('client.billing.invoices.show', hid($invoice->id)) : null,
                     ]);
                 } else {
                     $notifications->push([
@@ -162,7 +167,7 @@ class NotificationController extends Controller
                         'body' => 'Your payment slip could not be verified. Please upload a new slip or contact support.',
                         'time' => $receipt->verified_at,
                         'read' => false,
-                        'link' => $invoice ? route('client.billing.invoices.show', $invoice->id) : null,
+                        'link' => $invoice ? route('client.billing.invoices.show', hid($invoice->id)) : null,
                     ]);
                 }
             });

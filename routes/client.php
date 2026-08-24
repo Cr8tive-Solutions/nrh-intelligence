@@ -65,11 +65,25 @@ Route::name('client.')->group(function () {
                 Route::get('/new', [CreateRequestController::class, 'index'])->name('new');
                 Route::get('/malaysia', [CreateRequestController::class, 'malaysia'])->name('malaysia');
                 Route::get('/global', [CreateRequestController::class, 'global'])->name('global');
-                Route::get('/kyc', [CreateRequestController::class, 'kyc'])->name('kyc');
-                Route::get('/kyb', [CreateRequestController::class, 'kyb'])->name('kyb');
-                Route::get('/kys', [CreateRequestController::class, 'kys'])->name('kys');
+                // ── Due Diligence (KYC / KYB / KYS) — DISABLED ────────────────
+                // Parked pending client confirmation. The sidebar links were
+                // removed first, but the routes stayed reachable by direct URL
+                // or bookmark — and a submitted due-diligence request creates a
+                // ScreeningRequest with NO candidate_scope_type rows, which
+                // prices at RM0 and gives the admin portal no way to record
+                // findings or generate a report. So the endpoints are off, not
+                // just hidden.
+                //
+                // Controller methods (kyc/kyb/kys/submitDueDiligence) and
+                // due-diligence.blade.php are intentionally left in place.
+                // To re-enable, uncomment these four lines.
+                //
+                // Route::get('/kyc', [CreateRequestController::class, 'kyc'])->name('kyc');
+                // Route::get('/kyb', [CreateRequestController::class, 'kyb'])->name('kyb');
+                // Route::get('/kys', [CreateRequestController::class, 'kys'])->name('kys');
+                // Route::post('/due-diligence/submit', [CreateRequestController::class, 'submitDueDiligence'])->name('due-diligence.submit');
+
                 Route::post('/submit', [CreateRequestController::class, 'submit'])->name('submit');
-                Route::post('/due-diligence/submit', [CreateRequestController::class, 'submitDueDiligence'])->name('due-diligence.submit');
                 Route::get('/success', [CreateRequestController::class, 'successful'])->name('success');
             });
         });

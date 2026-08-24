@@ -13,7 +13,7 @@ class ScopeType extends Model
     /** @use HasFactory<ScopeTypeFactory> */
     use HasFactory;
 
-    protected $fillable = ['country_id', 'category', 'name', 'turnaround', 'turnaround_hours', 'price', 'price_on_request', 'description', 'requires_signed_consent', 'required_documents'];
+    protected $fillable = ['country_id', 'category', 'name', 'turnaround', 'turnaround_hours', 'price', 'price_on_request', 'description', 'requires_signed_consent', 'required_documents', 'sort_order'];
 
     protected function casts(): array
     {
@@ -23,6 +23,7 @@ class ScopeType extends Model
             'turnaround_hours' => 'integer',
             'requires_signed_consent' => 'boolean',
             'required_documents' => 'array',
+            'sort_order' => 'integer',
         ];
     }
 
