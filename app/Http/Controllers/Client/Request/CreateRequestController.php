@@ -83,6 +83,21 @@ class CreateRequestController extends Controller
         $customerId = session('client_customer_id');
         $userId = session('client_user_id');
 
+        // Refuse unpriced price-on-request scopes server-side — the wizard
+        // hides them, but a tampered payload (or a package containing one)
+        // would otherwise bill at RM0.
+        $unpriced = DB::table('scope_types')
+            ->whereIn('id', $scopeIds)
+            ->where('price_on_request', true)
+            ->whereNotIn('id', fn ($q) => $q->select('scope_type_id')->from('customer_scope_prices')->where('customer_id', $customerId))
+            ->pluck('name');
+
+        if ($unpriced->isNotEmpty()) {
+            return back()->withInput()->withErrors([
+                'cart_data' => 'Pricing has not been set for: '.$unpriced->implode(', ').'. Please contact your account manager before ordering these checks.',
+            ]);
+        }
+
         $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $type, $scopeIds, $candidates, $requiredDocs) {
             $screeningRequest = ScreeningRequest::create([
                 'customer_id' => $customerId,

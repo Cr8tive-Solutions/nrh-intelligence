@@ -26,6 +26,8 @@
         $canUploadSlip   = auth()->user()?->canAny(['view-prices', 'manage-billing']);
         $canViewPrices   = auth()->user()?->can('view-prices');
         $hasSlip         = $request->hasPaymentSlip();
+        $paySubtotal     = $isCashBilled ? $request->cashSubtotal() : 0;
+        $payTax          = $isCashBilled ? $request->cashTax() : 0;
         $payTotal        = $isCashBilled ? $request->cashTotal() : 0;
 
         $typeLabel = match ($request->type) {
@@ -258,6 +260,9 @@
                 <div>
                     <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:4px;">Amount to pay</div>
                     <div style="font-size:24px;font-weight:800;color:var(--emerald-800);font-family:var(--font-mono);">{{ $currency }} {{ number_format($payTotal, 2) }}</div>
+                    @if ($payTax > 0)
+                        <div style="font-size:11px;color:var(--ink-500);margin-top:3px;">{{ number_format($paySubtotal, 2) }} + {{ number_format($payTax, 2) }} SST ({{ rtrim(rtrim(number_format(config('billing.sst_rate', 0.06) * 100, 1), '0'), '.') }}%)</div>
+                    @endif
                 </div>
                 <div>
                     <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-400);margin-bottom:4px;">Payment reference <span style="color:var(--danger);">*</span></div>

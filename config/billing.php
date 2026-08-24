@@ -45,4 +45,15 @@ return [
     */
     'cash_aliases' => ['per_request', 'per request', 'cash', 'pay_per_use', 'pay per use', 'prepaid', 'pre-paid'],
     'credit_aliases' => ['monthly', 'credit', 'invoice', 'postpaid', 'post-paid'],
+
+    /*
+    |--------------------------------------------------------------------------
+    | SST rate
+    |--------------------------------------------------------------------------
+    |
+    | 6% Malaysian SST, applied to monthly invoice subtotals (by the admin
+    | portal) AND to per-request cash totals — keep in sync with the admin
+    | portal's config/billing.php.
+    */
+    'sst_rate' => 0.06,
 ];

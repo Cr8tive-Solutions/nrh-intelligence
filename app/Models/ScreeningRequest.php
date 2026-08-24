@@ -102,12 +102,12 @@ class ScreeningRequest extends Model
     }
 
     /**
-     * Total cash-payable amount = sum of scope prices across every candidate's
+     * Pre-tax cash amount = sum of scope prices across every candidate's
      * pivot rows, honouring customer-specific overrides (customer_scope_prices)
      * before falling back to scope_types.price — the same resolution the admin
-     * portal uses (nrh-admin ScreeningRequest::calculateTotal).
+     * portal uses (nrh-admin ScreeningRequest::calculateSubtotal).
      */
-    public function cashTotal(): float
+    public function cashSubtotal(): float
     {
         $candidateIds = $this->candidates()->pluck('id');
         if ($candidateIds->isEmpty()) {
@@ -137,6 +137,21 @@ class ScreeningRequest extends Model
         }
 
         return round($total, 2);
+    }
+
+    /** SST on the cash subtotal (config('billing.sst_rate'), 6%). */
+    public function cashTax(): float
+    {
+        return round($this->cashSubtotal() * (float) config('billing.sst_rate', 0.06), 2);
+    }
+
+    /**
+     * Total cash-payable amount including SST — matches what the admin portal
+     * books when verifying the payment (nrh-admin ScreeningRequest::calculateTotal).
+     */
+    public function cashTotal(): float
+    {
+        return round($this->cashSubtotal() + $this->cashTax(), 2);
     }
 
     /**
