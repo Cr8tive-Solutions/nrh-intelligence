@@ -33,7 +33,7 @@
                 <div style="text-align:right;">
                     <p style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--ink-900);margin:0;">{{ $invoice->number }}</p>
                     <p style="font-size:12px;color:var(--ink-500);margin:4px 0 8px;">{{ $invoice->period }}</p>
-                    <span class="pill {{ $invoice->status === 'paid' ? 'pill-clear' : 'pill-review' }}">
+                    <span class="pill {{ $invoice->status === 'paid' ? 'pill-clear' : ($invoice->status === 'overdue' ? 'pill-flagged' : 'pill-review') }}">
                         <span class="dot"></span>{{ ucfirst($invoice->status) }}
                     </span>
                 </div>

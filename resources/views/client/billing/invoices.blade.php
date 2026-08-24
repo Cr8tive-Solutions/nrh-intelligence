@@ -36,9 +36,9 @@
                             <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $inv->issued_at->format('d M Y') }}</td>
                             <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $inv->due_at->format('d M Y') }}</td>
                             <td>
-                                <span class="pill {{ $inv->status === 'paid' ? 'pill-clear' : 'pill-review' }}">
+                                <span class="pill {{ $inv->status === 'paid' ? 'pill-clear' : ($inv->status === 'overdue' ? 'pill-flagged' : 'pill-review') }}">
                                     <span class="dot"></span>
-                                    {{ $inv->status === 'paid' ? 'Closed' : 'Open' }}
+                                    {{ $inv->status === 'paid' ? 'Closed' : ($inv->status === 'overdue' ? 'Overdue' : 'Open') }}
                                 </span>
                             </td>
                             <td style="text-align:right;font-weight:600;font-family:var(--font-mono);font-size:13px;color:var(--ink-900);">
