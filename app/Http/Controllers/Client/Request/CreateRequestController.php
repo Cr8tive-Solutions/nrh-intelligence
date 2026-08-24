@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -221,7 +222,14 @@ class CreateRequestController extends Controller
                 continue;
             }
 
-            $storedPath = $upload->storeAs($dir, $key.'.'.$upload->getClientOriginalExtension(), 'local');
+            // Allow-list the stored extension (client filenames are untrusted),
+            // falling back to the content-sniffed one; and add a random suffix so
+            // the path isn't guessable from the sequential request reference.
+            $ext = strtolower($upload->getClientOriginalExtension());
+            if (! in_array($ext, ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'], true)) {
+                $ext = $upload->guessExtension() ?: 'bin';
+            }
+            $storedPath = $upload->storeAs($dir, $key.'-'.Str::random(12).'.'.$ext, 'local');
 
             if ($key === 'consent') {
                 $consentFilePath = $storedPath;
