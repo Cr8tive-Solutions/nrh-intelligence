@@ -6,6 +6,7 @@ use App\Http\Controllers\Client\Billing\InvoiceController;
 use App\Http\Controllers\Client\Billing\TransactionController;
 use App\Http\Controllers\Client\CandidatesController;
 use App\Http\Controllers\Client\DashboardController;
+use App\Http\Controllers\Client\GuideController;
 use App\Http\Controllers\Client\NotificationController;
 use App\Http\Controllers\Client\Request\AddCandidateController;
 use App\Http\Controllers\Client\Request\CreateRequestController;
@@ -137,6 +138,12 @@ Route::name('client.')->group(function () {
 
         // System updates
         Route::get('/updates', [SystemUpdateController::class, 'index'])->name('updates');
+
+        // User guide — documentation only, available to every authenticated user.
+        // No permission gate: the guide covers the whole portal, and reading
+        // about a gated page is not itself gated.
+        Route::get('/guide', [GuideController::class, 'show'])->name('guide.show');
+        Route::get('/guide/download', [GuideController::class, 'download'])->name('guide.download');
 
         // Settings
         Route::prefix('settings')->name('settings.')->group(function () {

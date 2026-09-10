@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>PDF preview</title>
+<style>
+  body { margin:0; background:#555; font-family:sans-serif; }
+  .pg { margin: 12px auto; display:block; box-shadow:0 2px 8px rgba(0,0,0,.5); background:#fff; }
+  .lab { color:#fff; font-size:12px; text-align:center; padding-top:8px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+<div id="out"></div>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const params = new URLSearchParams(location.search);
+const from = parseInt(params.get('from') || '1', 10);
+const to = parseInt(params.get('to') || '4', 10);
+const scale = parseFloat(params.get('scale') || '1.5');
+
+pdfjsLib.getDocument('/_guide-preview.pdf').promise.then(async (pdf) => {
+  const out = document.getElementById('out');
+  for (let i = from; i <= Math.min(to, pdf.numPages); i++) {
+    const page = await pdf.getPage(i);
+    const vp = page.getViewport({ scale });
+    const lab = document.createElement('div');
+    lab.className = 'lab';
+    lab.textContent = 'page ' + i + ' / ' + pdf.numPages;
+    out.appendChild(lab);
+    const c = document.createElement('canvas');
+    c.className = 'pg';
+    c.width = vp.width; c.height = vp.height;
+    out.appendChild(c);
+    await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+  }
+  document.title = 'ready ' + pdf.numPages;
+});
+</script>
+</body>
+</html>
