@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Client\Auth\InvitationController;
+use App\Http\Controllers\Client\Auth\RegistrationController;
 use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\Billing\InvoiceController;
 use App\Http\Controllers\Client\Billing\TransactionController;
@@ -47,6 +48,13 @@ Route::name('client.')->group(function () {
     Route::post('/invitation/{token}', [InvitationController::class, 'accept'])
         ->middleware('throttle:5,1')
         ->name('invitation.accept');
+
+    // Invite-to-register: NRH staff email a link from the admin portal; the
+    // invitee registers their company here and staff approve it there.
+    Route::get('/register/{token}', [RegistrationController::class, 'show'])->name('registration.show');
+    Route::post('/register/{token}', [RegistrationController::class, 'submit'])
+        ->middleware('throttle:5,1')
+        ->name('registration.submit');
 
     // Authenticated routes
     Route::middleware('client.auth')->group(function () {
