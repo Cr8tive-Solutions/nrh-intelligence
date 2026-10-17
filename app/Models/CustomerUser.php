@@ -58,17 +58,23 @@ class CustomerUser extends Authenticatable
     /**
      * Email the password-reset link. Overrides the CanResetPassword default
      * (which targets the non-existent `password.reset` route) to point at the
-     * client portal's own reset page and to send via the portal's plain-text
-     * Mail::raw convention, matching the 2FA-code and invitation emails.
+     * client portal's own reset page. Sends a branded HTML email with a
+     * plain-text alternative for clients that don't render HTML.
      */
     public function sendPasswordResetNotification($token): void
     {
         $url = route('client.reset', ['token' => $token]).'?email='.urlencode($this->email);
 
-        Mail::raw(
-            "We received a request to reset the password for your NRH Intelligence portal account.\n\n".
-            "Reset your password using the link below (it expires in 60 minutes):\n{$url}\n\n".
-            "If you didn't request this, you can safely ignore this email — your password won't change.",
+        $data = [
+            'name' => $this->name,
+            'url' => $url,
+            // Mirrors the broker's token lifetime (config/auth.php).
+            'expireMinutes' => (int) config('auth.passwords.customer_users.expire', 60),
+        ];
+
+        Mail::send(
+            ['html' => 'client.emails.password-reset', 'text' => 'client.emails.password-reset-text'],
+            $data,
             function ($message) {
                 $message->to($this->email)->subject('Reset your NRH Intelligence password');
             }
