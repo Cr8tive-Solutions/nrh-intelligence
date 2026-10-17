@@ -15,12 +15,12 @@
                 @csrf
                 <div class="search" style="flex:1;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
-                    <input type="text" name="q" value="{{ $query }}" placeholder="REQ-2026-0101, candidate name, or IC number…" autofocus />
+                    <input type="text" name="q" value="{{ $query }}" placeholder="REP-2026-0101, candidate name, or IC number…" autofocus />
                 </div>
                 <button type="submit" class="btn btn-primary">Search</button>
             </form>
             <p style="font-size:11px;color:var(--ink-400);margin:10px 0 0;">
-                You can search by <strong>request reference</strong> (e.g. REQ-2026-0101), <strong>candidate name</strong>, or <strong>identity number</strong>.
+                You can search by <strong>request reference</strong> (e.g. REP-2026-0101), <strong>candidate name</strong>, or <strong>identity number</strong>.
             </p>
         </div>
 

@@ -56,11 +56,15 @@ class ScreeningRequest extends Model
     }
 
     /**
-     * Next request reference (REQ-YYYY-NNNN), year-scoped like the admin
+     * Next request reference (REP-YYYY-NNNN), year-scoped like the admin
      * portal's invoice numbering. Serialised with a transaction-scoped
      * advisory lock — a plain read-then-increment races under concurrent
      * submissions and trips the unique constraint on `reference`. Must be
      * called inside DB::transaction().
+     *
+     * The prefix changed from REQ- to REP-; the running number continues
+     * across both, so numbering never visually repeats. We therefore scan
+     * either prefix (`RE_-`) for the year when finding the last sequence.
      */
     public static function generateReference(): string
     {
@@ -68,12 +72,13 @@ class ScreeningRequest extends Model
 
         $year = now()->format('Y');
         // Order by numeric tail so any legacy mixed-width references sort correctly.
-        $last = self::where('reference', 'like', "REQ-{$year}-%")
+        // `RE_-` matches both the legacy REQ- and the current REP- prefixes.
+        $last = self::where('reference', 'like', "RE_-{$year}-%")
             ->orderByRaw('LENGTH(reference) DESC, reference DESC')
             ->first();
         $seq = $last ? ((int) substr(strrchr($last->reference, '-'), 1)) + 1 : 1;
 
-        return "REQ-{$year}-".str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+        return "REP-{$year}-".str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
     }
 
     public function customer(): BelongsTo

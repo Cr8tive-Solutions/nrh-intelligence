@@ -36,7 +36,7 @@ it('creates the request, candidate, scope pivot and consent record', function ()
         ->assertRedirect(route('client.request.success'));
 
     $request = ScreeningRequest::where('customer_id', $customerId)->firstOrFail();
-    expect($request->reference)->toStartWith('REQ-')
+    expect($request->reference)->toStartWith('REP-')
         ->and($request->type)->toBe('employment_global');
 
     $candidate = DB::table('request_candidates')->where('screening_request_id', $request->id)->first();

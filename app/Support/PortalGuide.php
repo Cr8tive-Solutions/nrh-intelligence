@@ -241,7 +241,7 @@ class PortalGuide
 
                 ['type' => 'sub', 'text' => 'Track Request — searching'],
                 ['type' => 'table', 'head' => ['Search by', 'Behaviour'], 'widths' => ['26%', '74%'], 'rows' => [
-                    ['<b>Request reference</b>', 'Partial match. A reference such as <code>REQ-…</code> also pulls up the request itself, not only its candidates.'],
+                    ['<b>Request reference</b>', 'Partial match. A reference such as <code>REP-…</code> also pulls up the request itself, not only its candidates.'],
                     ['<b>Candidate name</b>', 'Partial match, case-insensitive.'],
                     ['<b>Identity number</b>', '<b>Exact, complete number only.</b>'],
                 ]],
@@ -290,7 +290,7 @@ class PortalGuide
                 ['type' => 'p', 'text' => 'Reports are versioned, and the portal only ever lists <b>current</b> versions: once a report is superseded the older file disappears from the list, so nobody circulates a stale document by accident. If you need a superseded version for an audit, ask your account manager.'],
 
                 ['type' => 'sub', 'text' => 'Downloading a report'],
-                ['type' => 'p', 'text' => 'Reports appear in the <b>Reports</b> block on the request detail page, and against the request under <b>Reports</b> in the sidebar. Files are PDFs named after the request, the report type and the version — for example <code>REQ-2026-0184-full-v2.pdf</code>.'],
+                ['type' => 'p', 'text' => 'Reports appear in the <b>Reports</b> block on the request detail page, and against the request under <b>Reports</b> in the sidebar. Files are PDFs named after the request, the report type and the version — for example <code>REP-2026-0184-full-v2.pdf</code>.'],
                 ['type' => 'note', 'title' => 'Downloads are logged', 'text' => 'Every report download is written to the audit log with the user and the time. Screening reports contain personal data, and being able to show who took a copy is part of handling it properly.'],
                 ['type' => 'warn', 'title' => '“Report file is no longer available”', 'text' => 'The record exists but the file could not be retrieved. This is a server-side condition, not something retrying will fix — contact support with the request reference.'],
 
@@ -554,7 +554,7 @@ class PortalGuide
                 ]],
                 ['type' => 'sub', 'text' => 'Formats and limits'],
                 ['type' => 'table', 'head' => ['Item', 'Value'], 'widths' => ['30%', '70%'], 'rows' => [
-                    ['Request reference', '<code>REQ-YYYY-NNNN</code>'],
+                    ['Request reference', '<code>REP-YYYY-NNNN</code>'],
                     ['Invoice number', '<code>INV-YYYY-NNN</code>'],
                     ['Candidate documents', 'PDF, DOC, DOCX, JPG, PNG — 10&nbsp;MB each'],
                     ['Payment slips and receipts', 'PDF, JPG, PNG — 5&nbsp;MB each'],

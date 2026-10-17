@@ -26,7 +26,8 @@ class TrackRequestController extends Controller
 
         // If query looks like a request reference, search at request level
         $requestMatch = null;
-        if (str_contains(strtoupper($query), 'REQ-') || ctype_digit(str_replace('-', '', $query))) {
+        $upper = strtoupper($query);
+        if (str_contains($upper, 'REP-') || str_contains($upper, 'REQ-') || ctype_digit(str_replace('-', '', $query))) {
             $requestMatch = ScreeningRequest::with(['candidates.scopeTypes', 'candidates.identityType'])
                 ->where('customer_id', $customerId)
                 ->where('reference', 'ilike', "%{$query}%")
