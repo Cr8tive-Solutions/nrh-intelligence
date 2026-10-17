@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Invoice;
 use App\Models\ScreeningRequest;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\Fixtures;
@@ -72,4 +73,87 @@ it('accepts a price-on-request scope once a customer price exists', function () 
         ->assertRedirect(route('client.request.success'));
 
     expect(ScreeningRequest::where('customer_id', $this->customerId)->count())->toBe(1);
+});
+
+it('auto-generates an unpaid invoice linked to a cash request on submit', function () {
+    Fixtures::agreement($this->customerId, 'per_request');
+    $scopeId = Fixtures::scopeType($this->countryId, ['price' => 100.00, 'name' => 'Criminal Record Check']);
+
+    $this->actingAs($this->user, 'customer_user')
+        ->post(route('client.request.submit'), cashSubmitPayload($scopeId, $this->identityTypeId))
+        ->assertSessionHas('status');
+
+    $request = ScreeningRequest::where('customer_id', $this->customerId)->firstOrFail();
+    expect($request->invoice_id)->not->toBeNull()
+        ->and($request->status)->toBe('new'); // stays new until the invoice is paid+verified
+
+    $invoice = Invoice::findOrFail($request->invoice_id);
+    expect($invoice->status)->toBe('unpaid')
+        ->and((float) $invoice->subtotal)->toBe(100.0)
+        ->and((float) $invoice->tax)->toBe(6.0)
+        ->and((float) $invoice->total)->toBe(106.0)
+        ->and($invoice->number)->toStartWith('INV-')
+        ->and($invoice->issued_at->toDateString())->toBe($invoice->due_at->toDateString()); // due immediately
+
+    // One line per candidate × scope, carrying the candidate's name.
+    expect($invoice->items()->count())->toBe(1);
+    $item = $invoice->items()->first();
+    expect($item->description)->toContain('Ali bin Abu')
+        ->and($item->description)->toContain('Criminal Record Check')
+        ->and((float) $item->unit_price)->toBe(100.0);
+});
+
+it('does not generate an invoice for a monthly (credit) request', function () {
+    Fixtures::agreement($this->customerId, 'monthly');
+    $scopeId = Fixtures::scopeType($this->countryId, ['price' => 100.00]);
+
+    $this->actingAs($this->user, 'customer_user')
+        ->post(route('client.request.submit'), cashSubmitPayload($scopeId, $this->identityTypeId))
+        ->assertRedirect(route('client.request.success'));
+
+    $request = ScreeningRequest::where('customer_id', $this->customerId)->firstOrFail();
+    expect($request->invoice_id)->toBeNull()
+        ->and(Invoice::where('customer_id', $this->customerId)->count())->toBe(0);
+});
+
+it('creates one invoice line per candidate when a cash request has several', function () {
+    Fixtures::agreement($this->customerId, 'per_request');
+    $scopeId = Fixtures::scopeType($this->countryId, ['price' => 80.00, 'name' => 'Bankruptcy Search']);
+
+    $payload = [
+        'screening_type' => 'employment_global',
+        'consent' => '1',
+        'cart_data' => json_encode([['id' => $scopeId]]),
+        'candidates_data' => json_encode([
+            ['identity_type_id' => $this->identityTypeId, 'name' => 'Ali bin Abu',  'identity_number' => '900101-01-1234', 'nationality' => 'Malaysian'],
+            ['identity_type_id' => $this->identityTypeId, 'name' => 'Siti binti Yu', 'identity_number' => '910202-02-2345', 'nationality' => 'Malaysian'],
+        ]),
+    ];
+
+    $this->actingAs($this->user, 'customer_user')
+        ->post(route('client.request.submit'), $payload)
+        ->assertSessionHas('status');
+
+    $invoice = Invoice::where('customer_id', $this->customerId)->firstOrFail();
+    expect($invoice->items()->count())->toBe(2)
+        ->and((float) $invoice->subtotal)->toBe(160.0)
+        ->and($invoice->items()->pluck('description')->implode('|'))->toContain('Ali bin Abu')
+        ->and($invoice->items()->pluck('description')->implode('|'))->toContain('Siti binti Yu');
+});
+
+it('shows the invoice payment pointer on the cash request details page', function () {
+    Fixtures::agreement($this->customerId, 'per_request');
+    $scopeId = Fixtures::scopeType($this->countryId, ['price' => 100.00, 'name' => 'Criminal Record Check']);
+
+    $this->actingAs($this->user, 'customer_user')
+        ->post(route('client.request.submit'), cashSubmitPayload($scopeId, $this->identityTypeId));
+
+    $request = ScreeningRequest::where('customer_id', $this->customerId)->firstOrFail();
+    $invoice = Invoice::findOrFail($request->invoice_id);
+
+    $this->actingAs($this->user, 'customer_user')
+        ->get(route('client.requests.details', hid($request->id)))
+        ->assertOk()
+        ->assertSee('Payment required')
+        ->assertSee($invoice->number);
 });

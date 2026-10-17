@@ -19,6 +19,13 @@
         $isCashPaymentVerified = $isCashCycleNew && $request->isPaymentVerified();
         $isCashPaymentPending  = $isCashCycleNew && ! $request->isPaymentVerified();
 
+        // Cash requests billed on an invoice (new flow): payment happens under Billing.
+        $invoice             = $request->invoice;
+        $invoicePaid         = $invoice && $invoice->status === 'paid';
+        $isInvoicedUnpaid    = $isCashBilled && $invoice && ! $invoicePaid
+                               && ! in_array($request->status, ['complete', 'updated', 'rejected']);
+        $canViewInvoice      = auth()->user()?->can('download-invoices');
+
         $bank            = config('billing.bank');
         $currency        = config('billing.currency', 'MYR');
         $popEmail        = config('billing.proof_of_payment_email');
@@ -71,6 +78,11 @@
                 'title' => 'Payment confirmed — starting soon',
                 'desc'  => 'Payment confirmed on ' . $request->payment_verified_at->format('d M Y') . '. Processing will begin within ' . $afterPaymentSla . '.',
             ],
+            $isInvoicedUnpaid => [
+                'bg' => 'rgba(184,147,31,0.06)', 'accent' => 'var(--gold-500)', 'icon' => 'alert',
+                'title' => 'Action needed — payment required',
+                'desc'  => 'Invoice ' . ($invoice->number ?? '') . ' has been generated for this request. Settle it under Billing to begin processing.',
+            ],
             $isFlagged => [
                 'bg' => 'rgba(184,147,31,0.06)', 'accent' => 'var(--gold-500)', 'icon' => 'flag',
                 'title' => 'Flagged for analyst review',
@@ -98,9 +110,14 @@
             $simpleSteps = [
                 ['label' => 'Submitted', 'sub' => $request->created_at->format('d M Y'),
                  'done' => true,        'current' => false, 'flagged' => false],
-                ['label' => 'Payment',   'sub' => $isCashPaymentVerified ? 'Confirmed' : ($hasSlip ? 'Slip uploaded' : 'Transfer required'),
-                 'done'    => $isCashPaymentVerified || ! $isCashCycleNew,
-                 'current' => $isCashPaymentPending, 'flagged' => false],
+                ['label' => 'Payment',
+                 'sub'     => $isCashPaymentVerified ? 'Confirmed'
+                              : ($invoicePaid ? 'Paid'
+                              : ($isInvoicedUnpaid ? 'Invoice issued'
+                              : ($hasSlip ? 'Slip uploaded' : 'Transfer required'))),
+                 'done'    => $isCashPaymentVerified || $invoicePaid || $request->status !== 'new',
+                 'current' => $request->status === 'new' && ! ($isCashPaymentVerified || $invoicePaid),
+                 'flagged' => false],
                 ['label' => 'Checking',  'sub' => $isComplete ? 'Completed' : 'Background verification',
                  'done'    => $isComplete,
                  'current' => in_array($request->status, ['in_progress', 'prelim']) || ($isCashPaymentVerified && $request->status === 'new'),
@@ -226,6 +243,31 @@
             </div>
         @endif
     </div>
+
+    {{-- Invoice payment pointer (cash billing, invoiced requests) --}}
+    @if ($isInvoicedUnpaid)
+        <div style="margin-bottom:20px;background:rgba(184,147,31,0.06);border:1px solid rgba(184,147,31,0.25);border-left:4px solid var(--gold-500);border-radius:var(--radius-lg);padding:22px 24px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <svg style="width:18px;height:18px;color:var(--gold-700);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"/>
+                </svg>
+                <div style="font-size:15px;font-weight:700;color:var(--ink-900);">Payment required</div>
+            </div>
+            <p style="font-size:14px;color:var(--ink-700);line-height:1.6;margin:0 0 16px;">
+                Invoice <b>{{ $invoice->number }}</b> ({{ $currency }} {{ number_format((float) $invoice->total, 2) }}, due immediately) has been generated for this request. Upload your payment proof against the invoice to begin processing.
+            </p>
+            @if ($canViewInvoice)
+                <a href="{{ route('client.billing.invoices.show', hid($invoice->id)) }}"
+                   style="display:inline-block;background:var(--gold-600,#b8931f);color:#fff;font-size:13px;font-weight:700;text-decoration:none;padding:10px 20px;border-radius:var(--radius);">
+                    View &amp; pay invoice →
+                </a>
+            @else
+                <p style="font-size:13px;color:var(--ink-500);margin:0;">
+                    Ask a billing administrator on your team to settle it under <b>Billing → Invoices</b>.
+                </p>
+            @endif
+        </div>
+    @endif
 
     {{-- Payment block (cash billing, billing users only) --}}
     @if ($isCashPaymentPending && $canViewPrices)

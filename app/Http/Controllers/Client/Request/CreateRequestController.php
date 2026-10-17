@@ -8,6 +8,7 @@ use App\Models\ConsentRecord;
 use App\Models\Country;
 use App\Models\Customer;
 use App\Models\IdentityType;
+use App\Models\Invoice;
 use App\Models\Package;
 use App\Models\RequestCandidate;
 use App\Models\ScopeType;
@@ -103,7 +104,11 @@ class CreateRequestController extends Controller
         // the posted id is only a hint.
         $packageId = $this->resolvePackageId($request->input('package_id'), $customerId, $scopeIds);
 
-        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $packageId, $type, $scopeIds, $candidates, $requiredDocs) {
+        // Cash (per-request) customers are billed upfront: the request generates
+        // an invoice on submit, paid through the invoice-receipt flow.
+        $isCashBilled = Customer::with('agreement')->find($customerId)?->isCashBilled() ?? false;
+
+        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $packageId, $type, $scopeIds, $candidates, $requiredDocs, $isCashBilled) {
             $screeningRequest = ScreeningRequest::create([
                 'customer_id' => $customerId,
                 'customer_user_id' => $userId,
@@ -112,6 +117,8 @@ class CreateRequestController extends Controller
                 'status' => 'new',
                 'type' => $type,
             ]);
+
+            $createdCandidates = collect();
 
             foreach ($candidates as $idx => $c) {
                 $candidate = RequestCandidate::create([
@@ -137,12 +144,87 @@ class CreateRequestController extends Controller
                 } else {
                     $this->recordConsent($request, $candidate, 'digital_form', null);
                 }
+
+                $createdCandidates->push($candidate);
+            }
+
+            if ($isCashBilled) {
+                $this->createCashInvoice($screeningRequest, $createdCandidates, $scopeIds);
             }
 
             return $screeningRequest;
         });
 
         return $this->redirectAfterSubmit($createdRequest);
+    }
+
+    /**
+     * Generate an upfront invoice for a cash request, one line per
+     * candidate × scope (so the candidate's name appears on the invoice),
+     * priced with the customer's override (customer_scope_prices) or the
+     * default scope price, plus 6% SST. Links it via screening_requests.invoice_id
+     * and returns it, or null when there is nothing billable.
+     *
+     * @param  \Illuminate\Support\Collection<int, RequestCandidate>  $candidates
+     * @param  array<int, int|string>  $scopeIds
+     */
+    protected function createCashInvoice(ScreeningRequest $screeningRequest, $candidates, array $scopeIds): ?Invoice
+    {
+        if ($candidates->isEmpty() || empty($scopeIds)) {
+            return null;
+        }
+
+        $scopeNames = DB::table('scope_types')->whereIn('id', $scopeIds)->pluck('name', 'id');
+        $customerPrices = DB::table('customer_scope_prices')
+            ->where('customer_id', $screeningRequest->customer_id)
+            ->whereIn('scope_type_id', $scopeIds)
+            ->pluck('price', 'scope_type_id');
+        $defaultPrices = DB::table('scope_types')->whereIn('id', $scopeIds)->pluck('price', 'id');
+
+        $items = [];
+        foreach ($candidates as $candidate) {
+            foreach ($scopeIds as $sid) {
+                $price = (float) ($customerPrices[$sid] ?? $defaultPrices[$sid] ?? 0);
+                $items[] = [
+                    'description' => $candidate->name.' — '.($scopeNames[$sid] ?? 'Screening'),
+                    'qty' => 1,
+                    'unit_price' => $price,
+                    'total' => $price,
+                ];
+            }
+        }
+
+        $subtotal = round(array_sum(array_column($items, 'total')), 2);
+
+        // Nothing priced (e.g. all zero) — don't mint a RM0 invoice.
+        if ($subtotal <= 0) {
+            return null;
+        }
+
+        $tax = round($subtotal * (float) config('billing.sst_rate', 0.06), 2);
+
+        $invoice = Invoice::create([
+            'customer_id' => $screeningRequest->customer_id,
+            'number' => Invoice::generateNumber(),
+            'period' => 'Request '.$screeningRequest->reference,
+            'period_date' => now()->toDateString(),
+            'period_end' => now()->toDateString(),
+            'status' => 'unpaid',
+            // Cash is upfront, so the invoice is due immediately.
+            'issued_at' => now()->toDateString(),
+            'due_at' => now()->toDateString(),
+            'subtotal' => $subtotal,
+            'tax' => $tax,
+            'total' => round($subtotal + $tax, 2),
+        ]);
+
+        foreach ($items as $item) {
+            $invoice->items()->create($item);
+        }
+
+        $screeningRequest->update(['invoice_id' => $invoice->id]);
+
+        return $invoice;
     }
 
     /**
@@ -352,9 +434,14 @@ class CreateRequestController extends Controller
         $customer = Customer::with('agreement')->find($screeningRequest->customer_id);
 
         if ($customer?->isCashBilled()) {
+            $screeningRequest->refresh();
+            $invoiceNo = $screeningRequest->invoice?->number;
+
             return redirect()
                 ->route('client.requests.details', hid($screeningRequest->id))
-                ->with('status', 'Request created. Please complete payment to begin processing.');
+                ->with('status', $invoiceNo
+                    ? "Request created. Invoice {$invoiceNo} has been generated — settle it under Billing to begin processing."
+                    : 'Request created. Please complete payment to begin processing.');
         }
 
         // Monthly-billed customers start immediately — no payment gate.
