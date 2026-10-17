@@ -48,6 +48,11 @@
         <env name="DB_USERNAME" value="nrh_test"/>
         <env name="DB_PASSWORD" value="nrh_test"/>
         <env name="DB_URL" value=""/>
+        <!-- Encryption off by default so tests are deterministic regardless of
+             the deployment's real PII_KEY in .env; encryption tests opt in by
+             setting config('pii.key') at runtime (see FileEncryptionTest). -->
+        <env name="PII_KEY" value="" force="true"/>
+        <server name="PII_KEY" value="" force="true"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
