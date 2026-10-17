@@ -120,6 +120,18 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+
+        // Client-portal logins. Reuses the standard password_reset_tokens table
+        // (keyed by email) — the broker only ever loads CustomerUser rows via the
+        // customer_users provider, so a token minted here resolves to a portal
+        // user. Tokens are hashed, expire after 60 min, and are throttled to one
+        // request per 60s per email.
+        'customer_users' => [
+            'provider' => 'customer_users',
+            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60,
+            'throttle' => 60,
+        ],
     ],
 
     /*

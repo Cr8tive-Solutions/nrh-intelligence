@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Client\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerUser;
 use App\Services\TwoFactorAuthenticator;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 class LoginController extends Controller
 {
@@ -254,6 +257,15 @@ class LoginController extends Controller
 
     public function sendReset(Request $request)
     {
+        $data = $request->validate(['email' => ['required', 'email']]);
+
+        // The broker mints a hashed, expiring token and calls
+        // CustomerUser::sendPasswordResetNotification() to email the link. It
+        // no-ops for an unknown email and self-throttles per the broker config.
+        Password::broker('customer_users')->sendResetLink(['email' => $data['email']]);
+
+        // Always the same message, whether or not the email exists, so the form
+        // can't be used to enumerate which addresses have portal accounts.
         return back()->with('status', 'If that email exists, a reset link has been sent.');
     }
 
@@ -264,7 +276,40 @@ class LoginController extends Controller
 
     public function processReset(Request $request)
     {
-        return redirect()->route('client.login')->with('success', 'Password reset successfully.');
+        $request->validate([
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', 'min:8'],
+        ]);
+
+        $status = Password::broker('customer_users')->reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (CustomerUser $user, string $password) {
+                // The 'hashed' cast hashes on set; rotating remember_token signs
+                // the account out of its other sessions (AuthenticateSession
+                // compares the password hash per request).
+                $user->forceFill([
+                    'password' => $password,
+                    'remember_token' => Str::random(60),
+                ])->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PasswordReset) {
+            activity('auth')
+                ->withProperties($this->requestProperties($request) + ['email' => $request->input('email')])
+                ->event('password.reset')
+                ->log('Password reset via emailed link');
+
+            return redirect()->route('client.login')->with('success', 'Password reset successfully. Please sign in with your new password.');
+        }
+
+        // INVALID_TOKEN (wrong/expired link) or INVALID_USER (email changed).
+        return back()
+            ->withInput($request->only('email'))
+            ->withErrors(['email' => __($status)]);
     }
 
     public function logout(Request $request)
