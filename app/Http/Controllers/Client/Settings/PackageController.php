@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Client\Settings;
 
 use App\Http\Controllers\Controller;
-use App\Models\CustomerScopePrice;
 use App\Models\Package;
 
 /**
@@ -25,14 +24,11 @@ class PackageController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Fetched once and passed in, so the per-package total costs no extra query.
-        // A null total means the package holds a price-on-request scope with no
-        // agreed price — the submission guard in CreateRequestController rejects it.
-        $overrides = CustomerScopePrice::where('customer_id', $customerId)
-            ->pluck('price', 'scope_type_id');
-
+        // A package is sold at its fixed bundle price (per candidate). A 0/blank
+        // price means it has not been priced yet — submission is blocked until
+        // the account manager sets one.
         $totals = $packages->mapWithKeys(
-            fn (Package $package) => [$package->id => $package->effectiveTotal($overrides)]
+            fn (Package $package) => [$package->id => (float) $package->price]
         );
 
         return view('client.settings.packages.index', compact('packages', 'totals'));

@@ -263,10 +263,9 @@
                                         <div class="pkg-content">
                                             <div class="pkg-name" x-text="pkg.name"></div>
                                             <div class="pkg-meta"><span x-text="pkg.scope_ids.length"></span> scopes included</div>
-                                            {{-- Priced on request: no quotable total, and submit() would reject it. --}}
+                                            {{-- No bundle price set yet — submit() would reject it. --}}
                                             <div class="pkg-meta" x-show="pkg.unavailable" style="color:var(--gold-700);margin-top:3px;">
-                                                Priced on request &mdash; <span x-text="pkg.blocking_scopes.join(', ')"></span>.
-                                                Contact your account manager to agree a price.
+                                                Price not set &mdash; contact your account manager to agree a package price.
                                             </div>
                                         </div>
                                         <div class="pkg-price" x-show="canViewPrices">
@@ -334,7 +333,7 @@
                         <template x-if="cart.length > 0">
                             <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">
                                 <div x-show="canViewPrices" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);margin-bottom:6px;">
-                                    <span>Per candidate</span>
+                                    <span>Per candidate <span x-show="isPackageOrder" style="color:var(--emerald-700);font-weight:600;">· package bundle</span></span>
                                     <span style="font-weight:600;font-family:var(--font-mono);color:var(--ink-900);">MYR <span x-text="cartTotal.toFixed(2)"></span></span>
                                 </div>
                                 <button @click="clearCart()" style="font-size:11px;color:var(--ink-400);background:none;border:none;cursor:pointer;padding:0;"
@@ -584,7 +583,7 @@
                     </div>
                     <div style="border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px;">
                         <div x-show="canViewPrices" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
-                            <span>Per candidate</span>
+                            <span>Per candidate <span x-show="isPackageOrder" style="color:var(--emerald-700);font-weight:600;">· package bundle</span></span>
                             <span style="font-weight:600;color:var(--ink-900);font-family:var(--font-mono);">MYR <span x-text="cartTotal.toFixed(2)"></span></span>
                         </div>
                         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-500);">
@@ -955,7 +954,19 @@ function newRequest() {
             return Object.values(groups);
         },
         get filteredPackages() { return this.allPackages.filter(p => p.country_id === this.selectedCountry); },
-        get cartTotal()        { return this.cart.reduce((sum, i) => sum + i.price, 0); },
+        // When the cart is exactly a package, the customer pays that package's
+        // fixed bundle price — not the sum of the individual scope prices.
+        get cartTotal() {
+            if (this.selectedPackageId !== null) {
+                const pkg = this.allPackages.find(p => p.id === this.selectedPackageId);
+                if (pkg) { return pkg.price; }
+            }
+            return this.cart.reduce((sum, i) => sum + i.price, 0);
+        },
+        get isPackageOrder() {
+            return this.selectedPackageId !== null
+                && this.allPackages.some(p => p.id === this.selectedPackageId);
+        },
 
         // True when the selected scopes require document uploads. In that mode the
         // checkbox-only consent is disabled and every candidate must upload each required doc.

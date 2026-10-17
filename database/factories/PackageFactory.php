@@ -16,6 +16,7 @@ class PackageFactory extends Factory
             'customer_id' => Customer::factory(),
             'country_id' => Country::factory(),
             'name' => fake()->randomElement(['Standard Screening', 'Premium Package', 'Finance Sector Pack', 'Executive Check']),
+            'price' => fake()->randomFloat(2, 50, 500),
         ];
     }
 }

@@ -33,7 +33,8 @@
         @forelse ($packages as $pkg)
             @php
                 $currency = $pkg->country?->currency ?? 'MYR';
-                $total = $totals[$pkg->id] ?? null;
+                $total = $totals[$pkg->id] ?? 0;
+                $unpriced = $total <= 0;
             @endphp
             <div class="card" style="padding:20px;display:flex;flex-direction:column;">
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;">
@@ -45,8 +46,8 @@
                         </p>
                     </div>
                     <div style="text-align:right;flex-shrink:0;">
-                        @if ($total === null)
-                            <span class="pill pill-review">On request</span>
+                        @if ($unpriced)
+                            <span class="pill pill-review">Not priced</span>
                         @else
                             <div style="font-family:var(--font-mono);font-size:14px;font-weight:600;color:var(--ink-900);white-space:nowrap;">
                                 {{ $currency }} {{ number_format($total, 2) }}
@@ -70,9 +71,9 @@
                     </div>
                 @endif
 
-                @if ($total === null)
+                @if ($unpriced)
                     <p style="font-size:11px;color:var(--gold-700);margin:12px 0 0;line-height:1.5;">
-                        This package includes a scope priced on request. We need to agree a price with you before a
+                        This package hasn't been priced yet. We need to agree a package price with you before a
                         request using it can be submitted.
                     </p>
                 @endif

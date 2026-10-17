@@ -85,24 +85,32 @@ class CreateRequestController extends Controller
         $customerId = session('client_customer_id');
         $userId = session('client_user_id');
 
-        // Refuse unpriced price-on-request scopes server-side — the wizard
-        // hides them, but a tampered payload (or a package containing one)
-        // would otherwise bill at RM0.
-        $unpriced = DB::table('scope_types')
-            ->whereIn('id', $scopeIds)
-            ->where('price_on_request', true)
-            ->whereNotIn('id', fn ($q) => $q->select('scope_type_id')->from('customer_scope_prices')->where('customer_id', $customerId))
-            ->pluck('name');
-
-        if ($unpriced->isNotEmpty()) {
-            return back()->withInput()->withErrors([
-                'cart_data' => 'Pricing has not been set for: '.$unpriced->implode(', ').'. Please contact your account manager before ordering these checks.',
-            ]);
-        }
-
-        // Which package this came from, for reporting. Re-derived server-side —
-        // the posted id is only a hint.
+        // Which package this came from. Re-derived server-side — the posted id
+        // is only a hint — and it also decides how the order is billed.
         $packageId = $this->resolvePackageId($request->input('package_id'), $customerId, $scopeIds);
+
+        // A package is billed at its fixed bundle price, which covers every
+        // scope it bundles — so an unpriced price-on-request scope inside a
+        // priced package is fine.
+        $packagePrice = $packageId ? (float) (Package::whereKey($packageId)->value('price') ?? 0) : 0.0;
+        $orderedAsPricedPackage = $packagePrice > 0;
+
+        // Refuse unpriced price-on-request scopes server-side (ad-hoc orders
+        // only) — the wizard hides them, but a tampered payload would otherwise
+        // bill at RM0.
+        if (! $orderedAsPricedPackage) {
+            $unpriced = DB::table('scope_types')
+                ->whereIn('id', $scopeIds)
+                ->where('price_on_request', true)
+                ->whereNotIn('id', fn ($q) => $q->select('scope_type_id')->from('customer_scope_prices')->where('customer_id', $customerId))
+                ->pluck('name');
+
+            if ($unpriced->isNotEmpty()) {
+                return back()->withInput()->withErrors([
+                    'cart_data' => 'Pricing has not been set for: '.$unpriced->implode(', ').'. Please contact your account manager before ordering these checks.',
+                ]);
+            }
+        }
 
         // Cash (per-request) customers are billed upfront: the request generates
         // an invoice on submit, paid through the invoice-receipt flow.
@@ -174,23 +182,40 @@ class CreateRequestController extends Controller
             return null;
         }
 
-        $scopeNames = DB::table('scope_types')->whereIn('id', $scopeIds)->pluck('name', 'id');
-        $customerPrices = DB::table('customer_scope_prices')
-            ->where('customer_id', $screeningRequest->customer_id)
-            ->whereIn('scope_type_id', $scopeIds)
-            ->pluck('price', 'scope_type_id');
-        $defaultPrices = DB::table('scope_types')->whereIn('id', $scopeIds)->pluck('price', 'id');
+        // A package order bills at the package's fixed bundle price — one line
+        // per candidate — rather than line-by-line per scope. Mirrors the
+        // subtotal from ScreeningRequest::cashSubtotal and the admin invoice.
+        $package = $screeningRequest->package_id ? $screeningRequest->package()->first() : null;
 
         $items = [];
-        foreach ($candidates as $candidate) {
-            foreach ($scopeIds as $sid) {
-                $price = (float) ($customerPrices[$sid] ?? $defaultPrices[$sid] ?? 0);
+        if ($package && (float) $package->price > 0) {
+            $price = round((float) $package->price, 2);
+            foreach ($candidates as $candidate) {
                 $items[] = [
-                    'description' => $candidate->name.' — '.($scopeNames[$sid] ?? 'Screening'),
+                    'description' => $candidate->name.' — '.$package->name.' (package)',
                     'qty' => 1,
                     'unit_price' => $price,
                     'total' => $price,
                 ];
+            }
+        } else {
+            $scopeNames = DB::table('scope_types')->whereIn('id', $scopeIds)->pluck('name', 'id');
+            $customerPrices = DB::table('customer_scope_prices')
+                ->where('customer_id', $screeningRequest->customer_id)
+                ->whereIn('scope_type_id', $scopeIds)
+                ->pluck('price', 'scope_type_id');
+            $defaultPrices = DB::table('scope_types')->whereIn('id', $scopeIds)->pluck('price', 'id');
+
+            foreach ($candidates as $candidate) {
+                foreach ($scopeIds as $sid) {
+                    $price = (float) ($customerPrices[$sid] ?? $defaultPrices[$sid] ?? 0);
+                    $items[] = [
+                        'description' => $candidate->name.' — '.($scopeNames[$sid] ?? 'Screening'),
+                        'qty' => 1,
+                        'unit_price' => $price,
+                        'total' => $price,
+                    ];
+                }
             }
         }
 
@@ -526,29 +551,23 @@ class CreateRequestController extends Controller
             ->where('customer_id', $customerId)
             ->orderBy('name')
             ->get()
-            ->map(function (Package $p) use ($customerPrices) {
-                // A package holding a price-on-request scope with no agreed price
-                // has no quotable total, and submit() rejects any request using it.
-                // Flag it so the wizard disables it instead of advertising a price
-                // that silently excludes the unpriced scope.
-                $total = $p->effectiveTotal($customerPrices);
-
-                $blocking = $p->scopeTypes
-                    ->filter(fn ($s) => $s->price_on_request && ! $customerPrices->has($s->id))
-                    ->pluck('name')
-                    ->values()
-                    ->all();
+            ->map(function (Package $p) {
+                // A package is sold at its fixed bundle price, charged per
+                // candidate. That price covers every scope it bundles, so a
+                // price-on-request scope inside it no longer blocks the order.
+                // A package is only unavailable if no price has been set.
+                $price = (float) $p->price;
 
                 return [
                     'id' => $p->id,
                     'country_id' => $p->country_id,
                     'name' => $p->name,
                     'scope_ids' => $p->scopeTypes->pluck('id')->all(),
-                    'price' => $total ?? 0.0,
+                    'price' => $price,
                     // Availability, not pricing — a user who cannot see prices
                     // still needs to know why a package is disabled.
-                    'unavailable' => $total === null,
-                    'blocking_scopes' => $blocking,
+                    'unavailable' => $price <= 0,
+                    'blocking_scopes' => [],
                 ];
             })
             ->map(fn ($p) => $canViewPrices ? $p : [...$p, 'price' => 0.0])

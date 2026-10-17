@@ -129,6 +129,15 @@ class ScreeningRequest extends Model
             return 0.0;
         }
 
+        // Package orders are billed at the package's fixed bundle price, per
+        // candidate — not the per-scope sum. A request is only attributed to a
+        // package when its scopes exactly match it, so every candidate carries
+        // the full bundle. Mirrors nrh-admin ScreeningRequest::calculateSubtotal.
+        $package = $this->package_id ? $this->package()->first() : null;
+        if ($package && (float) $package->price > 0) {
+            return round((float) $package->price * $candidateIds->count(), 2);
+        }
+
         $scopeIds = DB::table('candidate_scope_type')
             ->whereIn('request_candidate_id', $candidateIds)
             ->pluck('scope_type_id');

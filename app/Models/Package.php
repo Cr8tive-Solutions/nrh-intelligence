@@ -18,12 +18,16 @@ class Package extends Model
 
     use LogsActivity;
 
-    protected $fillable = ['customer_id', 'country_id', 'name'];
+    protected $fillable = ['customer_id', 'country_id', 'name', 'price'];
+
+    protected $casts = [
+        'price' => 'decimal:2',
+    ];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'country_id'])
+            ->logOnly(['name', 'country_id', 'price'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges()
             ->useLogName('package')

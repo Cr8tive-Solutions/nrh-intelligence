@@ -157,3 +157,70 @@ it('shows the invoice payment pointer on the cash request details page', functio
         ->assertSee('Payment required')
         ->assertSee($invoice->number);
 });
+
+it('bills a cash package order at the bundle price per candidate', function () {
+    Fixtures::agreement($this->customerId, 'per_request');
+    $scopeA = Fixtures::scopeType($this->countryId, ['price' => 100.00]);
+    $scopeB = Fixtures::scopeType($this->countryId, ['price' => 100.00]);
+    $packageId = Fixtures::package($this->customerId, $this->countryId, ['name' => 'Exec Pack', 'price' => 300.00]);
+    Fixtures::attachPackageScope($packageId, $scopeA);
+    Fixtures::attachPackageScope($packageId, $scopeB);
+
+    $payload = [
+        'screening_type' => 'employment_global',
+        'consent' => '1',
+        'cart_data' => json_encode([['id' => $scopeA], ['id' => $scopeB]]),
+        'candidates_data' => json_encode([
+            ['identity_type_id' => $this->identityTypeId, 'name' => 'Ali bin Abu', 'identity_number' => '900101-01-1234', 'nationality' => 'Malaysian'],
+            ['identity_type_id' => $this->identityTypeId, 'name' => 'Siti binti Kassim', 'identity_number' => '920202-02-2222', 'nationality' => 'Malaysian'],
+        ]),
+        'package_id' => $packageId,
+    ];
+
+    $this->actingAs($this->user, 'customer_user')
+        ->post(route('client.request.submit'), $payload)
+        ->assertRedirect(); // cash requests land on the request/invoice page
+
+    $request = ScreeningRequest::where('customer_id', $this->customerId)->firstOrFail();
+
+    // Bundle 300 × 2 candidates = 600, not 4 scope-rows × 100 = 400.
+    expect($request->package_id)->toBe($packageId)
+        ->and($request->cashSubtotal())->toBe(600.0)
+        ->and($request->cashTotal())->toBe(636.0);
+
+    $invoice = Invoice::findOrFail($request->invoice_id);
+    expect((float) $invoice->subtotal)->toBe(600.0)
+        ->and((float) $invoice->total)->toBe(636.0)
+        ->and($invoice->items()->count())->toBe(2); // one bundle line per candidate
+
+    $first = $invoice->items()->first();
+    expect((float) $first->unit_price)->toBe(300.0)
+        ->and($first->description)->toContain('Exec Pack');
+});
+
+it('accepts a priced package even if it bundles a price-on-request scope', function () {
+    Fixtures::agreement($this->customerId, 'per_request');
+    $por = Fixtures::scopeType($this->countryId, ['price' => 0.00, 'price_on_request' => true]);
+    $packageId = Fixtures::package($this->customerId, $this->countryId, ['name' => 'Bundle', 'price' => 275.00]);
+    Fixtures::attachPackageScope($packageId, $por);
+
+    $payload = [
+        'screening_type' => 'employment_global',
+        'consent' => '1',
+        'cart_data' => json_encode([['id' => $por]]),
+        'candidates_data' => json_encode([
+            ['identity_type_id' => $this->identityTypeId, 'name' => 'Ali bin Abu', 'identity_number' => '900101-01-1234', 'nationality' => 'Malaysian'],
+        ]),
+        'package_id' => $packageId,
+    ];
+
+    // The per-scope unpriced guard must NOT block a priced package.
+    $this->actingAs($this->user, 'customer_user')
+        ->post(route('client.request.submit'), $payload)
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(); // cash requests land on the request/invoice page
+
+    $request = ScreeningRequest::where('customer_id', $this->customerId)->firstOrFail();
+    expect($request->package_id)->toBe($packageId)
+        ->and($request->cashSubtotal())->toBe(275.0);
+});
