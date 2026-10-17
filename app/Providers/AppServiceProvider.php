@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Hashids\Hashids;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
+use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use League\Flysystem\Filesystem as Flysystem;
@@ -21,6 +22,13 @@ class AppServiceProvider extends ServiceProvider
             config('hashids.salt') ?: config('app.key'),
             (int) config('hashids.min_length', 8),
         ));
+
+        // `artisan serve` (the Sail container's web server) strips every
+        // non-allow-listed env var from its PHP workers whenever a .env file
+        // exists. compose.yaml sets ADMIN_STORAGE_PATH in `environment:`, so
+        // without this the workers fell back to the sibling path and every
+        // admin-side file download (report PDFs) 404'd.
+        ServeCommand::$passthroughVariables[] = 'ADMIN_STORAGE_PATH';
     }
 
     public function boot(): void
