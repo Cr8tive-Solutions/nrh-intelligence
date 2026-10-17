@@ -35,6 +35,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerLocalMountDriver();
+
+        // SST rate is set from the admin portal (app_settings); override the
+        // static config default so every config('billing.sst_rate') call site
+        // across the client portal uses the shared, admin-managed value.
+        config(['billing.sst_rate' => \App\Models\Setting::sstRate((float) config('billing.sst_rate', 0.06))]);
     }
 
     /**
