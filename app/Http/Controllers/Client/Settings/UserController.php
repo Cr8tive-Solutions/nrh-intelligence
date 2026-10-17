@@ -47,6 +47,8 @@ class UserController extends Controller
             'role' => ['required', 'string', Rule::exists('roles', 'name')->where('guard_name', 'customer_user')],
         ]);
 
+        $this->assertCanAssignRole($validated['role']);
+
         $invitation = DB::transaction(function () use ($validated) {
             $user = CustomerUser::create([
                 'customer_id' => $this->customerId(),
@@ -153,6 +155,7 @@ class UserController extends Controller
     public function update(Request $request, CustomerUser $user)
     {
         $this->authorizeSameCustomer($user);
+        $this->assertCanManage($user);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -162,6 +165,31 @@ class UserController extends Controller
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', Rule::exists('permissions', 'name')->where('guard_name', 'customer_user')],
         ]);
+
+        $this->assertCanAssignRole($validated['role']);
+        $this->assertCanAssignPermissions($validated['permissions'] ?? []);
+
+        $currentRole = $user->roles->first()?->name;
+        $currentStatus = $user->status;
+        $currentPermissions = $user->permissions->pluck('name')->all();
+
+        // A manager may not change their own role, status, or permissions — that
+        // is the escalation / self-lockout path. Name and email they may edit.
+        if ($this->isSelf($user)) {
+            $changesRole = $validated['role'] !== $currentRole;
+            $changesStatus = $validated['status'] !== $user->status;
+            $changesPermissions = array_diff($validated['permissions'] ?? [], $currentPermissions) !== []
+                || array_diff($currentPermissions, $validated['permissions'] ?? []) !== [];
+
+            if ($changesRole || $changesStatus || $changesPermissions) {
+                abort(403, 'You cannot change your own role, status, or permissions.');
+            }
+        }
+
+        // Keep at least one active Owner when demoting or deactivating one.
+        if ($validated['role'] !== 'Owner' || $validated['status'] !== 'active') {
+            $this->assertNotLastActiveOwner($user);
+        }
 
         $before = [
             'name' => $user->name,
@@ -180,6 +208,14 @@ class UserController extends Controller
 
         $user->syncRoles([$validated['role']]);
         $user->syncPermissions($validated['permissions'] ?? []);
+
+        // Deactivating a user invalidates their long-lived remember-me cookie
+        // immediately; active sessions are torn down by ClientAuth on their
+        // next request.
+        if ($validated['status'] === 'inactive' && $currentStatus === 'active') {
+            $user->setRememberToken(Str::random(60));
+            $user->save();
+        }
 
         $after = [
             'name' => $user->name,
@@ -257,9 +293,20 @@ class UserController extends Controller
     public function destroy(CustomerUser $user)
     {
         $this->authorizeSameCustomer($user);
+        $this->assertCanManage($user);
 
         if ($user->id === Auth::guard('customer_user')->id()) {
             abort(403, 'You cannot remove your own account.');
+        }
+
+        $this->assertNotLastActiveOwner($user);
+
+        // Deleting a user cascades to every screening request they submitted
+        // (FK ON DELETE CASCADE), taking candidates and report-version rows with
+        // it. Refuse the delete when they own request history — deactivate
+        // instead — so that data is never silently destroyed from the UI.
+        if ($user->screeningRequests()->exists()) {
+            abort(403, 'This user has submitted screening requests. Deactivate the account instead of deleting it to preserve that history.');
         }
 
         $snapshot = [
@@ -290,6 +337,96 @@ class UserController extends Controller
     {
         if ($user->customer_id !== $this->customerId()) {
             abort(404);
+        }
+    }
+
+    /**
+     * Role privilege ranking. A manager may never assign a role, or act on a
+     * user, that outranks their own — so an Admin cannot mint or edit an Owner,
+     * and only an Owner can grant the Owner role.
+     */
+    protected const ROLE_RANK = [
+        'Viewer' => 1,
+        'HR' => 2,
+        'Accounts' => 2,
+        'Admin' => 3,
+        'Owner' => 4,
+    ];
+
+    protected function actingUser(): CustomerUser
+    {
+        return Auth::guard('customer_user')->user();
+    }
+
+    protected function roleRank(?string $role): int
+    {
+        return self::ROLE_RANK[$role] ?? 0;
+    }
+
+    protected function actingRank(): int
+    {
+        return $this->roleRank($this->actingUser()->roles->first()?->name);
+    }
+
+    /**
+     * Guard against assigning a role above the acting manager's own rank.
+     */
+    protected function assertCanAssignRole(string $role): void
+    {
+        if ($this->roleRank($role) > $this->actingRank()) {
+            abort(403, 'You cannot assign a role higher than your own.');
+        }
+    }
+
+    /**
+     * A manager may only grant permissions they themselves hold, so direct
+     * permissions cannot be used to escalate beyond the manager's own access.
+     *
+     * @param  array<int, string>  $permissions
+     */
+    protected function assertCanAssignPermissions(array $permissions): void
+    {
+        $own = $this->actingUser()->getAllPermissions()->pluck('name')->all();
+
+        if (array_diff($permissions, $own) !== []) {
+            abort(403, 'You cannot grant a permission you do not hold yourself.');
+        }
+    }
+
+    /**
+     * Guard against acting on a user who outranks the acting manager (e.g. an
+     * Admin editing or deleting an Owner).
+     */
+    protected function assertCanManage(CustomerUser $target): void
+    {
+        if ($this->roleRank($target->roles->first()?->name) > $this->actingRank()) {
+            abort(403, 'You cannot modify a user with a higher role than your own.');
+        }
+    }
+
+    protected function isSelf(CustomerUser $target): bool
+    {
+        return $target->id === $this->actingUser()->id;
+    }
+
+    /**
+     * Prevent a company from losing its last active Owner. Called before any
+     * change that would demote, deactivate, or delete the given Owner.
+     */
+    protected function assertNotLastActiveOwner(CustomerUser $target): void
+    {
+        if ($this->roleRank($target->roles->first()?->name) !== self::ROLE_RANK['Owner']) {
+            return;
+        }
+
+        $otherActiveOwners = CustomerUser::where('customer_id', $this->customerId())
+            ->where('id', '!=', $target->id)
+            ->where('status', 'active')
+            ->whereHas('roles', fn ($q) => $q->where('name', 'Owner')->where('guard_name', 'customer_user'))
+            ->exists();
+
+        if (! $otherActiveOwners) {
+            abort(403, 'This is the company\'s last active Owner and cannot be removed or demoted.');
         }
     }
 }

@@ -114,10 +114,19 @@
                     @error('name') <p class="hint">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="field">
+                <div class="field" x-data="{ email: @js(old('email', $user->email)), orig: @js($user->email) }">
                     <label>Work Email</label>
-                    <input type="email" name="email" value="{{ old('email', $user->email) }}"/>
+                    <input type="email" name="email" x-model="email"/>
                     @error('email') <p class="hint">{{ $message }}</p> @enderror
+
+                    {{-- Changing the login/2FA email requires the current
+                         password and a confirmation click on the new address. --}}
+                    <div class="field" style="margin-top:12px;" x-show="email !== orig" x-cloak>
+                        <label>Current Password <span style="color:var(--ink-500);font-weight:400;">(required to change email)</span></label>
+                        <input type="password" name="current_password" autocomplete="current-password"/>
+                        @error('current_password') <p class="hint">{{ $message }}</p> @enderror
+                        <p class="hint">A confirmation link will be sent to the new address; the change takes effect once you confirm it.</p>
+                    </div>
                 </div>
 
                 <div class="field-row field-row-2">

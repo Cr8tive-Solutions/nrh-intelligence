@@ -57,6 +57,74 @@
                 </form>
             </div>
         </div>
+
+        {{-- Two-factor authentication (authenticator app) --}}
+        <div class="card" style="margin-top:20px;">
+            <div class="card-head">
+                <h3>Two-Factor Authentication</h3>
+            </div>
+            <div class="form-body" style="display:flex;flex-direction:column;gap:16px;">
+
+                @if (session('error'))
+                    <div class="alert" style="background:rgba(196,69,58,0.08);border:1px solid rgba(196,69,58,0.25);color:#c4453a;">
+                        <p style="margin:0;">{{ session('error') }}</p>
+                    </div>
+                @endif
+                @if (session('status'))
+                    <div class="alert" style="background:var(--card);border:1px solid var(--line);color:var(--ink-700);">
+                        <p style="margin:0;">{{ session('status') }}</p>
+                    </div>
+                @endif
+
+                @if ($twoFactorEnabled)
+                    <p style="font-size:13px;color:var(--ink-700);margin:0;">
+                        An authenticator app is <strong>enabled</strong> on your account. You'll enter a code from your app each time you sign in.
+                    </p>
+                    <form method="POST" action="{{ route('client.settings.security.2fa.disable') }}" style="display:flex;flex-direction:column;gap:12px;">
+                        @csrf
+                        <div class="field">
+                            <label>Current Password <span style="color:var(--ink-500);font-weight:400;">(required to disable)</span></label>
+                            <input type="password" name="current_password" autocomplete="current-password"/>
+                            @error('current_password') <p class="hint">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="form-footer">
+                            <button type="submit" class="btn">Disable authenticator app</button>
+                        </div>
+                    </form>
+                @elseif ($setupSecret)
+                    <p style="font-size:13px;color:var(--ink-700);margin:0;">
+                        Scan this QR code in Google Authenticator (or any TOTP app), then enter the 6-digit code it shows to finish.
+                    </p>
+                    <div style="width:200px;height:200px;background:#fff;padding:8px;border:1px solid var(--line);border-radius:var(--radius);">
+                        {!! $qrSvg !!}
+                    </div>
+                    <p style="font-size:12px;color:var(--ink-500);margin:0;">
+                        Can't scan? Enter this key manually: <code style="user-select:all;">{{ $setupSecret }}</code>
+                    </p>
+                    <form method="POST" action="{{ route('client.settings.security.2fa.confirm') }}" style="display:flex;flex-direction:column;gap:12px;">
+                        @csrf
+                        <div class="field">
+                            <label>Verification Code</label>
+                            <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"/>
+                            @error('code') <p class="hint">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="form-footer">
+                            <button type="submit" class="btn btn-primary">Confirm &amp; enable</button>
+                        </div>
+                    </form>
+                @else
+                    <p style="font-size:13px;color:var(--ink-700);margin:0;">
+                        Add an authenticator app for stronger sign-in security. If you don't, we'll email you a one-time code instead.
+                    </p>
+                    <form method="POST" action="{{ route('client.settings.security.2fa.enable') }}">
+                        @csrf
+                        <div class="form-footer">
+                            <button type="submit" class="btn btn-primary">Set up authenticator app</button>
+                        </div>
+                    </form>
+                @endif
+            </div>
+        </div>
     </div>
 
 </x-client.layouts.app>

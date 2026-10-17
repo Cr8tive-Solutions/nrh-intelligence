@@ -12,11 +12,10 @@ use Spatie\Permission\Traits\HasRoles;
 
 class CustomerUser extends Authenticatable
 {
-    use HasHashid;
-
     /** @use HasFactory<CustomerUserFactory> */
     use HasFactory;
 
+    use HasHashid;
     use HasRoles;
 
     protected string $guard_name = 'customer_user';
@@ -34,13 +33,25 @@ class CustomerUser extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
     ];
 
     protected function casts(): array
     {
         return [
             'password' => 'hashed',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Whether the user has a confirmed authenticator-app (TOTP) factor. Login
+     * uses the app factor when true and falls back to an emailed code otherwise.
+     */
+    public function hasTwoFactorAppEnabled(): bool
+    {
+        return ! is_null($this->two_factor_secret) && ! is_null($this->two_factor_confirmed_at);
     }
 
     public function customer(): BelongsTo

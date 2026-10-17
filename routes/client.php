@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Client\Auth\InvitationController;
-use App\Http\Controllers\Client\Auth\RegistrationController;
 use App\Http\Controllers\Client\Auth\LoginController;
+use App\Http\Controllers\Client\Auth\RegistrationController;
 use App\Http\Controllers\Client\Billing\InvoiceController;
 use App\Http\Controllers\Client\Billing\TransactionController;
 use App\Http\Controllers\Client\CandidatesController;
@@ -24,6 +24,7 @@ use App\Http\Controllers\Client\Settings\ProfileController;
 use App\Http\Controllers\Client\Settings\SecurityController;
 use App\Http\Controllers\Client\Settings\UserController;
 use App\Http\Controllers\Client\SystemUpdateController;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
 
 Route::name('client.')->group(function () {
@@ -56,8 +57,16 @@ Route::name('client.')->group(function () {
         ->middleware('throttle:5,1')
         ->name('registration.submit');
 
-    // Authenticated routes
-    Route::middleware('client.auth')->group(function () {
+    // Email-change confirmation. Opened from the link emailed to the NEW
+    // address, so it must be reachable without a session — the signature (and
+    // one-hour expiry) is the authorisation.
+    Route::get('/settings/profile/email/confirm', [ProfileController::class, 'confirmEmail'])
+        ->middleware('signed')
+        ->name('settings.profile.email.confirm');
+
+    // Authenticated routes. AuthenticateSession enforces the password-hash check
+    // so that changing a password signs the account out of its other sessions.
+    Route::middleware(['client.auth', AuthenticateSession::class])->group(function () {
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('permission:view-dashboard')->name('dashboard');
@@ -155,17 +164,22 @@ Route::name('client.')->group(function () {
 
         // Settings
         Route::prefix('settings')->name('settings.')->group(function () {
-            // Profile is per-user — always available
+            // Profile & security are per-user — always available. Every user
+            // must be able to rotate their own (possibly compromised) password,
+            // so security is NOT gated behind manage-settings.
             Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
             Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
             Route::delete('/profile/avatar', [ProfileController::class, 'removeAvatar'])->name('profile.avatar.remove');
+            Route::get('/security', [SecurityController::class, 'index'])->name('security');
+            Route::post('/security', [SecurityController::class, 'update'])->name('security.update');
+            Route::post('/security/2fa/enable', [SecurityController::class, 'enableTwoFactor'])->name('security.2fa.enable');
+            Route::post('/security/2fa/confirm', [SecurityController::class, 'confirmTwoFactor'])->name('security.2fa.confirm');
+            Route::post('/security/2fa/disable', [SecurityController::class, 'disableTwoFactor'])->name('security.2fa.disable');
 
-            // Account / Security / Agreement — manage-settings
+            // Account / Agreement — manage-settings
             Route::middleware('permission:manage-settings')->group(function () {
                 Route::get('/account', [AccountController::class, 'index'])->name('account');
                 Route::post('/account', [AccountController::class, 'update'])->name('account.update');
-                Route::get('/security', [SecurityController::class, 'index'])->name('security');
-                Route::post('/security', [SecurityController::class, 'update'])->name('security.update');
                 Route::get('/agreement', [AgreementController::class, 'index'])->name('agreement');
             });
 

@@ -1,9 +1,17 @@
+@php
+    $authSubValue = $method === 'app'
+        ? 'Open your authenticator app and enter the current 6-digit code.'
+        : 'We emailed a 6-digit code to '.e($email).'.';
+    $stepLabelValue = $method === 'app'
+        ? 'AUTHENTICATOR APP'
+        : '<span id="otpTimer">EXPIRES IN 10:00</span>';
+@endphp
 <x-client.layouts.auth
     title="Two-Factor Verification"
     authTitle='Enter your <em>6-digit</em> code.'
-    authSub='We sent a code to your <b>NRH Authenticator</b> — also available via SMS to <b>•••• ••• 4412</b>.'
+    :authSub="$authSubValue"
     step="2 · 2"
-    stepLabel='<span id="otpTimer">EXPIRES IN 10:00</span>'
+    :stepLabel="$stepLabelValue"
     footerText="Wrong account?"
     footerLink="← Back to sign in"
     :footerHref="route('client.login')"
@@ -100,6 +108,7 @@
             <input class="otp-input" maxlength="1" inputmode="numeric">
             <input class="otp-input" maxlength="1" inputmode="numeric">
         </div>
+        @if ($method === 'email')
         <div class="resend-row" style="margin-top:14px;">
             <span>Didn't receive a code?</span>
             <span>
@@ -110,6 +119,7 @@
                 </form>
             </span>
         </div>
+        @endif
     </div>
 
     {{-- Action buttons --}}
@@ -125,57 +135,13 @@
         </div>
     </form>
 
-    {{-- Other methods --}}
-    <div>
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:var(--ink-500);font-weight:600;margin-bottom:10px;">Or use another method</div>
-        <div class="method-list">
-            <button type="button" class="method primary">
-                <div class="method-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
-                </div>
-                <div>
-                    <div class="method-name">NRH Authenticator <span style="margin-left:6px;font-size:10px;color:var(--gold-700);background:var(--gold-100);padding:1px 6px;border-radius:3px;letter-spacing:0.1em;font-weight:700;">PRIMARY</span></div>
-                    <div class="method-desc" style="font-family:var(--font-mono);">iPhone 15 · ends in ••72</div>
-                </div>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--ink-400);flex-shrink:0;"><path d="M9 6l6 6-6 6"/></svg>
-            </button>
-            <button type="button" class="method">
-                <div class="method-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7 12.8 12.8 0 0 0 .7 2.8 2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5 12.8 12.8 0 0 0 2.8.7A2 2 0 0 1 22 16.9z"/></svg>
-                </div>
-                <div>
-                    <div class="method-name">Text message</div>
-                    <div class="method-desc" style="font-family:var(--font-mono);">+1 (828) ••• •412</div>
-                </div>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--ink-400);flex-shrink:0;"><path d="M9 6l6 6-6 6"/></svg>
-            </button>
-            <button type="button" class="method">
-                <div class="method-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="10" width="18" height="11" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3M12 15v2"/></svg>
-                </div>
-                <div>
-                    <div class="method-name">Hardware security key</div>
-                    <div class="method-desc" style="font-family:var(--font-mono);">YubiKey 5C · registered Feb 2024</div>
-                </div>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--ink-400);flex-shrink:0;"><path d="M9 6l6 6-6 6"/></svg>
-            </button>
-            <button type="button" class="method">
-                <div class="method-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-                </div>
-                <div>
-                    <div class="method-name">Backup recovery codes</div>
-                    <div class="method-desc" style="font-family:var(--font-mono);">8 of 10 codes remaining</div>
-                </div>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--ink-400);flex-shrink:0;"><path d="M9 6l6 6-6 6"/></svg>
-            </button>
-        </div>
-    </div>
-
-    {{-- Meta --}}
+    {{-- Help --}}
     <div class="auth-meta">
-        <span>Can't access any method? <a href="#">Contact IT</a></span>
-        <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.1em;">AUDIT · EVT-8842X</span>
+        @if ($method === 'app')
+            <span>Lost access to your authenticator app? <a href="{{ route('client.login') }}">Sign in again</a> or contact your administrator.</span>
+        @else
+            <span>Can't find the email? Check your spam folder, or use “Resend code” above.</span>
+        @endif
     </div>
 
     @push('scripts')
@@ -220,20 +186,22 @@
             if (inputs[0]) inputs[0].focus();
         })();
 
-        // Expiry countdown (10 min)
+        @if ($method === 'email')
+        // Expiry countdown (10 min) — email codes only
         (function () {
             let secs = 600;
             const el = document.getElementById('otpTimer');
+            if (!el) return;
             const t  = setInterval(() => {
                 secs--;
-                if (secs <= 0) { clearInterval(t); if (el) el.textContent = 'EXPIRED'; return; }
+                if (secs <= 0) { clearInterval(t); el.textContent = 'EXPIRED'; return; }
                 const m = String(Math.floor(secs / 60)).padStart(1, '0');
                 const s = String(secs % 60).padStart(2, '0');
-                if (el) el.textContent = 'EXPIRES IN ' + m + ':' + s;
+                el.textContent = 'EXPIRES IN ' + m + ':' + s;
             }, 1000);
         })();
 
-        // Resend countdown (28s)
+        // Resend countdown (28s) — email codes only
         (function () {
             let n       = 28;
             const count = document.getElementById('resendCount');
@@ -250,6 +218,7 @@
                 if (count) count.textContent = n;
             }, 1000);
         })();
+        @endif
     </script>
     @endpush
 

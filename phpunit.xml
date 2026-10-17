@@ -39,7 +39,10 @@
             Feature tests wrap each case in a transaction and roll back.
         -->
         <env name="DB_CONNECTION" value="pgsql"/>
-        <env name="DB_HOST" value="127.0.0.1"/>
+        <!-- Postgres runs on the Docker host; the Sail container reaches it via
+             host.docker.internal. Not forced, so a host-served run (e.g. Herd)
+             can override with DB_HOST=127.0.0.1 in its environment. -->
+        <env name="DB_HOST" value="host.docker.internal"/>
         <env name="DB_PORT" value="5432"/>
         <env name="DB_DATABASE" value="nrh_test"/>
         <env name="DB_USERNAME" value="nrh_test"/>

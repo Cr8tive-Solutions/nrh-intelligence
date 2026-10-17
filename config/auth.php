@@ -7,6 +7,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Dev-only 2FA bypass
+    |--------------------------------------------------------------------------
+    |
+    | When true, the login flow skips the emailed verification code and signs
+    | the user in on password alone. This is a development convenience ONLY and
+    | fails closed: it defaults to false regardless of APP_ENV, so a public host
+    | is never silently exempt from 2FA. Never enable it on an internet-facing
+    | instance.
+    |
+    */
+
+    'dev_2fa_bypass' => (bool) env('AUTH_DEV_2FA_BYPASS', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Authentication Defaults
     |--------------------------------------------------------------------------
     |

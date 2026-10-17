@@ -15,6 +15,21 @@ class ClientAuth
             return redirect()->route('client.login');
         }
 
+        // A user deactivated mid-session (or whose company was disabled) must
+        // lose access immediately, not merely at the next idle timeout. Status
+        // is only enforced at password login otherwise, so re-check it here on
+        // every request and tear the session down if the account is no longer
+        // active. Remember-me cookies are killed separately by rotating the
+        // remember_token when the account is deactivated.
+        if (Auth::guard('customer_user')->user()->status !== 'active') {
+            Auth::guard('customer_user')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('client.login')
+                ->withErrors(['email' => 'Your account is no longer active. Please contact your administrator.']);
+        }
+
         Auth::shouldUse('customer_user');
 
         // Keep the legacy client_customer_id / client_user_id session keys in

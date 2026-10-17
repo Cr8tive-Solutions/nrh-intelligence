@@ -137,10 +137,17 @@
             </a>
         </div>
 
-        @canany(['manage-settings', 'manage-team', 'manage-packages', 'view-audit-log'])
         {{-- Settings --}}
         <div style="display:flex;flex-direction:column;gap:2px;">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:var(--ink-500);padding:0 10px 8px;">Settings</div>
+
+            {{-- Security is per-user — available to every authenticated user so
+                 anyone can rotate a compromised password. --}}
+            @php $active = request()->routeIs('client.settings.security*'); @endphp
+            <a href="{{ route('client.settings.security') }}" class="nav-item {{ $active ? 'active' : '' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7v4l-2 3h18l-2-3V9a7 7 0 0 0-7-7z"/><path d="M9 19a3 3 0 0 0 6 0"/></svg>
+                Security
+            </a>
 
             @can('manage-settings')
             @php $active = request()->routeIs('client.settings.account*'); @endphp
@@ -175,12 +182,6 @@
             @endcan
 
             @can('manage-settings')
-            @php $active = request()->routeIs('client.settings.security*'); @endphp
-            <a href="{{ route('client.settings.security') }}" class="nav-item {{ $active ? 'active' : '' }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7v4l-2 3h18l-2-3V9a7 7 0 0 0-7-7z"/><path d="M9 19a3 3 0 0 0 6 0"/></svg>
-                Security
-            </a>
-
             @php $active = request()->routeIs('client.settings.agreement*'); @endphp
             <a href="{{ route('client.settings.agreement') }}" class="nav-item {{ $active ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M10 13l2 2 4-4"/></svg>
@@ -188,7 +189,6 @@
             </a>
             @endcan
         </div>
-        @endcanany
 
     </nav>
 

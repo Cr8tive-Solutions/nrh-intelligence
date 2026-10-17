@@ -12,6 +12,7 @@ if (! function_exists('hdecode')) {
     {
         $decoded = app('hashids')->decode($hash);
         abort_if(empty($decoded), 404);
+
         return $decoded[0];
     }
 }
