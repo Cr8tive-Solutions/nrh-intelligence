@@ -17,8 +17,17 @@ services:
             XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
             XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
+            # Cross-app storage mount (config/filesystems.php -> admin_local).
+            # Set here rather than in .env because the value describes the
+            # container layout below; a host-served run (Herd) must NOT use it,
+            # since there the sibling-path default already resolves.
+            ADMIN_STORAGE_PATH: /mnt/admin-storage
         volumes:
             - '.:/var/www/html'
+            # The admin portal's private storage, where report PDFs are
+            # generated. Read-only (:ro) — this app only streams reports from it
+            # and must never write into the admin portal's storage.
+            - '../stg-nrh-admin/storage/app/private:/mnt/admin-storage:ro'
         networks:
             - sail
 networks:

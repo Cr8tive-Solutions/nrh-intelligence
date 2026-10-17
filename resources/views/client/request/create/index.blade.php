@@ -263,12 +263,26 @@
                                         <div class="pkg-content">
                                             <div class="pkg-name" x-text="pkg.name"></div>
                                             <div class="pkg-meta"><span x-text="pkg.scope_ids.length"></span> scopes included</div>
+                                            {{-- Priced on request: no quotable total, and submit() would reject it. --}}
+                                            <div class="pkg-meta" x-show="pkg.unavailable" style="color:var(--gold-700);margin-top:3px;">
+                                                Priced on request &mdash; <span x-text="pkg.blocking_scopes.join(', ')"></span>.
+                                                Contact your account manager to agree a price.
+                                            </div>
                                         </div>
                                         <div class="pkg-price" x-show="canViewPrices">
-                                            <div class="amt"><span class="cur">MYR</span> <span x-text="pkg.price.toFixed(2)"></span></div>
-                                            <div class="unit">per candidate</div>
+                                            <template x-if="pkg.unavailable">
+                                                <div class="amt"><span class="cur">On request</span></div>
+                                            </template>
+                                            <template x-if="!pkg.unavailable">
+                                                <div>
+                                                    <div class="amt"><span class="cur">MYR</span> <span x-text="pkg.price.toFixed(2)"></span></div>
+                                                    <div class="unit">per candidate</div>
+                                                </div>
+                                            </template>
                                         </div>
-                                        <button @click="addPackage(pkg)" class="btn btn-primary pkg-add" type="button">Add all</button>
+                                        <button @click="addPackage(pkg)" class="btn btn-primary pkg-add" type="button"
+                                                :disabled="pkg.unavailable"
+                                                :style="pkg.unavailable ? 'opacity:0.5;cursor:not-allowed;' : ''">Add all</button>
                                     </li>
                                 </template>
                             </ul>
@@ -282,7 +296,7 @@
                             <div style="padding:40px 0;text-align:center;">
                                 <svg style="width:36px;height:36px;color:var(--ink-200);margin:0 auto 12px;display:block;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"/></svg>
                                 <p style="font-size:13px;color:var(--ink-400);margin:0 0 12px;">No saved favourites yet.</p>
-                                <a href="{{ route('client.settings.packages') }}" style="font-size:13px;font-weight:600;color:var(--emerald-700);text-decoration:none;">Create one in Settings →</a>
+                                <a href="{{ route('client.settings.packages') }}" style="font-size:13px;font-weight:600;color:var(--emerald-700);text-decoration:none;">View your packages →</a>
                             </div>
                         </div>
                     </div>
@@ -800,6 +814,8 @@
                         <input type="hidden" name="screening_type" value="{{ $screeningType ?? 'employment_global' }}">
                         <input type="hidden" name="cart_data" :value="JSON.stringify(cart)">
                         <input type="hidden" name="candidates_data" :value="JSON.stringify(candidates)">
+                        {{-- Attribution hint only; submit() re-verifies it against the cart. --}}
+                        <input type="hidden" name="package_id" :value="selectedPackageId ?? ''">
 
                         {{-- PDPA consent — checkbox mode (when no scope requires signed forms) --}}
                         <template x-if="!signedConsentRequired">
@@ -878,6 +894,9 @@ function newRequest() {
         scopeTab: 'scopes',
         scopeSearch: '',
         cart: [],
+        // Package the cart currently corresponds to, for request attribution.
+        // Cleared by syncPackageAttribution() as soon as the cart diverges.
+        selectedPackageId: null,
         candidates: [],
         uploads: [],
         newCandidate: { name: '', identity_type_id: '', identity_number: '', nationality: '', date_of_birth: '', mobile: '', remarks: '' },
@@ -892,7 +911,9 @@ function newRequest() {
         allScopes:     @json($scopes),
         allPackages:   @json($packages),
         identityTypes: @json($identityTypes),
-        canViewPrices: @json(auth('customer_user')->user()?->can('view-prices') ?? false),
+        {{-- Passed from the controller, which also zeroes the price fields when
+             false — so there is nothing to reveal by inspecting the page. --}}
+        canViewPrices: @json($canViewPrices ?? false),
 
         // Labels for each document key the admin can require on a scope.
         docLabels: { consent: 'Consent Form', nric: 'NRIC / ID Copy', resume: 'Resume / CV', certificate: 'Certificate Copy' },
@@ -952,15 +973,38 @@ function newRequest() {
 
         toggleScope(scope) {
             this.isInCart(scope.id) ? this.removeFromCart(scope.id) : this.cart.push({ ...scope });
+            this.syncPackageAttribution();
         },
-        removeFromCart(id) { this.cart = this.cart.filter(i => i.id !== id); },
-        clearCart()        { this.cart = []; },
+        removeFromCart(id) { this.cart = this.cart.filter(i => i.id !== id); this.syncPackageAttribution(); },
+        clearCart()        { this.cart = []; this.selectedPackageId = null; },
 
         addPackage(pkg) {
+            // Unavailable = holds a price-on-request scope with no agreed price.
+            // Adding it would quietly drop that scope and submit() would reject
+            // the request anyway, so refuse the whole package.
+            if (pkg.unavailable) { return; }
             pkg.scope_ids.forEach(sid => {
                 const scope = this.allScopes.find(s => s.id === sid);
                 if (scope && !this.isInCart(sid)) { this.cart.push({ ...scope }); }
             });
+            this.selectedPackageId = pkg.id;
+            this.syncPackageAttribution();
+        },
+
+        // The request is only "from" a package while the cart is exactly that
+        // package's scopes. Editing the cart afterwards makes it an ad-hoc
+        // order, so the attribution is dropped rather than left misleading.
+        // submit() re-checks this server-side regardless.
+        syncPackageAttribution() {
+            if (this.selectedPackageId === null) { return; }
+            const pkg = this.allPackages.find(p => p.id === this.selectedPackageId);
+            if (!pkg) { this.selectedPackageId = null; return; }
+
+            const inCart = this.cart.map(i => i.id).sort();
+            const inPkg  = [...pkg.scope_ids].sort();
+            const matches = inCart.length === inPkg.length && inPkg.every((id, i) => id === inCart[i]);
+
+            if (!matches) { this.selectedPackageId = null; }
         },
 
         addCandidate() {

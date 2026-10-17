@@ -56,9 +56,17 @@ return [
         // portal serves them to customers through this mount. Mirrors the
         // `client_local` disk on nrh-admin. In production both apps must
         // share (or mount) the same storage — set ADMIN_STORAGE_PATH.
+        // `local_mount` (see AppServiceProvider) instead of `local`: the stock
+        // local driver creates its root the moment the disk is resolved, so an
+        // absent mount threw UnableToCreateDirectory before any code could fall
+        // back. Containers never have the sibling path, so that turned a missing
+        // mount into a 500 rather than a 404 on a report download.
+        //
+        // Docker / production MUST set ADMIN_STORAGE_PATH to the shared mount —
+        // separate containers have no sibling directory to find.
         'admin_local' => [
-            'driver' => 'local',
-            'root' => env('ADMIN_STORAGE_PATH', base_path('../nrh-admin/storage/app/private')),
+            'driver' => 'local_mount',
+            'root' => env('ADMIN_STORAGE_PATH') ?: base_path('../nrh-admin/storage/app/private'),
             'serve' => false,
             'throw' => false,
             'report' => false,

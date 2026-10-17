@@ -99,10 +99,15 @@ class CreateRequestController extends Controller
             ]);
         }
 
-        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $type, $scopeIds, $candidates, $requiredDocs) {
+        // Which package this came from, for reporting. Re-derived server-side —
+        // the posted id is only a hint.
+        $packageId = $this->resolvePackageId($request->input('package_id'), $customerId, $scopeIds);
+
+        $createdRequest = DB::transaction(function () use ($request, $customerId, $userId, $packageId, $type, $scopeIds, $candidates, $requiredDocs) {
             $screeningRequest = ScreeningRequest::create([
                 'customer_id' => $customerId,
                 'customer_user_id' => $userId,
+                'package_id' => $packageId,
                 'reference' => ScreeningRequest::generateReference(),
                 'status' => 'new',
                 'type' => $type,
@@ -138,6 +143,38 @@ class CreateRequestController extends Controller
         });
 
         return $this->redirectAfterSubmit($createdRequest);
+    }
+
+    /**
+     * Resolve the package to attribute this request to, or null.
+     *
+     * The wizard posts the package the user clicked "Add all" on, but that is
+     * only a hint: the cart is freely editable afterwards and the payload is
+     * client-controlled. Attribute only when the package belongs to this
+     * customer AND its scope set is exactly what was ordered — otherwise the
+     * reporting would claim a package that was not actually what the customer
+     * bought.
+     *
+     * @param  array<int, int|string>  $scopeIds
+     */
+    protected function resolvePackageId(mixed $posted, ?int $customerId, array $scopeIds): ?int
+    {
+        if (blank($posted) || ! is_numeric($posted) || empty($scopeIds)) {
+            return null;
+        }
+
+        $package = Package::with('scopeTypes')
+            ->where('customer_id', $customerId)
+            ->find((int) $posted);
+
+        if (! $package) {
+            return null;
+        }
+
+        $packageScopes = $package->scopeTypes->pluck('id')->map('intval')->sort()->values()->all();
+        $ordered = collect($scopeIds)->map('intval')->unique()->sort()->values()->all();
+
+        return $packageScopes === $ordered ? $package->id : null;
     }
 
     /**
@@ -387,29 +424,53 @@ class CreateRequestController extends Controller
             ->reject(fn ($s) => $s['price_on_request'])
             ->values();
 
+        // Roles without `view-prices` (e.g. HR) order without seeing cost. The
+        // wizard hides every price with x-show, but that only hides it visually —
+        // the figures would still sit in the page source. Zero them server-side
+        // so they never reach the browser. Kept as 0.0 rather than removed so the
+        // Alpine cart arithmetic stays safe.
+        $canViewPrices = auth('customer_user')->user()?->can('view-prices') ?? false;
+
+        if (! $canViewPrices) {
+            $scopes = $scopes->map(fn ($s) => [...$s, 'price' => 0.0])->values();
+        }
+
         $packages = Package::with('scopeTypes')
             ->where('customer_id', $customerId)
+            ->orderBy('name')
             ->get()
-            ->map(function ($p) use ($customerPrices) {
-                $total = $p->scopeTypes->sum(function ($s) use ($customerPrices) {
-                    return $customerPrices->has($s->id)
-                        ? (float) $customerPrices->get($s->id)
-                        : (float) $s->price;
-                });
+            ->map(function (Package $p) use ($customerPrices) {
+                // A package holding a price-on-request scope with no agreed price
+                // has no quotable total, and submit() rejects any request using it.
+                // Flag it so the wizard disables it instead of advertising a price
+                // that silently excludes the unpriced scope.
+                $total = $p->effectiveTotal($customerPrices);
+
+                $blocking = $p->scopeTypes
+                    ->filter(fn ($s) => $s->price_on_request && ! $customerPrices->has($s->id))
+                    ->pluck('name')
+                    ->values()
+                    ->all();
 
                 return [
                     'id' => $p->id,
                     'country_id' => $p->country_id,
                     'name' => $p->name,
                     'scope_ids' => $p->scopeTypes->pluck('id')->all(),
-                    'price' => $total,
+                    'price' => $total ?? 0.0,
+                    // Availability, not pricing — a user who cannot see prices
+                    // still needs to know why a package is disabled.
+                    'unavailable' => $total === null,
+                    'blocking_scopes' => $blocking,
                 ];
-            });
+            })
+            ->map(fn ($p) => $canViewPrices ? $p : [...$p, 'price' => 0.0])
+            ->values();
 
         $identityTypes = IdentityType::all();
 
         return view('client.request.create.index', compact(
-            'countries', 'scopes', 'packages', 'identityTypes'
+            'countries', 'scopes', 'packages', 'identityTypes', 'canViewPrices'
         ) + ['lockedCountryId' => $lockedCountryId, 'screeningType' => $type]);
     }
 

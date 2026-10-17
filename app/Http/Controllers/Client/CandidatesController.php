@@ -18,7 +18,7 @@ class CandidatesController extends Controller
             'screeningRequest',
             fn ($q) => $q->where('customer_id', $customerId)
         )
-            ->with(['screeningRequest.submittedBy', 'scopeTypes' => fn ($q) => $q->orderBy('scope_types.id'), 'identityType'])
+            ->with(['screeningRequest.submittedBy', 'screeningRequest.package', 'scopeTypes' => fn ($q) => $q->orderBy('scope_types.id'), 'identityType'])
             ->findOrFail($id);
 
         return view('client.candidates.show', compact('candidate'));
@@ -46,7 +46,7 @@ class CandidatesController extends Controller
             'screeningRequest',
             fn ($q) => $q->where('customer_id', $customerId)
         )
-            ->with(['screeningRequest.submittedBy', 'scopeTypes'])
+            ->with(['screeningRequest.submittedBy', 'screeningRequest.package', 'scopeTypes'])
             ->latest()
             ->paginate(12);
 

@@ -74,8 +74,9 @@
                                             <button type="submit" class="btn btn-ghost" style="padding:5px 12px;font-size:12px;">Resend invite</button>
                                         </form>
                                     @endif
+                                    {{-- Hashid, not the raw id: the route binding decodes it. --}}
                                     <button type="button" class="btn btn-ghost" style="padding:5px 12px;font-size:12px;"
-                                        x-data @click="$dispatch('open-edit-user', { id: {{ $user->id }} })">
+                                        x-data @click="$dispatch('open-edit-user', { id: '{{ hid($user->id) }}' })">
                                         Edit
                                     </button>
                                 </div>
@@ -156,7 +157,7 @@
             </template>
 
             <template x-if="!loading && user">
-                <form :action="`{{ url('settings/users') }}/${user.id}`" method="POST" style="display:flex;flex-direction:column;gap:16px;">
+                <form :action="`{{ url('settings/users') }}/${user.hashid}`" method="POST" style="display:flex;flex-direction:column;gap:16px;">
                     @csrf
                     @method('PUT')
                     <div class="field">
@@ -248,7 +249,7 @@
                 confirmDelete() {
                     if (! this.user || ! confirm(`Remove ${this.user.name}?`)) { return; }
                     const form = document.getElementById('delete-user-form');
-                    form.action = `{{ url('settings/users') }}/${this.user.id}`;
+                    form.action = `{{ url('settings/users') }}/${this.user.hashid}`;
                     form.submit();
                 },
             };

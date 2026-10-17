@@ -24,7 +24,7 @@ class ScreeningRequest extends Model
     /** Canonical status set — keep in sync with nrh-admin ScreeningRequest::STATUSES. */
     public const STATUSES = ['new', 'in_progress', 'rejected', 'complete', 'updated'];
 
-    protected $fillable = ['customer_id', 'customer_user_id', 'invoice_id', 'reference', 'status', 'type', 'meta', 'rejection_reason', 'payment_slip_path', 'payment_slip_uploaded_at', 'payment_verified_at', 'payment_verified_by'];
+    protected $fillable = ['customer_id', 'customer_user_id', 'package_id', 'invoice_id', 'reference', 'status', 'type', 'meta', 'rejection_reason', 'payment_slip_path', 'payment_slip_uploaded_at', 'payment_verified_at', 'payment_verified_by'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -84,6 +84,16 @@ class ScreeningRequest extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    /**
+     * The package this request was ordered from, or null for an ad-hoc scope
+     * selection. Set only when the submitted cart exactly matched the package's
+     * scopes; null again if the package is later deleted (nullOnDelete).
+     */
+    public function package(): BelongsTo
+    {
+        return $this->belongsTo(Package::class);
     }
 
     public function submittedBy(): BelongsTo

@@ -87,10 +87,24 @@ class CustomerSeeder extends Seeder
         $nric = IdentityType::where('name', 'NRIC')->first();
         $passport = IdentityType::where('name', 'Passport')->first();
 
-        $myCriminal = ScopeType::where('country_id', $malaysia->id)->where('name', 'Criminal Record Check')->first();
-        $myEmployment = ScopeType::where('country_id', $malaysia->id)->where('name', 'Employment Verification')->first();
-        $myEducation = ScopeType::where('country_id', $malaysia->id)->where('name', 'Education Verification')->first();
-        $myCredit = ScopeType::where('country_id', $malaysia->id)->where('name', 'Credit Check')->first();
+        // Names must match ScopeTypeSeeder exactly — a miss used to fatal the
+        // whole seed on `$myCriminal->id` below.
+        $findMyScope = fn (string $name) => ScopeType::where('country_id', $malaysia->id)
+            ->where('name', $name)
+            ->first();
+
+        $myCriminal = $findMyScope('Crime Risk Integrity Check');
+        $myEmployment = $findMyScope('One Employment Verification');
+        $myEducation = $findMyScope('One Academic Credential Verification (Malaysian Institution)');
+        $myCredit = $findMyScope('Credit Summons & Default');
+
+        $demoScopes = collect([$myCriminal, $myEmployment, $myEducation, $myCredit]);
+
+        if ($demoScopes->contains(null)) {
+            $this->command?->warn('CustomerSeeder: expected Malaysian scope types are missing — run ScopeTypeSeeder first. The customer, users and agreement are seeded; packages, requests, invoices and transactions are skipped.');
+
+            return;
+        }
 
         // ── Packages ───────────────────────────────────────────────────────
         if ($customer->packages()->count() === 0) {

@@ -105,6 +105,25 @@ class Fixtures
         ], $attrs));
     }
 
+    public static function package(int $customerId, int $countryId, array $attrs = []): int
+    {
+        return DB::table('packages')->insertGetId(array_merge([
+            'customer_id' => $customerId,
+            'country_id' => $countryId,
+            'name' => 'Standard Screening '.self::uniq(),
+            'created_at' => now(), 'updated_at' => now(),
+        ], $attrs));
+    }
+
+    /** `package_scope_type` has a composite PK and no timestamps. */
+    public static function attachPackageScope(int $packageId, int $scopeTypeId): void
+    {
+        DB::table('package_scope_type')->insert([
+            'package_id' => $packageId,
+            'scope_type_id' => $scopeTypeId,
+        ]);
+    }
+
     public static function screeningRequest(int $customerId, int $customerUserId, array $attrs = []): int
     {
         return DB::table('screening_requests')->insertGetId(array_merge([
@@ -125,6 +144,19 @@ class Fixtures
             'name' => 'Candidate Name',
             'identity_number' => '900101-01-'.random_int(1000, 9999),
             'status' => 'new',
+            'created_at' => now(), 'updated_at' => now(),
+        ], $attrs));
+    }
+
+    public static function transaction(int $customerId, array $attrs = []): int
+    {
+        return DB::table('transactions')->insertGetId(array_merge([
+            'customer_id' => $customerId,
+            'type' => 'payment',
+            'amount' => 106.00,
+            'reference' => 'TXN-'.self::uniq(),
+            'status' => 'completed',
+            'method' => 'Monthly Billing',
             'created_at' => now(), 'updated_at' => now(),
         ], $attrs));
     }

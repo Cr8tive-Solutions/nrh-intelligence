@@ -6,8 +6,8 @@
         $displayName = $isRedacted ? 'Candidate erased' : $candidate->name;
         $displayId   = $isRedacted ? '—' : $candidate->identity_number;
         $initials = $isRedacted ? '··' : collect(explode(' ', $candidate->name))->map(fn ($p) => strtoupper(substr($p, 0, 1)))->take(2)->implode('');
-        $pkgNames = ['Standard', 'Executive', 'Clinical', 'Basic'];
-        $pkg      = $pkgNames[$candidate->id % 4];
+        // Null for ad-hoc orders (scopes picked individually rather than from a package).
+        $pkg = $req?->package?->name;
 
         $verdictMap = [
             'complete'    => ['text' => 'Cleared',        'cls' => 'clear'],
@@ -48,7 +48,9 @@
         <div>
             <div class="case-id">
                 <span>CASE · {{ $req->reference }}</span>
-                <span class="chip">{{ strtoupper($pkg) }} · TIER III</span>
+                @if ($pkg)
+                    <span class="chip">{{ strtoupper($pkg) }}</span>
+                @endif
             </div>
             <div class="case-name" @if($isRedacted) style="font-style:italic;color:var(--ink-400);" @endif>{{ $displayName }}</div>
             <div class="case-meta">
@@ -658,8 +660,7 @@
                     @endif
                     <div class="id-row">
                         <span class="k">Package</span>
-                        <span class="v" style="font-family:var(--font-ui);font-weight:600;">{{ $pkg }}</span>
-                        <span class="match"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>
+                        <span class="v" style="font-family:var(--font-ui);font-weight:600;">{{ $pkg ?? 'Custom selection' }}</span>
                     </div>
                 </div>
                 @endif
@@ -698,7 +699,7 @@
                     <div class="tl-item">
                         <div class="tl-time">{{ strtoupper($req->created_at->subMinutes(8)->format('M d · H:i')) }}</div>
                         <div class="tl-title">Order created</div>
-                        <div class="tl-desc">by {{ $req->submittedBy?->name ?? 'requester' }} · {{ $pkg }} package.</div>
+                        <div class="tl-desc">by {{ $req->submittedBy?->name ?? 'requester' }} · {{ $pkg ? $pkg.' package' : 'custom scope selection' }}.</div>
                     </div>
                 </div>
             </div>

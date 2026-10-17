@@ -10,11 +10,16 @@
     <div class="card">
         <div class="card-head">
             <h3>All Transactions</h3>
-            @if(count($transactions) > 0)
-                <span style="font-family:var(--font-mono);font-size:11px;color:var(--ink-500);letter-spacing:0.08em;">
-                    TOTAL · <b style="color:var(--ink-900);">MYR {{ number_format($transactions->sum('amount'), 2) }}</b>
-                </span>
-            @endif
+            {{-- Amounts are gated on view-prices, same as the invoice list. A role
+                 with view-billing but not view-prices (e.g. HR) sees the ledger
+                 without the money. --}}
+            @can('view-prices')
+                @if(count($transactions) > 0)
+                    <span style="font-family:var(--font-mono);font-size:11px;color:var(--ink-500);letter-spacing:0.08em;">
+                        TOTAL · <b style="color:var(--ink-900);">MYR {{ number_format($transactions->sum('amount'), 2) }}</b>
+                    </span>
+                @endif
+            @endcan
         </div>
         <div style="overflow-x:auto;">
             <div class="table-scroll"><table class="table">
@@ -43,11 +48,19 @@
                                 </span>
                             </td>
                             <td style="text-align:right;font-weight:600;font-family:var(--font-mono);font-size:13px;color:var(--ink-900);">
-                                MYR {{ number_format($txn->amount, 2) }}
+                                @can('view-prices')
+                                    MYR {{ number_format($txn->amount, 2) }}
+                                @else
+                                    <span style="color:var(--ink-300);">—</span>
+                                @endcan
                             </td>
                             <td style="text-align:right;">
-                                <a href="{{ route('client.billing.transactions.receipt', hid($txn->id)) }}"
-                                   class="btn btn-ghost" style="padding:5px 12px;font-size:12px;">View</a>
+                                {{-- The receipt route needs download-invoices; without it
+                                     the link would only ever 403. --}}
+                                @can('download-invoices')
+                                    <a href="{{ route('client.billing.transactions.receipt', hid($txn->id)) }}"
+                                       class="btn btn-ghost" style="padding:5px 12px;font-size:12px;">View</a>
+                                @endcan
                             </td>
                         </tr>
                     @empty

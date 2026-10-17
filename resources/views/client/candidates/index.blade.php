@@ -128,8 +128,8 @@
                         ];
                         $stage = $stageMap[$candidate->status] ?? ['cls' => 'pill-pending', 'text' => 'Unknown', 'fill' => '', 'pct' => 0];
 
-                        $pkgNames = ['Standard', 'Executive', 'Clinical', 'Basic'];
-                        $pkg = $pkgNames[$candidate->id % 4];
+                        // Null for ad-hoc orders (scopes picked individually).
+                        $pkg = $req?->package?->name;
                     @endphp
                     <tr onclick="location.href='{{ route('client.candidates.show', hid($candidate->id)) }}'">
                         <td onclick="event.stopPropagation()">
@@ -151,7 +151,13 @@
                                 </div>
                             </div>
                         </td>
-                        <td><span style="font-weight:600;">{{ $pkg }}</span></td>
+                        <td>
+                            @if ($pkg)
+                                <span style="font-weight:600;">{{ $pkg }}</span>
+                            @else
+                                <span style="color:var(--ink-400);">Custom</span>
+                            @endif
+                        </td>
                         <td>
                             <span class="pill {{ $stage['cls'] }}"><span class="dot"></span>{{ $stage['text'] }}</span>
                             <div class="tprogress" style="margin-top:6px;">

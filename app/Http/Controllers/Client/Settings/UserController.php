@@ -135,6 +135,10 @@ class UserController extends Controller
             ->pluck('name');
 
         return response()->json([
+            // `hashid` is what the modal builds its update/delete URLs from.
+            // CustomerUser is hashid-bound, so a raw integer id 404s on the
+            // route binding — see the `hid()` note in CLAUDE.md.
+            'hashid' => hid($user->id),
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,

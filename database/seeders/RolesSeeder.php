@@ -17,13 +17,14 @@ class RolesSeeder extends Seeder
         $roles = [
             'Owner' => $allPermissions,
             'Admin' => array_values(array_diff($allPermissions, ['manage-billing', 'manage-team'])),
+            // No 'view-billing': HR orders checks and reads reports; money is the
+            // Accounts role's job. See the remove_view_billing_from_hr_role migration.
             'HR' => [
                 'view-dashboard',
                 'view-candidates',
                 'view-requests',
                 'create-requests',
                 'view-reports',
-                'view-billing',
             ],
             'Accounts' => [
                 'view-dashboard',
@@ -36,13 +37,8 @@ class RolesSeeder extends Seeder
                 'download-invoices',
                 'view-audit-log',
             ],
-            'Member' => [
-                'view-dashboard',
-                'view-candidates',
-                'view-requests',
-                'create-requests',
-                'view-reports',
-            ],
+            // No 'Member' role — retired in favour of HR, which it only differed
+            // from by lacking view-billing. See the remove_member_role migration.
             'Viewer' => [
                 'view-dashboard',
                 'view-candidates',

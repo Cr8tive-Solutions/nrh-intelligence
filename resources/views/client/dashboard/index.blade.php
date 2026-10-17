@@ -115,12 +115,8 @@
                                 'rejected'    => 0,
                                 default       => rand(0, 1),
                             };
-                            $pkg = match($req->candidates_count % 4) {
-                                0 => 'Standard',
-                                1 => 'Executive',
-                                2 => 'Clinical',
-                                3 => 'Basic',
-                            };
+                            // Null for ad-hoc orders (scopes picked individually).
+                            $pkg = $req->package?->name;
                         @endphp
                         <tr onclick="location.href='{{ route('client.requests.details', hid($req->id)) }}'">
                             <td>
@@ -133,7 +129,7 @@
                                 </div>
                             </td>
                             <td>
-                                <span style="font-size:12px;font-weight:600;color:var(--ink-700);">{{ $pkg }}</span>
+                                <span style="font-size:12px;font-weight:600;color:var({{ $pkg ? '--ink-700' : '--ink-400' }});">{{ $pkg ?? 'Custom' }}</span>
                             </td>
                             <td>
                                 <div style="display:flex;align-items:baseline;gap:3px;">
@@ -204,28 +200,37 @@
                 </div>
             </div>
 
-            {{-- Active packages --}}
+            {{-- Requests by package --}}
             <div class="card">
                 <div class="card-head">
-                    <h3>Active packages</h3>
+                    <h3>Requests by package</h3>
                     <span style="font-size:10px;font-family:var(--font-mono);color:var(--ink-400);letter-spacing:0.1em;">{{ $stats['total'] }} TOTAL</span>
                 </div>
                 <div class="packages">
-                    @foreach ([
-                        ['Standard',  'crim + emp + edu',  54, 'var(--emerald-700)'],
-                        ['Executive', '+ credit, OFAC',    27, 'var(--emerald-500)'],
-                        ['Clinical',  '+ license, drug',   12, 'var(--gold-500)'],
-                        ['Basic',     'crim only',          7, 'var(--ink-400)'],
-                    ] as [$name, $desc, $pct, $color])
-                    <div class="pkg">
-                        <div class="pkg-label">
-                            <span class="pkg-dot" style="background:{{ $color }};"></span>
-                            <span><b>{{ $name }}</b> <span style="color:var(--ink-500);">· {{ $desc }}</span></span>
+                    @php
+                        // Named packages get the emerald/gold ramp; the un-attributed
+                        // "Custom selection" bucket is always muted.
+                        $pkgColors = ['var(--emerald-700)', 'var(--emerald-500)', 'var(--gold-500)', 'var(--ink-500)'];
+                    @endphp
+                    @forelse ($packageUsage as $i => $usage)
+                        @php
+                            $color = $usage['is_package']
+                                ? ($pkgColors[$i] ?? 'var(--ink-400)')
+                                : 'var(--ink-400)';
+                        @endphp
+                        <div class="pkg">
+                            <div class="pkg-label">
+                                <span class="pkg-dot" style="background:{{ $color }};"></span>
+                                <span><b>{{ $usage['name'] }}</b> <span style="color:var(--ink-500);">· {{ $usage['scopes'] }}</span></span>
+                            </div>
+                            <span class="pkg-pct">{{ $usage['pct'] }}%</span>
+                            <div class="pkg-bar"><div class="pkg-fill" style="width:{{ $usage['pct'] }}%;background:{{ $color }};"></div></div>
                         </div>
-                        <span class="pkg-pct">{{ $pct }}%</span>
-                        <div class="pkg-bar"><div class="pkg-fill" style="width:{{ $pct }}%;background:{{ $color }};"></div></div>
-                    </div>
-                    @endforeach
+                    @empty
+                        <p style="font-size:12px;color:var(--ink-400);margin:0;padding:8px 0;">
+                            No requests yet. Package usage appears here once you submit one.
+                        </p>
+                    @endforelse
                 </div>
             </div>
 
