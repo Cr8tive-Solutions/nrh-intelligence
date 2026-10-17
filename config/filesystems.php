@@ -30,8 +30,13 @@ return [
 
     'disks' => [
 
+        // Private storage: payment slips, invoice receipts, candidate documents
+        // and client-captured consent evidence. Encrypted at rest under the
+        // shared PII_KEY (EncryptedFilesystemAdapter via the `local_mount`
+        // driver); no-op while PII_KEY is empty.
         'local' => [
-            'driver' => 'local',
+            'driver' => 'local_mount',
+            'encrypt' => true,
             'root' => storage_path('app/private'),
             // serve:false — nothing links private files through the framework's
             // /storage route; disabling it removes the signature-gated GET/PUT
@@ -66,6 +71,7 @@ return [
         // separate containers have no sibling directory to find.
         'admin_local' => [
             'driver' => 'local_mount',
+            'encrypt' => true,
             'root' => env('ADMIN_STORAGE_PATH') ?: base_path('../nrh-admin/storage/app/private'),
             'serve' => false,
             'throw' => false,
