@@ -522,6 +522,9 @@
                                 </div>
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-size:13px;font-weight:600;color:var(--ink-900);">{{ $reportLabel }} <span style="color:var(--ink-400);font-family:var(--font-mono);font-weight:400;font-size:11px;">v{{ $rv->version }}</span></div>
+                                    @if ($rv->requestCandidate)
+                                        <div style="font-size:12px;color:var(--ink-700);margin-top:2px;font-weight:500;">{{ $rv->requestCandidate->name }}</div>
+                                    @endif
                                     <div style="font-size:12px;color:var(--ink-500);margin-top:2px;">Issued {{ $rv->generated_at->diffForHumans() }}</div>
                                 </div>
                                 <svg style="width:16px;height:16px;color:var(--ink-400);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>

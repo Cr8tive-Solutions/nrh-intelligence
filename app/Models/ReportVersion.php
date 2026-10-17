@@ -34,6 +34,11 @@ class ReportVersion extends Model
         return $this->belongsTo(ScreeningRequest::class);
     }
 
+    public function requestCandidate(): BelongsTo
+    {
+        return $this->belongsTo(RequestCandidate::class);
+    }
+
     public function isSuperseded(): bool
     {
         return self::where('supersedes_id', $this->id)->exists();

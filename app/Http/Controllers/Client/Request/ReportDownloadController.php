@@ -34,8 +34,11 @@ class ReportDownloadController extends Controller
         }
 
         $filename = sprintf(
-            '%s-%s-v%d.pdf',
+            '%s%s-%s-v%d.pdf',
             $request->reference,
+            ($slug = $version->requestCandidate?->name)
+                ? '-'.trim(preg_replace('/[^A-Za-z0-9]+/', '-', $slug), '-')
+                : '',
             $version->type,
             $version->version,
         );
