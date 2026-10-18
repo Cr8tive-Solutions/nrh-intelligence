@@ -78,7 +78,7 @@ class InvoiceController extends Controller
         $id = hdecode($id);
         $customerId = session('client_customer_id');
 
-        $invoice = Invoice::with(['items', 'customer'])
+        $invoice = Invoice::with(['items', 'customer.agreements'])
             ->where('customer_id', $customerId)
             ->findOrFail($id);
 
@@ -88,6 +88,13 @@ class InvoiceController extends Controller
             : '';
 
         $bank = config('billing.bank');
+        $company = config('billing.company');
+        $chequePayee = config('billing.cheque_payee');
+
+        // Cash customers settle on issue ("PAY ON REQUEST"); credit customers
+        // have the standard net term. Mirrors Customer::isCashBilled().
+        $isCash = $invoice->customer?->isCashBilled() ?? false;
+        $paymentTerm = $isCash ? 'PAY ON REQUEST' : '30 DAYS';
 
         $statusBadge = match ($invoice->status) {
             'paid' => 'badge-paid',
@@ -95,8 +102,9 @@ class InvoiceController extends Controller
             default => 'badge-unpaid',
         };
 
-        $pdf = Pdf::loadView('client.billing.invoice-pdf', compact('invoice', 'logoSrc', 'bank', 'statusBadge'))
-            ->setPaper('a4', 'portrait');
+        $pdf = Pdf::loadView('client.billing.invoice-pdf', compact(
+            'invoice', 'logoSrc', 'bank', 'company', 'chequePayee', 'paymentTerm', 'statusBadge'
+        ))->setPaper('a4', 'portrait');
 
         $filename = $invoice->number.'.pdf';
 

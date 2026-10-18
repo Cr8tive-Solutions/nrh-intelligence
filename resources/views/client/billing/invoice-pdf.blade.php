@@ -1,289 +1,323 @@
+{{--
+    Official NRH Intelligence invoice — mirrors the approved Excel templates
+    (NRH INVOICE TEMPLATE CASH / CREDIT). The only cash-vs-credit difference is
+    the PAYMENT TERM value ($paymentTerm), resolved in the controller from the
+    customer's billing mode.
+
+    Palette: dark green #13501B (section bars, Excel theme accent-3 darkened),
+    gold #D9C51A (payment-method headers). Kept faithful to the source file.
+--}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <style>
+    @page { margin: 0; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        font-size: 11px;
+        font-size: 10px;
         color: #1a1a1a;
         background: #fff;
     }
 
-    .page { padding: 40px 44px; }
+    .page { padding: 30px 34px; }
 
-    /* ── Header ── */
-    .header {
-        display: table;
-        width: 100%;
-        padding-bottom: 24px;
-        margin-bottom: 24px;
-        border-bottom: 3px solid #064e3b;
+    /* ── Company header ── */
+    .masthead { width: 100%; border-collapse: collapse; }
+    .masthead td { vertical-align: middle; }
+    .mast-logo { width: 96px; }
+    .mast-logo img { width: 88px; height: 88px; }
+    .co-name {
+        font-size: 17px; font-weight: 700; color: #13501B;
+        letter-spacing: 0.02em; line-height: 1.1;
     }
-    .header-left  { display: table-cell; vertical-align: top; width: 55%; }
-    .header-right { display: table-cell; vertical-align: top; text-align: right; }
+    .co-reg { font-size: 9px; color: #444; margin-top: 4px; line-height: 1.5; }
 
-    .logo { height: 44px; width: auto; margin-bottom: 8px; }
-    .company-name {
-        font-size: 13px; font-weight: 700; color: #064e3b;
-        text-transform: uppercase; letter-spacing: 0.08em;
+    .contact { margin-top: 10px; }
+    .contact-row { margin-bottom: 2px; }
+    .contact-lbl {
+        display: inline-block; width: 58px;
+        font-size: 8.5px; font-weight: 700; letter-spacing: 0.08em;
+        color: #6b7280; text-transform: uppercase;
     }
-    .company-sub { font-size: 9px; color: #6b7280; margin-top: 2px; }
+    .contact-val { font-size: 9.5px; color: #1a1a1a; }
 
-    .inv-title {
-        font-size: 28px; font-weight: 700; color: #064e3b;
-        text-transform: uppercase; letter-spacing: 0.06em;
-        margin-bottom: 10px;
+    /* ── Section bars ── */
+    .invoice-bar {
+        background: #13501B; color: #fff;
+        text-align: center; font-size: 16px; font-weight: 700;
+        letter-spacing: 0.30em; padding: 8px 0;
+        margin: 16px 0 14px;
     }
-    .inv-meta-row { margin-bottom: 5px; }
-    .inv-meta-label { font-size: 9px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; }
-    .inv-meta-value { font-size: 11px; font-weight: 600; color: #111827; font-family: 'Courier New', monospace; }
 
-    /* ── Status badge ── */
-    .badge {
-        display: inline-block; padding: 3px 12px; border-radius: 99px;
-        font-size: 9px; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.12em;
-    }
-    .badge-paid     { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-    .badge-unpaid   { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-    .badge-overdue  { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    /* ── Bill-to / meta grid ── */
+    .meta { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    .meta td { vertical-align: top; }
+    .meta-left { width: 58%; padding-right: 20px; }
+    .meta-right { width: 42%; }
 
-    /* ── Bill-to / invoice-info band ── */
-    .info-band {
-        display: table; width: 100%;
-        background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
-        padding: 16px 20px; margin-bottom: 28px;
+    .block-lbl {
+        font-size: 8.5px; font-weight: 700; letter-spacing: 0.10em;
+        color: #6b7280; text-transform: uppercase; margin-bottom: 4px;
     }
-    .info-col { display: table-cell; vertical-align: top; width: 50%; }
-    .info-col + .info-col { border-left: 1px solid #e5e7eb; padding-left: 20px; }
-    .info-label {
-        font-size: 9px; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 0.12em; color: #9ca3af; margin-bottom: 6px;
+    .bill-name { font-size: 12px; font-weight: 700; color: #111; margin-bottom: 4px; }
+    .bill-line { font-size: 9.5px; color: #333; line-height: 1.55; }
+    .bill-field { margin-top: 5px; }
+    .bill-field .k {
+        display: inline-block; width: 70px;
+        font-size: 8.5px; font-weight: 700; letter-spacing: 0.06em;
+        color: #6b7280; text-transform: uppercase;
     }
-    .info-value { font-size: 12px; font-weight: 600; color: #111827; }
-    .info-sub   { font-size: 10px; color: #6b7280; margin-top: 3px; }
+    .bill-field .v { font-size: 9.5px; color: #1a1a1a; }
+
+    .meta-table { width: 100%; border-collapse: collapse; }
+    .meta-table td { padding: 4px 8px; font-size: 9.5px; border: 1px solid #d8d8d8; }
+    .meta-table td.k {
+        background: #f4f6f4; font-weight: 700; color: #444;
+        text-transform: uppercase; letter-spacing: 0.05em; font-size: 8.5px;
+        width: 46%; white-space: nowrap;
+    }
+    .meta-table td.v { font-family: 'Courier New', monospace; text-align: right; }
 
     /* ── Line items ── */
-    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
-    .items-table thead tr {
-        background: #064e3b; color: #fff;
+    .items { width: 100%; border-collapse: collapse; }
+    .items th {
+        background: #13501B; color: #fff;
+        font-size: 8.5px; font-weight: 700; letter-spacing: 0.08em;
+        text-transform: uppercase; padding: 8px 8px; border: 1px solid #13501B;
     }
-    .items-table thead th {
-        padding: 9px 12px; font-size: 9px; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.12em;
-    }
-    .items-table thead th:last-child,
-    .items-table thead th:nth-child(2),
-    .items-table thead th:nth-child(3) { text-align: right; }
+    .items td { border: 1px solid #d8d8d8; padding: 7px 8px; font-size: 9.5px; vertical-align: top; }
+    .col-item  { width: 34px;  text-align: center; }
+    .col-qty   { width: 42px;  text-align: center; }
+    .col-price { width: 96px;  text-align: right; }
+    .col-amt   { width: 96px;  text-align: right; }
+    .items td.num { font-family: 'Courier New', monospace; }
 
-    .items-table tbody tr { border-bottom: 1px solid #f3f4f6; }
-    .items-table tbody tr:nth-child(even) { background: #fafafa; }
-    .items-table tbody td { padding: 10px 12px; font-size: 11px; color: #374151; vertical-align: top; }
-    .items-table tbody td:nth-child(2),
-    .items-table tbody td:nth-child(3),
-    .items-table tbody td:last-child {
-        text-align: right; font-family: 'Courier New', monospace; font-size: 10px; color: #4b5563;
+    .line-rep { font-weight: 700; color: #111; }
+    .line-scope { color: #444; margin-top: 2px; }
+    .line-scope .tag {
+        font-size: 8px; font-weight: 700; letter-spacing: 0.06em;
+        color: #6b7280; text-transform: uppercase;
     }
-    .items-table tbody td:last-child { font-weight: 600; color: #111827; }
 
     /* ── Totals ── */
-    .totals-wrap { display: table; width: 100%; margin-top: 0; }
-    .totals-spacer { display: table-cell; width: 55%; }
-    .totals-box {
-        display: table-cell; vertical-align: top;
-        background: #f9fafb; border: 1px solid #e5e7eb;
-        border-top: none; padding: 16px 20px;
+    .totals { width: 100%; border-collapse: collapse; margin-top: -1px; }
+    .totals td { padding: 6px 8px; font-size: 10px; border: 1px solid #d8d8d8; }
+    .totals .spacer { border: none; }
+    .totals .t-lbl {
+        text-align: right; font-weight: 700; color: #444;
+        text-transform: uppercase; letter-spacing: 0.06em; font-size: 9px;
+        width: 150px;
     }
-    .totals-row { display: table; width: 100%; margin-bottom: 8px; }
-    .totals-row:last-child { margin-bottom: 0; }
-    .totals-lbl { display: table-cell; font-size: 10px; color: #6b7280; }
-    .totals-val { display: table-cell; text-align: right; font-size: 10px; color: #374151; font-family: 'Courier New', monospace; }
-    .totals-divider { border: none; border-top: 1px solid #e5e7eb; margin: 10px 0; }
-    .totals-grand-lbl { display: table-cell; font-size: 13px; font-weight: 700; color: #064e3b; }
-    .totals-grand-val { display: table-cell; text-align: right; font-size: 13px; font-weight: 700; color: #064e3b; font-family: 'Courier New', monospace; }
+    .totals .t-val { text-align: right; font-family: 'Courier New', monospace; width: 110px; }
+    .totals .grand td {
+        background: #13501B; color: #fff; font-weight: 700;
+        border-color: #13501B;
+    }
+    .totals .grand .t-lbl { color: #fff; font-size: 10px; }
 
-    /* ── Bank details ── */
-    .bank-section {
-        margin-top: 28px; border-top: 1px solid #e5e7eb; padding-top: 20px;
-        display: table; width: 100%;
+    /* ── Payment methods ── */
+    .pay { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .pay td { vertical-align: top; width: 50%; }
+    .pay td.left { padding-right: 9px; }
+    .pay td.right { padding-left: 9px; }
+    .pay-box { border: 1px solid #d8d8d8; }
+    .pay-head {
+        background: #D9C51A; color: #1a1a1a;
+        font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+        text-transform: uppercase; padding: 6px 10px;
     }
-    .bank-left  { display: table-cell; vertical-align: top; width: 55%; padding-right: 24px; }
-    .bank-right { display: table-cell; vertical-align: top; }
-    .section-title {
-        font-size: 10px; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 0.12em; color: #064e3b; margin-bottom: 10px;
+    .pay-body { padding: 9px 10px; }
+    .pay-row { width: 100%; border-collapse: collapse; }
+    .pay-row td { border: none; padding: 2px 0; font-size: 9.5px; }
+    .pay-row td.k {
+        width: 42%; font-weight: 700; color: #6b7280;
+        text-transform: uppercase; letter-spacing: 0.05em; font-size: 8.5px;
     }
-    .bank-row { margin-bottom: 6px; }
-    .bank-lbl { font-size: 9px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.08em; }
-    .bank-val { font-size: 11px; font-weight: 600; color: #111827; margin-top: 1px; font-family: 'Courier New', monospace; }
-    .bank-note { font-size: 10px; color: #6b7280; line-height: 1.6; }
-    .ref-highlight {
-        display: inline-block;
-        background: #ecfdf5; border: 1px solid #a7f3d0;
-        border-radius: 4px; padding: 2px 8px;
-        font-family: 'Courier New', monospace; font-weight: 700; color: #064e3b; font-size: 11px;
-    }
+    .pay-row td.v { font-family: 'Courier New', monospace; color: #111; }
+    .cheque-lead { font-size: 9px; color: #555; margin-bottom: 6px; }
+    .cheque-name { font-size: 11px; font-weight: 700; color: #111; }
 
-    /* ── Footer ── */
-    .footer {
-        margin-top: 28px; border-top: 1px solid #e5e7eb; padding-top: 14px;
-        display: table; width: 100%;
+    /* ── Note + footer ── */
+    .note {
+        margin-top: 14px; font-size: 9px; color: #555; font-style: italic;
+        line-height: 1.5;
     }
-    .footer-left  { display: table-cell; vertical-align: middle; }
-    .footer-right { display: table-cell; vertical-align: middle; text-align: right; }
-    .footer-text  { font-size: 8.5px; color: #9ca3af; line-height: 1.6; }
-    .watermark    { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: #d1d5db; }
+    .gen-footer {
+        margin-top: 12px; text-align: center;
+        font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+        color: #13501B; text-transform: uppercase;
+        border-top: 1.5px solid #13501B; border-bottom: 1.5px solid #13501B;
+        padding: 7px 0;
+    }
 </style>
 </head>
 <body>
 <div class="page">
 
-    {{-- ── Header ── --}}
-    <div class="header">
-        <div class="header-left">
+    {{-- ── Company masthead ── --}}
+    <table class="masthead">
+        <tr>
             @if($logoSrc)
-                <img src="{{ $logoSrc }}" class="logo" alt="NRH Intelligence">
+            <td class="mast-logo"><img src="{{ $logoSrc }}" alt="NRH Intelligence"></td>
             @endif
-            <div class="company-name">NRH Intelligence Sdn. Bhd.</div>
-            <div class="company-sub">Background Verification &amp; Due Diligence</div>
+            <td>
+                <div class="co-name">{{ $company['name'] }}</div>
+                <div class="co-reg">
+                    Co. Reg No.: {{ $company['reg_no'] }}<br>
+                    Tax Identification No: {{ $company['tax_no'] }}
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="contact">
+        <div class="contact-row">
+            <span class="contact-lbl">Address:</span>
+            <span class="contact-val">{{ $company['address'] }}</span>
         </div>
-        <div class="header-right">
-            <div class="inv-title">Invoice</div>
-            <div class="inv-meta-row">
-                <div class="inv-meta-label">Invoice No.</div>
-                <div class="inv-meta-value">{{ $invoice->number }}</div>
-            </div>
-            <div class="inv-meta-row" style="margin-top:8px;">
-                <span class="badge {{ $statusBadge }}">{{ ucfirst($invoice->status) }}</span>
-            </div>
+        <div class="contact-row">
+            <span class="contact-lbl">Tel:</span>
+            <span class="contact-val">{{ $company['phone'] }}</span>
+        </div>
+        <div class="contact-row">
+            <span class="contact-lbl">Email:</span>
+            <span class="contact-val">{{ $company['email'] }}</span>
         </div>
     </div>
 
-    {{-- ── Bill-to / dates band ── --}}
-    <div class="info-band">
-        <div class="info-col">
-            <div class="info-label">Bill To</div>
-            <div class="info-value">{{ $invoice->customer->name }}</div>
-            <div class="info-sub">{{ $invoice->period }}</div>
-        </div>
-        <div class="info-col">
-            <div style="display:table;width:100%;">
-                <div style="display:table-row;">
-                    <div style="display:table-cell;padding-bottom:8px;">
-                        <div class="info-label">Issue Date</div>
-                        <div class="info-value">{{ $invoice->issued_at->format('d M Y') }}</div>
-                    </div>
-                    <div style="display:table-cell;padding-bottom:8px;text-align:right;">
-                        <div class="info-label">Due Date</div>
-                        <div class="info-value" style="{{ $invoice->status !== 'paid' && $invoice->due_at->isPast() ? 'color:#dc2626;' : '' }}">
-                            {{ $invoice->due_at->format('d M Y') }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    {{-- ── INVOICE bar ── --}}
+    <div class="invoice-bar">INVOICE</div>
+
+    {{-- ── Invoiced-to / invoice meta ── --}}
+    @php
+        $cust = $invoice->customer;
+        $issued = $invoice->issued_at?->format('d/m/Y') ?? '';
+    @endphp
+    <table class="meta">
+        <tr>
+            <td class="meta-left">
+                <div class="block-lbl">Invoiced To:</div>
+                <div class="bill-name">{{ $cust->name }}</div>
+                <div class="bill-field"><span class="k">Address:</span><span class="v">{{ $cust->address ?: '—' }}</span></div>
+                <div class="bill-field"><span class="k">Attention:</span><span class="v">{{ $cust->contact_name ?: '—' }}</span></div>
+                <div class="bill-field"><span class="k">Phone:</span><span class="v">{{ $cust->contact_phone ?: '—' }}</span></div>
+                <div class="bill-field"><span class="k">Email:</span><span class="v">{{ $cust->contact_email ?: '—' }}</span></div>
+            </td>
+            <td class="meta-right">
+                <table class="meta-table">
+                    <tr><td class="k">Date</td><td class="v">{{ $issued }}</td></tr>
+                    <tr><td class="k">Invoice No</td><td class="v">{{ $invoice->number }}</td></tr>
+                    <tr><td class="k">P.O No</td><td class="v">NIL</td></tr>
+                    <tr><td class="k">Invoice Date</td><td class="v">{{ $issued }}</td></tr>
+                    <tr><td class="k">Payment Term</td><td class="v">{{ $paymentTerm }}</td></tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 
     {{-- ── Line items ── --}}
-    <table class="items-table">
+    <table class="items">
         <thead>
             <tr>
+                <th class="col-item">Item</th>
                 <th style="text-align:left;">Description</th>
-                <th>Qty</th>
-                <th>Unit Price (MYR)</th>
-                <th>Total (MYR)</th>
+                <th class="col-qty">Qty</th>
+                <th class="col-price">Per / Price<br>(MYR)</th>
+                <th class="col-amt">Amount<br>(MYR)</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($invoice->items as $item)
-            <tr>
-                <td>{{ $item->description }}</td>
-                <td>{{ $item->qty }}</td>
-                <td>{{ number_format($item->unit_price, 2) }}</td>
-                <td>{{ number_format($item->total, 2) }}</td>
-            </tr>
+            @foreach($invoice->items as $i => $item)
+                @php
+                    // Items carry "{REF} — {scope} (n candidates)". Split into the
+                    // REP NO and SCOPE TYPE lines the template shows; fall back to
+                    // the raw description if the reference can't be found.
+                    $desc = (string) $item->description;
+                    $repNo = null;
+                    if (preg_match('/\bRE[PQ]-\d{4}-\d+/u', $desc, $m)) {
+                        $repNo = $m[0];
+                    }
+                    $scope = $repNo ? str_replace($repNo, '', $desc) : $desc;
+                    $scope = preg_replace('/\s*\(\s*\d+\s+candidates?\s*\)\s*$/iu', '', $scope);
+                    $scope = trim($scope, " \t\n\r\0\x0B—–-·");
+                @endphp
+                <tr>
+                    <td class="col-item num">{{ $i + 1 }}</td>
+                    <td>
+                        @if($repNo)
+                            <div class="line-rep">REP NO: {{ $repNo }}</div>
+                            <div class="line-scope"><span class="tag">Scope Type:</span> {{ $scope ?: '—' }}</div>
+                        @else
+                            <div class="line-rep">{{ $scope ?: '—' }}</div>
+                        @endif
+                    </td>
+                    <td class="col-qty num">{{ $item->qty }}</td>
+                    <td class="col-price num">{{ number_format($item->unit_price, 2) }}</td>
+                    <td class="col-amt num">{{ number_format($item->total, 2) }}</td>
+                </tr>
             @endforeach
         </tbody>
     </table>
 
     {{-- ── Totals ── --}}
-    <div class="totals-wrap">
-        <div class="totals-spacer"></div>
-        <div class="totals-box">
-            <div class="totals-row">
-                <div class="totals-lbl">Subtotal</div>
-                <div class="totals-val">MYR {{ number_format($invoice->subtotal, 2) }}</div>
-            </div>
-            <div class="totals-row">
-                <div class="totals-lbl">Tax (6% SST)</div>
-                <div class="totals-val">MYR {{ number_format($invoice->tax, 2) }}</div>
-            </div>
-            <hr class="totals-divider">
-            <div class="totals-row">
-                <div class="totals-grand-lbl">Total Due</div>
-                <div class="totals-grand-val">MYR {{ number_format($invoice->total, 2) }}</div>
-            </div>
-        </div>
-    </div>
+    @php
+        $sstRate = $invoice->subtotal > 0 ? round($invoice->tax / $invoice->subtotal * 100) : 0;
+    @endphp
+    <table class="totals">
+        <tr>
+            <td class="spacer"></td>
+            <td class="t-lbl">Subtotal</td>
+            <td class="t-val">{{ number_format($invoice->subtotal, 2) }}</td>
+        </tr>
+        <tr>
+            <td class="spacer"></td>
+            <td class="t-lbl">SST ({{ $sstRate }}%)</td>
+            <td class="t-val">{{ number_format($invoice->tax, 2) }}</td>
+        </tr>
+        <tr class="grand">
+            <td class="spacer"></td>
+            <td class="t-lbl">Total (MYR)</td>
+            <td class="t-val">{{ number_format($invoice->total, 2) }}</td>
+        </tr>
+    </table>
 
-    {{-- ── Payment instructions ── --}}
-    @if($invoice->status !== 'paid')
-    <div class="bank-section">
-        <div class="bank-left">
-            <div class="section-title">Payment Instructions</div>
-            <div class="bank-row">
-                <div class="bank-lbl">Bank</div>
-                <div class="bank-val">{{ $bank['name'] }}</div>
-            </div>
-            <div class="bank-row">
-                <div class="bank-lbl">Account Holder</div>
-                <div class="bank-val">{{ $bank['account_holder'] }}</div>
-            </div>
-            <div class="bank-row">
-                <div class="bank-lbl">Account Number</div>
-                <div class="bank-val">{{ $bank['account_number'] }}</div>
-            </div>
-            @if(!empty($bank['swift']))
-            <div class="bank-row">
-                <div class="bank-lbl">SWIFT / BIC</div>
-                <div class="bank-val">{{ $bank['swift'] }}</div>
-            </div>
-            @endif
-        </div>
-        <div class="bank-right">
-            <div class="section-title">Reference</div>
-            <div class="bank-note" style="margin-bottom:10px;">
-                Please use the invoice number as your payment reference:
-            </div>
-            <div><span class="ref-highlight">{{ $invoice->number }}</span></div>
-            <div class="bank-note" style="margin-top:12px;">
-                Upload your payment receipt on the invoice page to notify our finance team.
-            </div>
-        </div>
-    </div>
-    @else
-    <div class="bank-section">
-        <div class="bank-left">
-            <div class="section-title">Payment Status</div>
-            <div class="bank-note">This invoice has been paid in full. Thank you.</div>
-        </div>
-    </div>
-    @endif
+    {{-- ── Payment methods ── --}}
+    <table class="pay">
+        <tr>
+            <td class="left">
+                <div class="pay-box">
+                    <div class="pay-head">Online Transfer Payment Method</div>
+                    <div class="pay-body">
+                        <table class="pay-row">
+                            <tr><td class="k">Bank</td><td class="v">{{ $bank['name'] }}</td></tr>
+                            <tr><td class="k">Account No</td><td class="v">{{ $bank['account_number'] }}</td></tr>
+                            <tr><td class="k">Swift Code</td><td class="v">{{ $bank['swift'] }}</td></tr>
+                            <tr><td class="k">Account Holder</td><td class="v">{{ $bank['account_holder'] }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </td>
+            <td class="right">
+                <div class="pay-box">
+                    <div class="pay-head">Cheque Payment Method</div>
+                    <div class="pay-body">
+                        <div class="cheque-lead">All Cheques must be issued to:</div>
+                        <div class="cheque-name">{{ $chequePayee }}</div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
 
-    {{-- ── Footer ── --}}
-    <div class="footer">
-        <div class="footer-left">
-            <div class="footer-text">
-                NRH Intelligence Sdn. Bhd. &nbsp;·&nbsp; background verification &amp; due diligence<br>
-                This is a computer-generated invoice and does not require a signature.
-            </div>
-        </div>
-        <div class="footer-right">
-            <div class="watermark">NRH Intelligence</div>
-        </div>
+    {{-- ── Note + computer-generated footer ── --}}
+    <div class="note">
+        Note: Payment Notification is required upon full settlement for Closure of Invoice Status
+    </div>
+    <div class="gen-footer">
+        This is a computer-generated invoice; no signature required
     </div>
 
 </div>

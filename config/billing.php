@@ -12,11 +12,30 @@ return [
     | bank accounts or rotate these without a deploy.
     */
     'bank' => [
-        'name' => env('BILLING_BANK_NAME', 'Maybank Berhad'),
-        'account_holder' => env('BILLING_BANK_HOLDER', 'NRH Intelligence Sdn. Bhd.'),
-        'account_number' => env('BILLING_BANK_ACCOUNT', '5621 0123 4567'),
-        'swift' => env('BILLING_BANK_SWIFT', 'MBBEMYKL'),
+        'name' => env('BILLING_BANK_NAME', 'CIMB BANK BERHAD'),
+        'account_holder' => env('BILLING_BANK_HOLDER', 'NRH INTELLIGENCE SDN BHD'),
+        'account_number' => env('BILLING_BANK_ACCOUNT', '8011600106'),
+        'swift' => env('BILLING_BANK_SWIFT', 'CIBBMYKL'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Issuing-company details (printed on the invoice header + footer)
+    |--------------------------------------------------------------------------
+    |
+    | These appear on the official invoice template. Cheques are made payable
+    | to `cheque_payee`.
+    */
+    'company' => [
+        'name' => env('BILLING_COMPANY_NAME', 'NRH INTELLIGENCE SDN BHD'),
+        'reg_no' => env('BILLING_COMPANY_REG', '202101036456 (1436756D)'),
+        'tax_no' => env('BILLING_COMPANY_TAX', 'C 26861781030'),
+        'address' => env('BILLING_COMPANY_ADDRESS', 'No. B1-1, Jalan Selaman 1, Dataran Palma, 68000 Ampang, Selangor'),
+        'phone' => env('BILLING_COMPANY_PHONE', '+60124395006'),
+        'email' => env('BILLING_COMPANY_EMAIL', 'nadiaa@nrhintelligence.com'),
+    ],
+
+    'cheque_payee' => env('BILLING_CHEQUE_PAYEE', 'NRH INTELLIGENCE SDN BHD'),
 
     'currency' => env('BILLING_CURRENCY', 'MYR'),
 
