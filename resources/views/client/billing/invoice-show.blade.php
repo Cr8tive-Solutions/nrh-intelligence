@@ -78,11 +78,12 @@
             </div>
 
             {{-- Totals --}}
+            @php $sstRate = $invoice->subtotal > 0 ? round($invoice->tax / $invoice->subtotal * 100) : 0; @endphp
             <div style="padding:16px 32px 20px;border-top:1px solid var(--line);background:var(--paper);">
                 <div style="margin-left:auto;max-width:280px;display:flex;flex-direction:column;gap:8px;">
                     @foreach ([
                         ['Subtotal',    number_format($invoice->subtotal, 2), false],
-                        ['Tax (6% SST)', number_format($invoice->tax, 2), false],
+                        ['SST ('.$sstRate.'%)', number_format($invoice->tax, 2), false],
                     ] as [$lbl, $val, $bold])
                         <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--ink-500);">
                             <span>{{ $lbl }}</span>
