@@ -232,15 +232,24 @@
         <tbody>
             @foreach($invoice->items as $i => $item)
                 @php
-                    // Items carry "{REF} — {scope} (n candidates)". Split into the
-                    // REP NO and SCOPE TYPE lines the template shows; fall back to
-                    // the raw description if the reference can't be found.
+                    // Two description shapes reach the invoice:
+                    //   cash  → "{candidate} — {scope}"  (REP NO lives on the request)
+                    //   admin → "{REF} — {scope} (n candidates)"  (ref embedded, no name)
+                    // Resolve each into REP NO / CANDIDATE / SCOPE TYPE lines.
                     $desc = (string) $item->description;
                     $repNo = null;
+                    $candidate = null;
+                    $scope = $desc;
+
                     if (preg_match('/\bRE[PQ]-\d{4}-\d+/u', $desc, $m)) {
                         $repNo = $m[0];
+                        $scope = str_replace($repNo, '', $desc);
+                    } elseif (str_contains($desc, ' — ')) {
+                        [$candidate, $scope] = array_map('trim', explode(' — ', $desc, 2));
                     }
-                    $scope = $repNo ? str_replace($repNo, '', $desc) : $desc;
+                    // Cash lines carry no embedded ref — take it from the linked request.
+                    $repNo = $repNo ?: optional($invoice->screeningRequests->first())->reference;
+
                     $scope = preg_replace('/\s*\(\s*\d+\s+candidates?\s*\)\s*$/iu', '', $scope);
                     $scope = trim($scope, " \t\n\r\0\x0B—–-·");
                 @endphp
@@ -249,10 +258,11 @@
                     <td>
                         @if($repNo)
                             <div class="line-rep">REP NO: {{ $repNo }}</div>
-                            <div class="line-scope"><span class="tag">Scope Type:</span> {{ $scope ?: '—' }}</div>
-                        @else
-                            <div class="line-rep">{{ $scope ?: '—' }}</div>
                         @endif
+                        @if($candidate)
+                            <div class="line-scope"><span class="tag">Candidate:</span> {{ $candidate }}</div>
+                        @endif
+                        <div class="line-scope"><span class="tag">Scope Type:</span> {{ $scope ?: '—' }}</div>
                     </td>
                     <td class="col-qty num">{{ $item->qty }}</td>
                     <td class="col-price num">{{ number_format($item->unit_price, 2) }}</td>

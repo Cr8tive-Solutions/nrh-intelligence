@@ -78,7 +78,7 @@ class InvoiceController extends Controller
         $id = hdecode($id);
         $customerId = session('client_customer_id');
 
-        $invoice = Invoice::with(['items', 'customer.agreements'])
+        $invoice = Invoice::with(['items', 'customer.agreements', 'screeningRequests'])
             ->where('customer_id', $customerId)
             ->findOrFail($id);
 
