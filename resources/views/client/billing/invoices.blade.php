@@ -54,7 +54,7 @@
                                         <a href="{{ route('client.billing.invoices.show', hid($inv->id)) }}"
                                            class="btn btn-ghost" style="padding:5px 10px;font-size:12px;"
                                            onclick="event.stopPropagation()">View</a>
-                                        <a href="{{ route('client.billing.invoices.download', hid($inv->id)) }}"
+                                        <a href="{{ route('client.billing.invoices.download', hid($inv->id)) }}" target="_blank" rel="noopener"
                                            style="font-size:12px;font-weight:500;color:var(--ink-400);text-decoration:none;transition:color 120ms;"
                                            onclick="event.stopPropagation()">PDF</a>
                                     </div>

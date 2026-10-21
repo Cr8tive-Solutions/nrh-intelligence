@@ -108,6 +108,8 @@ class InvoiceController extends Controller
 
         $filename = $invoice->number.'.pdf';
 
-        return $pdf->download($filename);
+        // Serve inline so the browser displays the invoice in a tab rather than
+        // forcing a download. The viewer's own Save still lets them keep a copy.
+        return $pdf->stream($filename);
     }
 }
