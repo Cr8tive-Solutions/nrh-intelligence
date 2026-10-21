@@ -109,9 +109,9 @@
     .totals .t-lbl {
         text-align: right; font-weight: 700; color: #444;
         text-transform: uppercase; letter-spacing: 0.06em; font-size: 9px;
-        width: 150px;
+        width: 96px;
     }
-    .totals .t-val { text-align: right; font-family: 'Courier New', monospace; width: 110px; }
+    .totals .t-val { text-align: right; font-family: 'Courier New', monospace; width: 96px; }
     .totals .grand td {
         background: #13501B; color: #fff; font-weight: 700;
         border-color: #13501B;
