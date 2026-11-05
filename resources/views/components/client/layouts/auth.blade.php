@@ -382,7 +382,7 @@
                         The world's most <em style="font-style:italic;color:var(--gold-400);">trusted</em> names verify here.
                     </h2>
                     <p style="font-size:14px;line-height:1.6;color:rgba(245,236,209,0.65);margin:0;">
-                        1.2M candidates screened across 184 jurisdictions. SOC 2 Type II, FCRA-certified, and PBSA-accredited since 2021.
+                        1.2M candidates screened across 184 jurisdictions. SOC 2 Type II and PBSA-accredited since 2021.
                     </p>
                 </div>
 
@@ -426,11 +426,9 @@
                 {{ $slot }}
 
                 <div class="auth-meta">
-                    <span>Protected by reCAPTCHA Enterprise</span>
                     <span>
-                        <a href="#">Terms</a> ·
-                        <a href="#">Privacy</a> ·
-                        <a href="#">FCRA notice</a>
+                        <a href="{{ config('app.terms_url') }}" target="_blank" rel="noopener">Terms</a> ·
+                        <a href="{{ config('app.privacy_url') }}" target="_blank" rel="noopener">Privacy</a>
                     </span>
                 </div>
             </div>

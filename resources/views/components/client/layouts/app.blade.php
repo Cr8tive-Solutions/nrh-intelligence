@@ -77,6 +77,18 @@
 
             {{ $slot }}
         </div>
+
+        {{-- Footer --}}
+        <footer class="nrh-footer">
+            <span>&copy; {{ date('Y') }} NRH Intelligence Sdn. Bhd.</span>
+            <nav>
+                <a href="{{ config('app.privacy_url') }}" target="_blank" rel="noopener">Privacy</a>
+                <span class="sep">&middot;</span>
+                <a href="{{ config('app.terms_url') }}" target="_blank" rel="noopener">Terms</a>
+                <span class="sep">&middot;</span>
+                <a href="mailto:{{ config('app.support_email') }}">Support</a>
+            </nav>
+        </footer>
     </div>
 
     @stack('scripts')

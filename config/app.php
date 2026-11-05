@@ -107,6 +107,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Company Links
+    |--------------------------------------------------------------------------
+    |
+    | Shown in the portal footer and on the sign-in screens. Privacy and terms
+    | point at the company website until dedicated pages are published.
+    |
+    */
+
+    'company_url' => env('COMPANY_URL', 'https://nrhintelligence.com'),
+
+    'privacy_url' => env('PRIVACY_URL', env('COMPANY_URL', 'https://nrhintelligence.com')),
+
+    'terms_url' => env('TERMS_URL', env('COMPANY_URL', 'https://nrhintelligence.com')),
+
+    'support_email' => env('SUPPORT_EMAIL', 'support@nrhintelligence.com'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Maintenance Mode Driver
     |--------------------------------------------------------------------------
     |

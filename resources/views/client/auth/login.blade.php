@@ -1,7 +1,7 @@
 <x-client.layouts.auth
     title="Sign In"
     authTitle='Welcome back, <em>recruiter.</em>'
-    authSub='Sign in to your KYRO workspace. Your session is encrypted end-to-end and audited under FCRA §611.'
+    authSub='Sign in to your KYRO workspace. Your session is encrypted end-to-end.'
     step="1 · 2"
     stepLabel="SECURE · TLS 1.3"
     footerText="New here?"
@@ -87,7 +87,6 @@
     {{-- Session info --}}
     <div class="session-strip">
         <span>LAST SIGN-IN · <b>{{ session('client_last_login', 'Never') }}</b></span>
-        <span style="text-align:right;">FCRA AUDITED</span>
     </div>
 
 </x-client.layouts.auth>
