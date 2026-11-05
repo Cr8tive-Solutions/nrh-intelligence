@@ -113,7 +113,7 @@
                             <td>
                                 @include('client.partials._status-badge', ['status' => $req->status, 'request' => $req, 'isCashBilled' => $isCashBilled ?? false])
                             </td>
-                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $req->created_at->format('d M Y') }}</td>
+                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $req->created_at->inDisplayTz()->format('d M Y') }}</td>
                             <td style="text-align:right;">
                                 <a href="{{ route('client.requests.details', hid($req->id)) }}"
                                    class="btn btn-ghost" style="padding:5px 12px;font-size:12px;"

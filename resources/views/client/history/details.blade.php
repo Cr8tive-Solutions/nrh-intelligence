@@ -66,7 +66,7 @@
             <div style="font-size:14px;color:var(--ink-600);margin-top:5px;line-height:1.5;">
                 {{ $candidates->count() }} {{ Str::plural('candidate', $candidates->count()) }},
                 {{ $totalChecks }} {{ Str::plural('check', $totalChecks) }} —
-                completed {{ $completedAt->format('d M Y') }} in <b>{{ $durationHuman }}</b>.
+                completed {{ $completedAt->inDisplayTz()->format('d M Y') }} in <b>{{ $durationHuman }}</b>.
             </div>
             <div style="display:flex;gap:20px;margin-top:14px;flex-wrap:wrap;">
                 <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-500);">
@@ -75,7 +75,7 @@
                 </div>
                 <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-500);">
                     <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/></svg>
-                    Requested on <b style="color:var(--ink-700);">{{ $submittedAt->format('d M Y') }}</b>
+                    Requested on <b style="color:var(--ink-700);">{{ $submittedAt->inDisplayTz()->format('d M Y') }}</b>
                 </div>
                 @if ($reports->isNotEmpty())
                     <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-500);">
@@ -110,7 +110,7 @@
                                 {{ $isRedacted ? 'Candidate erased' : $candidate->name }}
                             </div>
                             <div style="font-size:12px;color:var(--ink-400);font-family:var(--font-mono);margin-top:1px;">
-                                {{ $isRedacted ? 'Data erased ' . $candidate->redacted_at->format('d M Y') : ($candidate->identityType?->name ?? 'ID') . ' · ' . $candidate->identity_number }}
+                                {{ $isRedacted ? 'Data erased ' . $candidate->redacted_at->inDisplayTz()->format('d M Y') : ($candidate->identityType?->name ?? 'ID') . ' · ' . $candidate->identity_number }}
                             </div>
                         </div>
                         <span class="pill {{ $candFlagged ? 'pill-flagged' : 'pill-clear' }}">
@@ -218,11 +218,11 @@
                     </div>
                     <div class="id-row">
                         <span class="k">Submitted</span>
-                        <span class="v">{{ $submittedAt->format('d M Y · H:i') }}</span>
+                        <span class="v">{{ $submittedAt->inDisplayTz()->format('d M Y · H:i') }}</span>
                     </div>
                     <div class="id-row">
                         <span class="k">Completed</span>
-                        <span class="v">{{ $completedAt->format('d M Y · H:i') }}</span>
+                        <span class="v">{{ $completedAt->inDisplayTz()->format('d M Y · H:i') }}</span>
                     </div>
                     <div class="id-row">
                         <span class="k">Turnaround</span>
@@ -266,7 +266,7 @@
                                 </div>
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-size:13px;font-weight:600;color:var(--ink-900);">{{ $reportLabel }} <span style="color:var(--ink-400);font-family:var(--font-mono);font-weight:400;font-size:11px;">v{{ $rv->version }}</span></div>
-                                    <div style="font-size:11px;color:var(--ink-500);margin-top:1px;">{{ \Carbon\Carbon::parse($rv->generated_at)->format('d M Y · H:i') }}</div>
+                                    <div style="font-size:11px;color:var(--ink-500);margin-top:1px;">{{ \Carbon\Carbon::parse($rv->generated_at)->inDisplayTz()->format('d M Y · H:i') }}</div>
                                 </div>
                                 <svg style="width:15px;height:15px;color:var(--ink-400);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
                             </a>

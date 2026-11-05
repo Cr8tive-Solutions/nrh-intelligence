@@ -70,7 +70,7 @@ class ScreeningRequest extends Model
     {
         DB::select('SELECT pg_advisory_xact_lock(hashtext(?))', ['screening_requests.reference']);
 
-        $year = now()->format('Y');
+        $year = now()->inDisplayTz()->format('Y');
         // Order by numeric tail so any legacy mixed-width references sort correctly.
         // `RE_-` matches both the legacy REQ- and the current REP- prefixes.
         $last = self::where('reference', 'like', "RE_-{$year}-%")

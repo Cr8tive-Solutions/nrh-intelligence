@@ -43,8 +43,8 @@
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:20px 32px;border-bottom:1px solid var(--line);background:var(--paper);">
                 @foreach ([
                     ['Billed To', $invoice->customer->name],
-                    ['Issue Date', $invoice->issued_at->format('d M Y')],
-                    ['Due Date',   $invoice->due_at->format('d M Y')],
+                    ['Issue Date', $invoice->issued_at->inDisplayTz()->format('d M Y')],
+                    ['Due Date',   $invoice->due_at->inDisplayTz()->format('d M Y')],
                 ] as [$label, $value])
                     <div>
                         <p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-400);margin:0 0 4px;">{{ $label }}</p>
@@ -177,7 +177,7 @@
                         </div>
                         <div>
                             <label style="display:block;font-size:11px;font-weight:600;color:var(--ink-500);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Payment Date</label>
-                            <input type="date" name="paid_on" value="{{ old('paid_on', now()->toDateString()) }}"
+                            <input type="date" name="paid_on" value="{{ old('paid_on', now()->inDisplayTz()->toDateString()) }}"
                                    style="width:100%;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:inherit;background:var(--card);box-sizing:border-box;">
                             @error('paid_on')<p style="font-size:11px;color:#dc2626;margin:4px 0 0;">{{ $message }}</p>@enderror
                         </div>
@@ -225,7 +225,7 @@
                     <div style="flex:1;min-width:0;">
                         <div style="font-size:12px;font-weight:600;color:var(--ink-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $receipt->file_name }}</div>
                         <div style="font-size:11px;color:var(--ink-400);margin-top:2px;">
-                            Uploaded {{ $receipt->created_at->format('d M Y, H:i') }}
+                            Uploaded {{ $receipt->created_at->inDisplayTz()->format('d M Y, H:i') }}
                             @if($receipt->amount_claimed) · MYR {{ number_format($receipt->amount_claimed, 2) }} @endif
                             @if($receipt->paid_on) · Paid {{ $receipt->paid_on->format('d M Y') }} @endif
                             @if($receipt->reference) · Ref: <span style="font-family:var(--font-mono);">{{ $receipt->reference }}</span> @endif

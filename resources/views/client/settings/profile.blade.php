@@ -142,7 +142,7 @@
 
                 <div class="field">
                     <label>Member Since</label>
-                    <div class="readonly">{{ $user->created_at->format('d M Y') }}</div>
+                    <div class="readonly">{{ $user->created_at->inDisplayTz()->format('d M Y') }}</div>
                 </div>
 
                 <div class="form-footer">

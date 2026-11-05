@@ -140,7 +140,7 @@
     </form>
 
     <div class="session-strip">
-        <span>Link expires {{ $registration->expires_at->format('d M Y') }}</span>
+        <span>Link expires {{ $registration->expires_at->inDisplayTz()->format('d M Y') }}</span>
         <span style="text-align:right;">SECURE · TLS 1.3</span>
     </div>
 </x-client.layouts.auth>

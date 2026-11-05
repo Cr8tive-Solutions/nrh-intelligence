@@ -16,6 +16,7 @@ use App\Models\ScreeningRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -173,7 +174,7 @@ class CreateRequestController extends Controller
      * default scope price, plus 6% SST. Links it via screening_requests.invoice_id
      * and returns it, or null when there is nothing billable.
      *
-     * @param  \Illuminate\Support\Collection<int, RequestCandidate>  $candidates
+     * @param  Collection<int, RequestCandidate>  $candidates
      * @param  array<int, int|string>  $scopeIds
      */
     protected function createCashInvoice(ScreeningRequest $screeningRequest, $candidates, array $scopeIds): ?Invoice
@@ -232,12 +233,12 @@ class CreateRequestController extends Controller
             'customer_id' => $screeningRequest->customer_id,
             'number' => Invoice::generateNumber(),
             'period' => 'Request '.$screeningRequest->reference,
-            'period_date' => now()->toDateString(),
-            'period_end' => now()->toDateString(),
+            'period_date' => now()->inDisplayTz()->toDateString(),
+            'period_end' => now()->inDisplayTz()->toDateString(),
             'status' => 'unpaid',
             // Cash is upfront, so the invoice is due immediately.
-            'issued_at' => now()->toDateString(),
-            'due_at' => now()->toDateString(),
+            'issued_at' => now()->inDisplayTz()->toDateString(),
+            'due_at' => now()->inDisplayTz()->toDateString(),
             'subtotal' => $subtotal,
             'tax' => $tax,
             'total' => round($subtotal + $tax, 2),

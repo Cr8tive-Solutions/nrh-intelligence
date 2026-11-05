@@ -52,7 +52,7 @@ class Invoice extends Model
     {
         DB::select('SELECT pg_advisory_xact_lock(hashtext(?))', ['invoices.number']);
 
-        $year = now()->year;
+        $year = now()->inDisplayTz()->year;
         // Order by numeric tail so mixed-width sequences sort correctly.
         $last = self::where('number', 'like', "INV-{$year}-%")
             ->orderByRaw('LENGTH(number) DESC, number DESC')

@@ -108,7 +108,7 @@ class InvitationController extends Controller
             'client_user_name' => $user->name,
             'client_user_avatar' => $user->avatar,
             'client_company' => $user->customer->name,
-            'client_last_login' => now()->format('d M Y, H:i'),
+            'client_last_login' => now()->inDisplayTz()->format('d M Y, H:i'),
         ]);
     }
 }

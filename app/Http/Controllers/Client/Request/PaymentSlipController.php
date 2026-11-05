@@ -103,7 +103,7 @@ class PaymentSlipController extends Controller
             'reference' => $reference,
             'customerName' => $customerName,
             'uploadedBy' => $uploaderName.($uploaderEmail ? " ({$uploaderEmail})" : ''),
-            'uploadedAt' => now()->format('d M Y, H:i'),
+            'uploadedAt' => now()->inDisplayTz()->format('d M Y, H:i'),
             'filename' => $filename,
         ];
 

@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Setting;
 use App\Support\EncryptedFilesystemAdapter;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Hashids\Hashids;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Foundation\Console\ServeCommand;
@@ -35,11 +38,27 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerLocalMountDriver();
+        $this->registerDisplayTimezoneMacro();
 
         // SST rate is set from the admin portal (app_settings); override the
         // static config default so every config('billing.sst_rate') call site
         // across the client portal uses the shared, admin-managed value.
-        config(['billing.sst_rate' => \App\Models\Setting::sstRate((float) config('billing.sst_rate', 0.06))]);
+        config(['billing.sst_rate' => Setting::sstRate((float) config('billing.sst_rate', 0.06))]);
+    }
+
+    /**
+     * `->inDisplayTz()` — a copy of the date in the display timezone. Storage
+     * and arithmetic stay UTC; call this only to show a time or to take
+     * "today" for a business date.
+     */
+    private function registerDisplayTimezoneMacro(): void
+    {
+        $toDisplayTimezone = function () {
+            return $this->copy()->setTimezone(config('app.display_timezone'));
+        };
+
+        Carbon::macro('inDisplayTz', $toDisplayTimezone);
+        CarbonImmutable::macro('inDisplayTz', $toDisplayTimezone);
     }
 
     /**

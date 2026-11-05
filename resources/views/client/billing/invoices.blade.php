@@ -33,8 +33,8 @@
                                 <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--emerald-700);">{{ $inv->number }}</span>
                             </td>
                             <td style="font-weight:600;color:var(--ink-900);">{{ $inv->period }}</td>
-                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $inv->issued_at->format('d M Y') }}</td>
-                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $inv->due_at->format('d M Y') }}</td>
+                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $inv->issued_at->inDisplayTz()->format('d M Y') }}</td>
+                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $inv->due_at->inDisplayTz()->format('d M Y') }}</td>
                             <td>
                                 <span class="pill {{ $inv->status === 'paid' ? 'pill-clear' : ($inv->status === 'overdue' ? 'pill-flagged' : 'pill-review') }}">
                                     <span class="dot"></span>

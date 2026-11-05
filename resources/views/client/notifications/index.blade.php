@@ -89,7 +89,7 @@
                                 @endif
                             </p>
                             @if ($notif['time'])
-                                <span style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);white-space:nowrap;flex-shrink:0;">{{ $notif['time']->format('d M Y') }}</span>
+                                <span style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);white-space:nowrap;flex-shrink:0;">{{ $notif['time']->inDisplayTz()->format('d M Y') }}</span>
                             @endif
                         </div>
                         <p style="font-size:12px;color:var(--ink-600);margin:4px 0 0;line-height:1.5;">{{ $notif['body'] }}</p>

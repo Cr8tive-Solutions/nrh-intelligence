@@ -55,12 +55,12 @@
             <div class="case-name" @if($isRedacted) style="font-style:italic;color:var(--ink-400);" @endif>{{ $displayName }}</div>
             <div class="case-meta">
                 @if ($isRedacted)
-                    <span style="color:var(--ink-500);font-style:italic;">Data erased {{ $candidate->redacted_at->format('d M Y') }} · per data subject request</span>
+                    <span style="color:var(--ink-500);font-style:italic;">Data erased {{ $candidate->redacted_at->inDisplayTz()->format('d M Y') }} · per data subject request</span>
                 @else
                 <span>IC No. <b>{{ $candidate->identity_number }}</b></span>
                 @endif
-                <span>Ordered <b>{{ $req->created_at->format('M d, Y') }}</b></span>
-                <span>Due <b>{{ $req->created_at->addDays(5)->format('M d, Y') }}</b></span>
+                <span>Ordered <b>{{ $req->created_at->inDisplayTz()->format('M d, Y') }}</b></span>
+                <span>Due <b>{{ $req->created_at->inDisplayTz()->addDays(5)->format('M d, Y') }}</b></span>
                 <span>Consent on file · <b>{{ $candidate->mobile ? 'mobile' : 'on record' }}</b></span>
             </div>
         </div>
@@ -450,7 +450,7 @@
                 </div>
                 @if ($isRedacted)
                     <div style="padding:14px 18px;font-size:12px;color:var(--ink-500);line-height:1.6;">
-                        This candidate's personal data was erased on <b>{{ $candidate->redacted_at->format('d M Y') }}</b> in response to a data subject request. Identity details are no longer available in the system.
+                        This candidate's personal data was erased on <b>{{ $candidate->redacted_at->inDisplayTz()->format('d M Y') }}</b> in response to a data subject request. Identity details are no longer available in the system.
                     </div>
                 @else
                 <div class="identity">
@@ -499,30 +499,30 @@
                 <div class="timeline">
                     @if ($candidate->status === 'flagged')
                         <div class="tl-item gold">
-                            <div class="tl-time">{{ strtoupper($candidate->updated_at->format('M d · H:i')) }}</div>
+                            <div class="tl-time">{{ strtoupper($candidate->updated_at->inDisplayTz()->format('M d · H:i')) }}</div>
                             <div class="tl-title">Candidate flagged for review</div>
                             <div class="tl-desc">Auto-flag triggered · queued for analyst.</div>
                         </div>
                     @elseif ($candidate->status === 'complete')
                         <div class="tl-item">
-                            <div class="tl-time">{{ strtoupper($candidate->updated_at->format('M d · H:i')) }}</div>
+                            <div class="tl-time">{{ strtoupper($candidate->updated_at->inDisplayTz()->format('M d · H:i')) }}</div>
                             <div class="tl-title">All checks cleared</div>
                             <div class="tl-desc">Request complete · verdict: clear.</div>
                         </div>
                     @elseif ($candidate->status === 'in_progress')
                         <div class="tl-item">
-                            <div class="tl-time">{{ strtoupper($candidate->updated_at->format('M d · H:i')) }}</div>
+                            <div class="tl-time">{{ strtoupper($candidate->updated_at->inDisplayTz()->format('M d · H:i')) }}</div>
                             <div class="tl-title">Checks in progress</div>
                             <div class="tl-desc">Verification underway across all assigned checks.</div>
                         </div>
                     @endif
                     <div class="tl-item">
-                        <div class="tl-time">{{ strtoupper($req->created_at->format('M d · H:i')) }}</div>
+                        <div class="tl-time">{{ strtoupper($req->created_at->inDisplayTz()->format('M d · H:i')) }}</div>
                         <div class="tl-title">Consent received</div>
                         <div class="tl-desc">Candidate record submitted · checks initiated.</div>
                     </div>
                     <div class="tl-item">
-                        <div class="tl-time">{{ strtoupper($req->created_at->subMinutes(8)->format('M d · H:i')) }}</div>
+                        <div class="tl-time">{{ strtoupper($req->created_at->inDisplayTz()->subMinutes(8)->format('M d · H:i')) }}</div>
                         <div class="tl-title">Order created</div>
                         <div class="tl-desc">by {{ $req->submittedBy?->name ?? 'requester' }} · {{ $pkg ? $pkg.' package' : 'custom scope selection' }}.</div>
                     </div>

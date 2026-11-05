@@ -32,7 +32,7 @@
                 </div>
                 <div style="text-align:right;">
                     <p style="font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink-900);margin:0;">{{ $transaction->reference ?? '—' }}</p>
-                    <p style="font-size:12px;color:var(--ink-500);margin:4px 0 8px;">{{ $transaction->created_at->format('d M Y') }}</p>
+                    <p style="font-size:12px;color:var(--ink-500);margin:4px 0 8px;">{{ $transaction->created_at->inDisplayTz()->format('d M Y') }}</p>
                     @php
                         $statusPill = $transaction->status === 'completed' ? 'pill-clear' : ($transaction->status === 'pending' ? 'pill-review' : 'pill-flagged');
                     @endphp
@@ -56,7 +56,7 @@
                     ['Transaction Type', ucfirst($transaction->type)],
                     ['Payment Method',   $transaction->method],
                     ['Reference',        $transaction->reference ?? '—'],
-                    ['Date & Time',      $transaction->created_at->format('d M Y, H:i')],
+                    ['Date & Time',      $transaction->created_at->inDisplayTz()->format('d M Y, H:i')],
                     ['Account',          $transaction->customer->name],
                     ['Status',           ucfirst($transaction->status)],
                 ] as [$label, $value])

@@ -36,11 +36,11 @@
                                 <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--emerald-700);">{{ $req->reference }}</span>
                             </td>
                             <td style="color:var(--ink-700);">{{ $req->candidates_count }}</td>
-                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $req->created_at->format('d M Y') }}</td>
+                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $req->created_at->inDisplayTz()->format('d M Y') }}</td>
                             <td>
                                 <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--emerald-700);font-family:var(--font-mono);">
                                     <svg style="width:12px;height:12px;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path d="m4.5 12.75 6 6 9-13.5"/></svg>
-                                    {{ $req->updated_at->format('d M Y') }}
+                                    {{ $req->updated_at->inDisplayTz()->format('d M Y') }}
                                 </span>
                             </td>
                             <td style="text-align:right;">

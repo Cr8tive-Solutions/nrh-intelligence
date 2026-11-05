@@ -86,7 +86,7 @@
                                 </div>
                             @endif
 
-                            <p style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);margin:0;">Last updated: {{ $result->updated_at->format('d M Y, H:i') }}</p>
+                            <p style="font-size:11px;color:var(--ink-400);font-family:var(--font-mono);margin:0;">Last updated: {{ $result->updated_at->inDisplayTz()->format('d M Y, H:i') }}</p>
                         </div>
                     @endforeach
                 </div>

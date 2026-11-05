@@ -36,7 +36,7 @@
                 <tbody>
                     @forelse ($transactions as $txn)
                         <tr>
-                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $txn->created_at->format('d M Y') }}</td>
+                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $txn->created_at->inDisplayTz()->format('d M Y') }}</td>
                             <td>
                                 <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--emerald-700);">{{ $txn->reference ?? '—' }}</span>
                             </td>

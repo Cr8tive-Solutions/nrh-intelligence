@@ -36,7 +36,7 @@
 
                             {{-- Date + version --}}
                             <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                                <span style="font-size:13px;font-weight:700;color:var(--ink-900);">{{ $releaseDate->format('d M Y') }}</span>
+                                <span style="font-size:13px;font-weight:700;color:var(--ink-900);">{{ $releaseDate->inDisplayTz()->format('d M Y') }}</span>
                                 @if ($version)
                                     <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;padding:2px 8px;background:var(--emerald-50);color:var(--emerald-700);border-radius:999px;border:1px solid rgba(4,108,78,0.15);">{{ $version }}</span>
                                 @endif

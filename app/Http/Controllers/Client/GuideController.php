@@ -36,7 +36,7 @@ class GuideController extends Controller
         $pdf = Pdf::loadView('docs.guide-pdf', [
             'sections' => $sections,
             'sectionCount' => count($sections),
-            'generatedAt' => now()->format('d F Y'),
+            'generatedAt' => now()->inDisplayTz()->format('d F Y'),
             'portalHost' => preg_replace('#^https?://#', '', rtrim((string) config('app.url'), '/')),
         ])
             ->setPaper('a4', 'portrait')

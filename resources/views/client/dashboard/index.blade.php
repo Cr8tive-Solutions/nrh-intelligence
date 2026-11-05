@@ -3,7 +3,7 @@
     {{-- Page head --}}
     <div class="page-head">
         <div>
-            <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-400);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">{{ now()->startOfWeek()->format('M d') }} – {{ now()->endOfWeek()->format('M d') }}</div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-400);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">{{ now()->inDisplayTz()->startOfWeek()->format('M d') }} – {{ now()->inDisplayTz()->endOfWeek()->format('M d') }}</div>
             <h1>Good morning, <em>{{ $userName }}</em></h1>
             <div class="sub">{{ $companyName }} · {{ $stats['in_progress'] }} active {{ Str::plural('request', $stats['in_progress']) }}, {{ $stats['needs_review'] }} flagged for review</div>
         </div>
@@ -124,7 +124,7 @@
                                     <div class="av">{{ $initials }}</div>
                                     <div>
                                         <div class="name">{{ $req->reference }}</div>
-                                        <div class="role">{{ $req->candidates_count }} {{ Str::plural('candidate', $req->candidates_count) }} <span style="color:var(--ink-300);">·</span> <span class="id">{{ $req->created_at->format('d M Y') }}</span></div>
+                                        <div class="role">{{ $req->candidates_count }} {{ Str::plural('candidate', $req->candidates_count) }} <span style="color:var(--ink-300);">·</span> <span class="id">{{ $req->created_at->inDisplayTz()->format('d M Y') }}</span></div>
                                     </div>
                                 </div>
                             </td>
@@ -194,8 +194,8 @@
                     </div>
                     <div class="tat-bars" id="tatBars"></div>
                     <div class="tat-legend">
-                        <span>{{ strtoupper(now()->subDays(29)->format('M d')) }}</span>
-                        <span>{{ strtoupper(now()->format('M d')) }}</span>
+                        <span>{{ strtoupper(now()->inDisplayTz()->subDays(29)->format('M d')) }}</span>
+                        <span>{{ strtoupper(now()->inDisplayTz()->format('M d')) }}</span>
                     </div>
                 </div>
             </div>

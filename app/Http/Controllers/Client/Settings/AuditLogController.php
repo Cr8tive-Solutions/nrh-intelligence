@@ -36,12 +36,15 @@ class AuditLogController extends Controller
             $query->where('causer_id', (int) $request->input('user'));
         }
 
+        // The filter dates are local calendar days; created_at is stored in UTC.
+        $displayTimezone = config('app.display_timezone');
+
         if ($request->filled('from')) {
-            $query->whereDate('created_at', '>=', $request->date('from'));
+            $query->where('created_at', '>=', $request->date('from', tz: $displayTimezone)->startOfDay()->utc());
         }
 
         if ($request->filled('to')) {
-            $query->whereDate('created_at', '<=', $request->date('to'));
+            $query->where('created_at', '<=', $request->date('to', tz: $displayTimezone)->endOfDay()->utc());
         }
 
         $activities = $query->paginate(25)->withQueryString();

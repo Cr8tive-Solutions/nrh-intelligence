@@ -57,7 +57,7 @@
                 <tbody>
                     @forelse ($activities as $activity)
                         <tr style="cursor:pointer;" @click="openId = (openId === {{ $activity->id }} ? null : {{ $activity->id }})">
-                            <td style="font-family:var(--font-mono);font-size:12px;color:var(--ink-500);">{{ $activity->created_at->format('d M Y · H:i') }}</td>
+                            <td style="font-family:var(--font-mono);font-size:12px;color:var(--ink-500);">{{ $activity->created_at->inDisplayTz()->format('d M Y · H:i') }}</td>
                             <td>
                                 @if ($activity->causer)
                                     <div style="font-size:13px;color:var(--ink-900);">{{ $activity->causer->name }}</div>

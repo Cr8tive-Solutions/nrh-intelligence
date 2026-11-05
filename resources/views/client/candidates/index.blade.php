@@ -4,7 +4,7 @@
     <div class="page-head">
         <div>
             <h1>Candidates. <em>{{ $stats['active'] }} active</em> &middot; {{ $stats['consent'] }} awaiting consent.</h1>
-            <div class="sub">All candidates across <b>{{ session('client_company', 'your company') }}</b> &middot; billing period {{ now()->startOfMonth()->format('M d') }} &ndash; {{ now()->endOfMonth()->format('M d') }}</div>
+            <div class="sub">All candidates across <b>{{ session('client_company', 'your company') }}</b> &middot; billing period {{ now()->inDisplayTz()->startOfMonth()->format('M d') }} &ndash; {{ now()->inDisplayTz()->endOfMonth()->format('M d') }}</div>
         </div>
         <div style="display:flex;gap:8px;">
             <button class="btn btn-ghost">
@@ -140,14 +140,14 @@
                         </td>
                         <td>
                             <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--ink-900);">{{ $req->reference }}</div>
-                            <div style="font-size:10px;color:var(--ink-400);font-family:var(--font-mono);letter-spacing:0.05em;margin-top:2px;">{{ strtoupper($req->created_at->format('M d')) }} &middot; {{ $req->created_at->format('H:i') }}</div>
+                            <div style="font-size:10px;color:var(--ink-400);font-family:var(--font-mono);letter-spacing:0.05em;margin-top:2px;">{{ strtoupper($req->created_at->inDisplayTz()->format('M d')) }} &middot; {{ $req->created_at->inDisplayTz()->format('H:i') }}</div>
                         </td>
                         <td>
                             <div class="cand">
                                 <div class="av">{{ $initials }}</div>
                                 <div>
                                     <div class="name" @if($isRedacted) style="color:var(--ink-400);font-style:italic;" @endif>{{ $displayName }}</div>
-                                    <div class="role" @if($isRedacted) title="Data erased on {{ $candidate->redacted_at->format('d M Y') }}" @endif>{{ $isRedacted ? 'Data erased on '.$candidate->redacted_at->format('d M Y') : $displayId }}</div>
+                                    <div class="role" @if($isRedacted) title="Data erased on {{ $candidate->redacted_at->inDisplayTz()->format('d M Y') }}" @endif>{{ $isRedacted ? 'Data erased on '.$candidate->redacted_at->inDisplayTz()->format('d M Y') : $displayId }}</div>
                                 </div>
                             </div>
                         </td>
@@ -164,7 +164,7 @@
                                 <div class="bar"><div class="fill {{ $stage['fill'] }}" style="width:{{ $stage['pct'] }}%;"></div></div>
                             </div>
                         </td>
-                        <td style="font-size:12px;color:var(--ink-700);">{{ $req->created_at->format('d M Y') }}</td>
+                        <td style="font-size:12px;color:var(--ink-700);">{{ $req->created_at->inDisplayTz()->format('d M Y') }}</td>
                         <td style="font-size:12px;color:var(--ink-700);">{{ $req->submittedBy?->name ?? '—' }}</td>
                         <td style="text-align:right;color:var(--ink-400);">
                             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>

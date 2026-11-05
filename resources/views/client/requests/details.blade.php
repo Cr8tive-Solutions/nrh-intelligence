@@ -76,7 +76,7 @@
             $isCashPaymentVerified => [
                 'bg' => 'var(--emerald-50)', 'accent' => 'var(--emerald-600)', 'icon' => 'check',
                 'title' => 'Payment confirmed — starting soon',
-                'desc'  => 'Payment confirmed on ' . $request->payment_verified_at->format('d M Y') . '. Processing will begin within ' . $afterPaymentSla . '.',
+                'desc'  => 'Payment confirmed on ' . $request->payment_verified_at->inDisplayTz()->format('d M Y') . '. Processing will begin within ' . $afterPaymentSla . '.',
             ],
             $isInvoicedUnpaid => [
                 'bg' => 'rgba(184,147,31,0.06)', 'accent' => 'var(--gold-500)', 'icon' => 'alert',
@@ -108,7 +108,7 @@
         // Simplified tracker (3 steps for credit, 4 for cash)
         if ($isCashBilled) {
             $simpleSteps = [
-                ['label' => 'Submitted', 'sub' => $request->created_at->format('d M Y'),
+                ['label' => 'Submitted', 'sub' => $request->created_at->inDisplayTz()->format('d M Y'),
                  'done' => true,        'current' => false, 'flagged' => false],
                 ['label' => 'Payment',
                  'sub'     => $isCashPaymentVerified ? 'Confirmed'
@@ -122,18 +122,18 @@
                  'done'    => $isComplete,
                  'current' => in_array($request->status, ['in_progress', 'prelim']) || ($isCashPaymentVerified && $request->status === 'new'),
                  'flagged' => $isFlagged],
-                ['label' => 'Done',      'sub' => $isComplete ? $request->updated_at->format('d M Y') : 'Est. ' . $dueDate->format('d M'),
+                ['label' => 'Done',      'sub' => $isComplete ? $request->updated_at->inDisplayTz()->format('d M Y') : 'Est. ' . $dueDate->inDisplayTz()->format('d M'),
                  'done' => $isComplete,  'current' => false, 'flagged' => false],
             ];
         } else {
             $simpleSteps = [
-                ['label' => 'Submitted', 'sub' => $request->created_at->format('d M Y'),
+                ['label' => 'Submitted', 'sub' => $request->created_at->inDisplayTz()->format('d M Y'),
                  'done' => true, 'current' => false, 'flagged' => false],
                 ['label' => 'Checking',  'sub' => $request->status === 'in_progress' ? 'In progress' : ($isComplete ? 'Completed' : 'Awaiting start'),
                  'done'    => $isComplete,
                  'current' => in_array($request->status, ['new', 'in_progress', 'prelim']),
                  'flagged' => $isFlagged],
-                ['label' => 'Done',      'sub' => $isComplete ? $request->updated_at->format('d M Y') : 'Est. ' . $dueDate->format('d M'),
+                ['label' => 'Done',      'sub' => $isComplete ? $request->updated_at->inDisplayTz()->format('d M Y') : 'Est. ' . $dueDate->inDisplayTz()->format('d M'),
                  'done' => $isComplete, 'current' => false, 'flagged' => false],
             ];
         }
@@ -191,7 +191,7 @@
             <div style="font-size:19px;font-weight:700;color:var(--ink-900);line-height:1.3;">{{ $heroState['title'] }}</div>
             <div style="font-size:14px;color:var(--ink-600);margin-top:6px;line-height:1.5;">{{ $heroState['desc'] }}</div>
             <div style="margin-top:10px;font-size:12px;color:var(--ink-400);">
-                Submitted <b style="color:var(--ink-600);">{{ $request->created_at->format('d M Y') }}</b>
+                Submitted <b style="color:var(--ink-600);">{{ $request->created_at->inDisplayTz()->format('d M Y') }}</b>
                 by <b style="color:var(--ink-600);">{{ $request->submittedBy?->name ?? '—' }}</b>
                 &nbsp;·&nbsp; {{ $candidates->count() }} {{ Str::plural('candidate', $candidates->count()) }}
                 @if ($totalChecks > 0)
@@ -321,7 +321,7 @@
                     <div style="flex:1;">
                         <div style="font-size:14px;font-weight:600;color:var(--ink-900);">Payment slip uploaded</div>
                         <div style="font-size:13px;color:var(--ink-600);margin-top:2px;">
-                            Uploaded {{ $request->payment_slip_uploaded_at?->format('d M Y · H:i') }} — our finance team is verifying.
+                            Uploaded {{ $request->payment_slip_uploaded_at?->inDisplayTz()->format('d M Y · H:i') }} — our finance team is verifying.
                         </div>
                     </div>
                     @if ($canUploadSlip)
@@ -374,7 +374,7 @@
             <div style="flex:1;">
                 <div style="font-size:14px;font-weight:600;color:var(--ink-900);">Payment confirmed</div>
                 <div style="font-size:13px;color:var(--ink-600);margin-top:2px;">
-                    Verified {{ $request->payment_verified_at->format('d M Y · H:i') }} — processing will begin within {{ $afterPaymentSla }}.
+                    Verified {{ $request->payment_verified_at->inDisplayTz()->format('d M Y · H:i') }} — processing will begin within {{ $afterPaymentSla }}.
                 </div>
             </div>
             @if ($request->hasPaymentSlip())
@@ -431,7 +431,7 @@
                                     <div class="name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;{{ $isRedacted ? 'color:var(--ink-400);font-style:italic;' : '' }}">
                                         {{ $isRedacted ? 'Candidate erased' : $candidate->name }}
                                     </div>
-                                    <div class="id">{{ $isRedacted ? 'Data erased ' . $candidate->redacted_at->format('d M Y') : $candidate->identity_number }}</div>
+                                    <div class="id">{{ $isRedacted ? 'Data erased ' . $candidate->redacted_at->inDisplayTz()->format('d M Y') : $candidate->identity_number }}</div>
                                 </div>
                             </div>
                             <div class="progress-track">
@@ -469,11 +469,11 @@
                     </div>
                     <div class="id-row">
                         <span class="k">Date submitted</span>
-                        <span class="v">{{ $request->created_at->format('d M Y') }}</span>
+                        <span class="v">{{ $request->created_at->inDisplayTz()->format('d M Y') }}</span>
                     </div>
                     <div class="id-row">
                         <span class="k">Expected by</span>
-                        <span class="v">{{ $dueDate->format('d M Y') }}</span>
+                        <span class="v">{{ $dueDate->inDisplayTz()->format('d M Y') }}</span>
                     </div>
                 </div>
             </div>

@@ -65,7 +65,7 @@
                                     <span class="pill pill-pending"><span class="dot"></span>Inactive</span>
                                 @endif
                             </td>
-                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $user->created_at->format('d M Y') }}</td>
+                            <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $user->created_at->inDisplayTz()->format('d M Y') }}</td>
                             <td style="text-align:right;">
                                 <div style="display:inline-flex;gap:6px;">
                                     @if ($user->status !== 'active')

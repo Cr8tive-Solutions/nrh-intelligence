@@ -188,7 +188,7 @@
         <div class="header-right">
             <div class="receipt-label">Official Receipt</div>
             <div class="receipt-ref">{{ $transaction->reference ?? ('TXN-' . str_pad($transaction->id, 6, '0', STR_PAD_LEFT)) }}</div>
-            <div class="receipt-date">{{ $transaction->created_at->format('d F Y, H:i') }}</div>
+            <div class="receipt-date">{{ $transaction->created_at->inDisplayTz()->format('d F Y, H:i') }}</div>
         </div>
     </div>
 
@@ -222,7 +222,7 @@
         </tr>
         <tr>
             <td class="lbl">Date &amp; Time</td>
-            <td class="val mono">{{ $transaction->created_at->format('d M Y, H:i') }}</td>
+            <td class="val mono">{{ $transaction->created_at->inDisplayTz()->format('d M Y, H:i') }}</td>
         </tr>
         <tr>
             <td class="lbl">Status</td>

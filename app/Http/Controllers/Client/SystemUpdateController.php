@@ -13,7 +13,7 @@ class SystemUpdateController extends Controller
             ->orderByDesc('released_at')
             ->orderByDesc('id')
             ->get()
-            ->groupBy(fn ($u) => $u->released_at->format('Y-m-d'));
+            ->groupBy(fn ($u) => $u->released_at->inDisplayTz()->format('Y-m-d'));
 
         return view('client.updates.index', compact('updates'));
     }
