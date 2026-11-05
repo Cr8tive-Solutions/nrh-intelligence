@@ -48,7 +48,7 @@
                 One more step to protect <em style="font-style:italic;color:var(--gold-400);">every candidate's</em> record.
             </h2>
             <p style="font-size:14px;line-height:1.6;color:rgba(245,236,209,0.65);margin:0;">
-                NRH holds sensitive PII — SSNs, criminal histories, credit files. A second factor isn't optional. It's a covenant with the people being screened.
+                KYRO holds sensitive personal data — identity numbers, employment histories, criminal records. A second factor keeps it safe for the people being screened.
             </p>
         </div>
 

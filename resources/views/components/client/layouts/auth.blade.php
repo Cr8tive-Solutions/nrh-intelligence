@@ -376,29 +376,30 @@
                 {{-- Hero --}}
                 <div style="position:relative;z-index:2;max-width:440px;">
                     <div style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.22em;color:var(--gold-400);margin-bottom:20px;">
-                        ◆ &nbsp;Fiduciary-grade screening
+                        ◆ &nbsp;Background screening by NRH Intelligence
                     </div>
                     <h2 style="font-family:var(--font-display);font-weight:400;font-size:44px;line-height:1.1;letter-spacing:-0.015em;color:#f5ecd1;margin:0 0 20px;">
-                        The world's most <em style="font-style:italic;color:var(--gold-400);">trusted</em> names verify here.
+                        Your screening, <em style="font-style:italic;color:var(--gold-400);">in one place</em>.
                     </h2>
                     <p style="font-size:14px;line-height:1.6;color:rgba(245,236,209,0.65);margin:0;">
-                        1.2M candidates screened across 184 jurisdictions. SOC 2 Type II and PBSA-accredited since 2021.
+                        Submit requests, follow every check as it progresses, and download your reports from one secure workspace.
+                        KYRO has undergone vulnerability assessment and penetration testing (VAPT).
                     </p>
                 </div>
 
-                {{-- Stats --}}
+                {{-- Security highlights --}}
                 <div style="position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding-top:28px;border-top:1px solid rgba(212,175,55,0.2);">
                     <div>
-                        <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">1.2<span style="color:var(--gold-400);font-size:18px;">M</span></div>
-                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">Screenings</div>
+                        <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">VAPT</div>
+                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">Security tested</div>
                     </div>
                     <div>
-                        <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">184</div>
-                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">Jurisdictions</div>
+                        <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">2FA</div>
+                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">On every sign-in</div>
                     </div>
                     <div>
-                        <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">99.4<span style="color:var(--gold-400);font-size:18px;">%</span></div>
-                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">On-time SLA</div>
+                        <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">AES-256</div>
+                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">Encrypted files</div>
                     </div>
                 </div>
             @endif
