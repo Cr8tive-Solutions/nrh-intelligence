@@ -123,6 +123,10 @@ return [
 
     'support_email' => env('SUPPORT_EMAIL', 'support@nrhintelligence.com'),
 
+    // Month of the latest VAPT (vulnerability assessment & penetration test),
+    // shown beside the "VAPT tested" note. Update after each new test.
+    'vapt_date' => env('VAPT_DATE', 'Oct 2026'),
+
     /*
     |--------------------------------------------------------------------------
     | Maintenance Mode Driver

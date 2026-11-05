@@ -383,7 +383,7 @@
                     </h2>
                     <p style="font-size:14px;line-height:1.6;color:rgba(245,236,209,0.65);margin:0;">
                         Submit requests, follow every check as it progresses, and download your reports from one secure workspace.
-                        KYRO has undergone vulnerability assessment and penetration testing (VAPT).
+                        KYRO has undergone vulnerability assessment and penetration testing (VAPT){{ config('app.vapt_date') ? ', most recently in '.config('app.vapt_date') : '' }}.
                     </p>
                 </div>
 
@@ -391,7 +391,7 @@
                 <div style="position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding-top:28px;border-top:1px solid rgba(212,175,55,0.2);">
                     <div>
                         <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">VAPT</div>
-                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">Security tested</div>
+                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(245,236,209,0.5);margin-top:4px;">{{ config('app.vapt_date') ? 'Tested '.config('app.vapt_date') : 'Security tested' }}</div>
                     </div>
                     <div>
                         <div style="font-family:var(--font-display);font-size:26px;font-weight:500;color:#f5ecd1;letter-spacing:-0.02em;">2FA</div>

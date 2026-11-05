@@ -80,7 +80,7 @@
 
         {{-- Footer --}}
         <footer class="nrh-footer">
-            <span>&copy; {{ date('Y') }} NRH Intelligence Sdn. Bhd. <span class="sep">&middot;</span> VAPT tested</span>
+            <span>&copy; {{ date('Y') }} NRH Intelligence Sdn. Bhd. <span class="sep">&middot;</span> VAPT tested{{ config('app.vapt_date') ? ' '.config('app.vapt_date') : '' }}</span>
             <nav>
                 <a href="{{ config('app.privacy_url') }}" target="_blank" rel="noopener">Privacy</a>
                 <span class="sep">&middot;</span>
