@@ -48,7 +48,8 @@ class InvoiceController extends Controller
         $validated = $request->validate([
             'receipt_file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'amount_claimed' => ['nullable', 'numeric', 'min:0.01'],
-            'paid_on' => ['nullable', 'date', 'before_or_equal:today'],
+            // A local calendar date; 'today' alone would be the UTC date, a day behind before 08:00.
+            'paid_on' => ['nullable', 'date', 'before_or_equal:'.now()->inDisplayTz()->toDateString()],
             'reference' => ['nullable', 'string', 'max:200'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);

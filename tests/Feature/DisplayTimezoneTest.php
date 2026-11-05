@@ -2,8 +2,10 @@
 
 use App\Models\Invoice;
 use App\Models\ScreeningRequest;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Tests\Support\Fixtures;
 
 /**
@@ -62,6 +64,26 @@ it('filters the audit log by Malaysian calendar days', function () {
         ->assertOk()
         ->assertViewHas('activities', fn ($activities) => collect($activities->items())
             ->pluck('description')->all() === ['early on the 6th']);
+});
+
+it('accepts a payment receipt paid on the Malaysian today before 08:00', function () {
+    // 06:00 on 6 Nov in Malaysia, still 5 Nov in UTC.
+    Carbon::setTestNow(Carbon::parse('2026-11-05 22:00:00', 'UTC'));
+    Storage::fake('local');
+    Fixtures::seedRoles();
+    $customerId = Fixtures::customer();
+    $user = Fixtures::user($customerId);
+    $invoice = Invoice::find(Fixtures::invoice($customerId));
+
+    $this->actingAs($user, 'customer_user')
+        ->withSession(['client_customer_id' => $customerId, 'client_user_id' => $user->id])
+        ->post(route('client.billing.invoices.receipts.store', hid($invoice->id)), [
+            'receipt_file' => UploadedFile::fake()->create('receipt.pdf', 20, 'application/pdf'),
+            'paid_on' => '2026-11-06',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($invoice->receipts()->first()?->paid_on->toDateString())->toBe('2026-11-06');
 });
 
 it('converts every stored timestamp a view formats', function () {
