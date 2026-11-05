@@ -2,12 +2,11 @@
 
     {{-- Mobile menu toggle --}}
     <button
-        @click="sidebarOpen = !sidebarOpen"
-        class="min-[960px]:hidden"
+        @click="toggleSidebar()"
         style="width:32px;height:32px;display:grid;place-items:center;border-radius:var(--radius);border:1px solid transparent;background:transparent;cursor:pointer;color:var(--ink-700);"
         onmouseover="this.style.borderColor='var(--line)';this.style.background='var(--card)'"
         onmouseout="this.style.borderColor='transparent';this.style.background='transparent'"
-        aria-label="Toggle menu"
+        aria-label="Toggle sidebar"
     >
         <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>

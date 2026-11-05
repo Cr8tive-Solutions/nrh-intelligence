@@ -11,13 +11,28 @@
     @stack('head')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="app-shell" x-data="{ sidebarOpen: false }">
+<body
+    class="app-shell"
+    x-data="{
+        sidebarOpen: false,
+        sidebarCollapsed: (() => { try { return localStorage.getItem('nrh-sidebar-collapsed') === '1'; } catch (e) { return false; } })(),
+        toggleSidebar() {
+            if (window.matchMedia('(min-width: 960px)').matches) {
+                this.sidebarCollapsed = ! this.sidebarCollapsed;
+                try { localStorage.setItem('nrh-sidebar-collapsed', this.sidebarCollapsed ? '1' : '0'); } catch (e) {}
+            } else {
+                this.sidebarOpen = ! this.sidebarOpen;
+            }
+        },
+    }"
+    @keydown.escape.window="sidebarOpen = false"
+>
 
     {{-- Mobile overlay --}}
     <div
         x-show="sidebarOpen"
         @click="sidebarOpen = false"
-        style="position:fixed;inset:0;z-index:30;background:rgba(0,0,0,0.35);"
+        style="position:fixed;inset:0;z-index:36;background:rgba(0,0,0,0.35);"
         class="min-[960px]:hidden"
         x-transition:enter="transition-opacity duration-200"
         x-transition:enter-start="opacity-0"

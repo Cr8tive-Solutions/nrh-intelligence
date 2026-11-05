@@ -62,6 +62,7 @@
     --info:    #3a6b8f;
 
     --radius:    6px;
+    --topbar-h:  64px;
     --radius-lg: 12px;
 
     --shadow-xs: 0 1px 0 rgba(20,32,27,0.04);
@@ -131,6 +132,32 @@ body {
     top: 0;
     height: 100vh;
     overflow-y: auto;
+}
+/* Below 960px the sidebar is an off-canvas drawer over the page. */
+@media (max-width: 959.98px) {
+    .nrh-sidebar { position: fixed; top: 0; bottom: 0; left: 0; z-index: 40; }
+}
+/* At 960px and up the topbar menu button collapses it to an icon rail. */
+@media (min-width: 960px) {
+    /* translate: none so the fixed-position user menu below escapes the sidebar's clipping. */
+    .nrh-sidebar { translate: none; transition: width 200ms ease, padding 200ms ease; }
+    .nrh-sidebar.is-collapsed { width: 68px; padding-left: 10px; padding-right: 10px; overflow-x: hidden; }
+    .nrh-sidebar.is-collapsed .sb-text,
+    .nrh-sidebar.is-collapsed .sb-section,
+    .nrh-sidebar.is-collapsed .sb-chevron { display: none !important; }
+    .nrh-sidebar.is-collapsed .sb-brand { justify-content: center; padding: 0 !important; }
+    .nrh-sidebar.is-collapsed .sb-brand img { max-width: 40px; object-fit: contain; }
+    .nrh-sidebar.is-collapsed nav { padding: 16px 4px !important; gap: 12px !important; }
+    .nrh-sidebar.is-collapsed .nav-item { justify-content: center !important; gap: 0 !important; padding: 10px 0 !important; font-size: 0; }
+    .nrh-sidebar.is-collapsed .nav-item > span { gap: 0 !important; }
+    .nrh-sidebar.is-collapsed .nav-item svg { width: 18px; height: 18px; }
+    .nrh-sidebar.is-collapsed .nav-sub-item svg { width: 15px; height: 15px; }
+    .nrh-sidebar.is-collapsed .nav-item.active::before { left: -4px; }
+    .nrh-sidebar.is-collapsed .sb-sublist { padding: 2px 0 !important; }
+    .nrh-sidebar.is-collapsed .sidebar-footer { padding-left: 0 !important; padding-right: 0 !important; }
+    .nrh-sidebar.is-collapsed .sb-theme { justify-content: center !important; font-size: 0 !important; padding: 10px 0 !important; }
+    .nrh-sidebar.is-collapsed .sb-user { justify-content: center; padding: 6px 0 !important; }
+    .nrh-sidebar.is-collapsed .sb-user-menu { position: fixed !important; left: 76px !important; right: auto !important; bottom: 16px !important; width: 200px; }
 }
 
 .brand-mark {
@@ -279,7 +306,8 @@ body {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 14px 28px;
+    height: var(--topbar-h);
+    padding: 0 28px;
     border-bottom: 1px solid var(--line);
     background: var(--paper);
     position: sticky;
@@ -1884,7 +1912,7 @@ body {
 /* Mobile — ≤ 768px */
 @media (max-width: 768px) {
     /* Topbar */
-    .nrh-topbar    { padding: 10px 16px; gap: 10px; }
+    .nrh-topbar    { padding: 0 16px; gap: 10px; }
     .topbar-search { display: none; }
     .breadcrumbs   { font-size: 11px; gap: 5px; }
 
