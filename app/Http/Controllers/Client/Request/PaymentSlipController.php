@@ -98,25 +98,30 @@ class PaymentSlipController extends Controller
         $uploaderEmail = $user?->email;
         $action = $isReplacement ? 'replaced' : 'uploaded';
 
-        $body = "A payment slip has been {$action} and is awaiting verification.\n\n"
-            ."Request: {$reference}\n"
-            ."Customer: {$customerName}\n"
-            ."Uploaded by: {$uploaderName}".($uploaderEmail ? " ({$uploaderEmail})" : '')."\n"
-            .'Uploaded at: '.now()->format('d M Y, H:i')."\n"
-            ."Filename: {$filename}\n\n"
-            .'Log into the admin portal to view the slip and verify payment.';
+        $data = [
+            'action' => $action,
+            'reference' => $reference,
+            'customerName' => $customerName,
+            'uploadedBy' => $uploaderName.($uploaderEmail ? " ({$uploaderEmail})" : ''),
+            'uploadedAt' => now()->format('d M Y, H:i'),
+            'filename' => $filename,
+        ];
 
         $subjectVerb = $isReplacement ? 'replaced' : 'uploaded';
 
         try {
-            Mail::raw($body, function ($message) use ($recipient, $reference, $subjectVerb, $uploaderEmail) {
-                $message->to($recipient)
-                    ->subject("Payment slip {$subjectVerb} — {$reference}");
+            Mail::send(
+                ['html' => 'emails.payment-slip', 'text' => 'emails.payment-slip-text'],
+                $data,
+                function ($message) use ($recipient, $reference, $subjectVerb, $uploaderEmail) {
+                    $message->to($recipient)
+                        ->subject("Payment slip {$subjectVerb} — {$reference}");
 
-                if ($uploaderEmail) {
-                    $message->replyTo($uploaderEmail);
-                }
-            });
+                    if ($uploaderEmail) {
+                        $message->replyTo($uploaderEmail);
+                    }
+                },
+            );
 
             Log::info('payment_slip.finance_notified', [
                 'request_id' => $screeningRequest->id,

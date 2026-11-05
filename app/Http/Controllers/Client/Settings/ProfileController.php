@@ -76,18 +76,16 @@ class ProfileController extends Controller
             ['user' => $user->id, 'email' => $newEmail],
         );
 
-        Mail::raw(
-            "A request was made to change the email address on your NRH Intelligence account to this address.\n\n"
-            ."Confirm the change by opening the link below within one hour:\n\n{$url}\n\n"
-            .'If you did not request this, you can ignore this email.',
-            fn ($message) => $message->to($newEmail)->subject('Confirm your new NRH Intelligence email'),
+        Mail::send(
+            ['html' => 'emails.email-change-confirm', 'text' => 'emails.email-change-confirm-text'],
+            ['url' => $url],
+            fn ($message) => $message->to($newEmail)->subject('Confirm your new KYRO email'),
         );
 
         // Notify the current (old) address so the owner is alerted to the change.
-        Mail::raw(
-            "A request was made to change the email address on your NRH Intelligence account to {$newEmail}.\n\n"
-            ."If this was you, no action is needed — confirm the change from the link sent to the new address.\n\n"
-            .'If this was NOT you, change your password immediately and contact your administrator.',
+        Mail::send(
+            ['html' => 'emails.email-change-alert', 'text' => 'emails.email-change-alert-text'],
+            ['newEmail' => $newEmail],
             fn ($message) => $message->to($user->email)->subject('Security alert: email change requested'),
         );
     }

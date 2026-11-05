@@ -14,7 +14,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title }} — NRH Intelligence</title>
+    <title>{{ $title }} — KYRO</title>
     <link rel="icon" type="image/png" href="{{ asset('nrh-logo.png') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter-tight:400,500,600,700|fraunces:400,500,600,700ital|jetbrains-mono:400,500,600&display=swap" rel="stylesheet"/>
@@ -369,7 +369,7 @@
                 <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:2;">
                     <img src="{{ asset('nrh-logo.png') }}" alt="NRH Intelligence" style="height:36px;width:auto;flex-shrink:0;">
                     <div style="font-family:var(--font-display);font-weight:600;font-size:17px;color:#f5ecd1;letter-spacing:0.01em;">
-                        NRH <em style="color:var(--gold-400);font-style:italic;">Intelligence</em>
+                        KYRO
                     </div>
                 </div>
 

@@ -13,7 +13,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>NRH Intelligence — Customer Portal Guide</title>
+<title>KYRO — Customer Portal Guide</title>
 <style>
 @page { margin: 76px 46px 56px 46px; }
 * { box-sizing: border-box; }
@@ -34,7 +34,7 @@ body { font-family: 'DejaVu Sans', sans-serif; font-size: 8.5pt; color: #3b4b44;
 
 /* ── Cover ── */
 .cov { text-align: center; padding-top: 118px; }
-.cov-mark { width: 52pt; margin: 0 auto; background-color: #023527; color: #d4af37;
+.cov-mark { width: 76pt; margin: 0 auto; background-color: #023527; color: #d4af37;
             font-family: 'DejaVu Serif', serif; font-size: 17pt; line-height: 1;
             text-align: center; padding: 15pt 0 17pt 0; }
 .cov-title { font-family: 'DejaVu Serif', serif; font-size: 21pt; color: #14201b;
@@ -119,7 +119,7 @@ code { font-family: 'DejaVu Sans Mono', monospace; background: #f3f4ee;
     <table>
         <tr>
             <td>
-                <div class="ph-t">NRH <em>Intelligence</em></div>
+                <div class="ph-t">KYRO</div>
                 <div class="ph-s">Customer Portal Guide</div>
             </td>
             <td class="ph-r">{{ $portalHost }}</td>
@@ -130,9 +130,9 @@ code { font-family: 'DejaVu Sans Mono', monospace; background: #f3f4ee;
 
 {{-- ─────────────── Cover ─────────────── --}}
 <div class="cov">
-    <div class="cov-mark">NRH</div>
+    <div class="cov-mark">KYRO</div>
     <div class="cov-title">Customer Portal <em>Guide</em></div>
-    <div class="cov-sub">NRH Intelligence &mdash; Screening &middot; Est. 2019</div>
+    <div class="cov-sub">KYRO &mdash; by NRH Intelligence</div>
     <div class="cov-rule"></div>
     <div class="cov-meta">
         {{ $sectionCount }} SECTIONS<br>

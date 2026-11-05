@@ -1,7 +1,7 @@
 <x-client.layouts.auth
     title="Sign In"
     authTitle='Welcome back, <em>recruiter.</em>'
-    authSub='Sign in to your NRH Intelligence workspace. Your session is encrypted end-to-end and audited under FCRA §611.'
+    authSub='Sign in to your KYRO workspace. Your session is encrypted end-to-end and audited under FCRA §611.'
     step="1 · 2"
     stepLabel="SECURE · TLS 1.3"
     footerText="New here?"

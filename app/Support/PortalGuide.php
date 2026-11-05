@@ -59,7 +59,7 @@ class PortalGuide
             'permission' => null,
             'summary' => 'What this document covers and how to move around it.',
             'blocks' => [
-                ['type' => 'p', 'text' => 'This is the user guide for the <b>NRH Intelligence customer portal</b> — where your team orders background checks, follows them while they run, downloads finished reports, and settles what you owe. It covers every item in the sidebar, the permission each one needs, and what each action actually does.'],
+                ['type' => 'p', 'text' => 'This is the user guide for the <b>KYRO customer portal</b> — where your team orders background checks, follows them while they run, downloads finished reports, and settles what you owe. It covers every item in the sidebar, the permission each one needs, and what each action actually does.'],
                 ['type' => 'p', 'text' => 'Screening work is carried out by NRH staff in a separate internal system. Anything you submit here reaches them immediately, and reports they issue appear here the moment they are released — so the two sides stay in step without anyone emailing anyone.'],
                 ['type' => 'sub', 'text' => 'How to use this document'],
                 ['type' => 'list', 'items' => [
@@ -86,7 +86,7 @@ class PortalGuide
 
                 ['type' => 'sub', 'text' => 'Accepting your invitation'],
                 ['type' => 'steps', 'items' => [
-                    'Open the email titled <b>“You’re invited to … on NRH Intelligence”</b> and click the activation link.',
+                    'Open the email titled <b>“You’re invited to … on KYRO”</b> and click the activation link.',
                     'Choose a password of at least eight characters and confirm it.',
                     'You are signed in and taken to the dashboard. Your account switches from <code>inactive</code> to <code>active</code>.',
                 ]],

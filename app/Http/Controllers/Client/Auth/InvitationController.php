@@ -95,7 +95,7 @@ class InvitationController extends Controller
 
         return redirect()
             ->route('client.dashboard')
-            ->with('success', 'Welcome to NRH Intelligence — your account is now active.');
+            ->with('success', 'Welcome to KYRO — your account is now active.');
     }
 
     protected function loginAndPopulateSession(Request $request, CustomerUser $user): void

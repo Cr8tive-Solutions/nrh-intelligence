@@ -103,9 +103,11 @@ class LoginController extends Controller
             '2fa_attempts' => 0,
         ]);
 
-        Mail::raw("Your NRH Intelligence verification code is: {$code}\n\nThis code expires in 10 minutes.", function ($message) use ($user) {
-            $message->to($user->email)->subject('Your NRH verification code');
-        });
+        Mail::send(
+            ['html' => 'emails.two-factor-code', 'text' => 'emails.two-factor-code-text'],
+            ['code' => $code, 'expireMinutes' => 10],
+            fn ($message) => $message->to($user->email)->subject('Your KYRO verification code'),
+        );
 
         activity('auth')
             ->causedBy($user)
@@ -243,9 +245,11 @@ class LoginController extends Controller
 
         session(['2fa_code' => $code, '2fa_expires_at' => now()->addMinutes(10)->timestamp, '2fa_attempts' => 0]);
 
-        Mail::raw("Your NRH Intelligence verification code is: {$code}\n\nThis code expires in 10 minutes.", function ($message) use ($email) {
-            $message->to($email)->subject('Your NRH verification code');
-        });
+        Mail::send(
+            ['html' => 'emails.two-factor-code', 'text' => 'emails.two-factor-code-text'],
+            ['code' => $code, 'expireMinutes' => 10],
+            fn ($message) => $message->to($email)->subject('Your KYRO verification code'),
+        );
 
         return back()->with('status', 'A new code has been sent to '.$email.'.');
     }

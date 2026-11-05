@@ -8,9 +8,9 @@
         <img src="{{ asset('nrh-logo.png') }}" alt="NRH Intelligence" style="height:36px;width:auto;flex-shrink:0;">
         <div style="display:flex;flex-direction:column;line-height:1.1;">
             <div style="font-family:var(--font-display);font-weight:600;font-size:16px;letter-spacing:0.01em;color:var(--ink-900);">
-                NRH <em style="font-style:italic;color:var(--gold-600);">Intelligence</em>
+                KYRO
             </div>
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:var(--ink-500);margin-top:3px;">Screening · Est. 2019</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:var(--ink-500);margin-top:3px;">by NRH Intelligence</div>
         </div>
     </div>
 

@@ -98,11 +98,13 @@ class UserController extends Controller
         $url = route('client.invitation.show', $invitation->token);
         $expiresIn = $invitation->expires_at->diffForHumans(null, true);
 
-        $body = "Hi {$user->name},\n\n"
-            ."{$invitedBy?->name} has invited you to join {$companyName} on NRH Intelligence.\n\n"
-            ."Click the link below to set your password and activate your account:\n\n"
-            ."{$url}\n\n"
-            ."This invitation expires in {$expiresIn}. If you weren't expecting this email, you can ignore it safely.";
+        $data = [
+            'name' => $user->name,
+            'inviterName' => $invitedBy?->name,
+            'companyName' => $companyName,
+            'url' => $url,
+            'expiresIn' => $expiresIn,
+        ];
 
         Log::info('invitation_email.sending', [
             'invitation_id' => $invitation->id,
@@ -112,10 +114,14 @@ class UserController extends Controller
         ]);
 
         try {
-            Mail::raw($body, function ($message) use ($user, $companyName) {
-                $message->to($user->email)
-                    ->subject("You're invited to {$companyName} on NRH Intelligence");
-            });
+            Mail::send(
+                ['html' => 'emails.invitation', 'text' => 'emails.invitation-text'],
+                $data,
+                function ($message) use ($user, $companyName) {
+                    $message->to($user->email)
+                        ->subject("You're invited to {$companyName} on KYRO");
+                },
+            );
             Log::info('invitation_email.sent', ['to' => $user->email]);
         } catch (\Throwable $e) {
             Log::error('invitation_email.failed', [

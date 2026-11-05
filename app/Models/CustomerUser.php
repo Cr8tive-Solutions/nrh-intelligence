@@ -73,10 +73,10 @@ class CustomerUser extends Authenticatable
         ];
 
         Mail::send(
-            ['html' => 'client.emails.password-reset', 'text' => 'client.emails.password-reset-text'],
+            ['html' => 'emails.password-reset', 'text' => 'emails.password-reset-text'],
             $data,
             function ($message) {
-                $message->to($this->email)->subject('Reset your NRH Intelligence password');
+                $message->to($this->email)->subject('Reset your KYRO password');
             }
         );
     }

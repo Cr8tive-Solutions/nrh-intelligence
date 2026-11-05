@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**NRH Intelligence** is a customer-facing portal for a background check / verification platform. Customers (companies) log in to submit screening requests, track progress, view reports, and manage billing. There is no admin panel in this repository — only the client portal.
+**KYRO** (by NRH Intelligence — the company name, which stays on invoices, receipts and copyright lines) is a customer-facing portal for a background check / verification platform. Customers (companies) log in to submit screening requests, track progress, view reports, and manage billing. There is no admin panel in this repository — only the client portal.
 
 ## Commands
 
