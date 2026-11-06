@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Tests\Support\Fixtures;
 
 /**
@@ -86,4 +87,34 @@ it('ignores a forged tenant id in the session', function () {
         ->withSession(['client_customer_id' => $this->customerB])
         ->get(route('client.requests.details', hid($this->requestB)))
         ->assertNotFound();
+});
+
+it('gates report downloads on view-reports, not just view-requests', function () {
+    $customerId = Fixtures::customer();
+    $owner = Fixtures::user($customerId, 'Owner');
+    $requestId = Fixtures::screeningRequest($customerId, $owner->id, ['status' => 'complete']);
+    $versionId = DB::table('report_versions')->insertGetId([
+        'screening_request_id' => $requestId,
+        'type' => 'full',
+        'version' => 1,
+        'generated_at' => now(),
+        'file_path' => 'reports/missing-on-purpose.pdf',
+        'file_sha256' => str_repeat('a', 64),
+        'content_hash' => str_repeat('b', 64),
+        'snapshot' => '{}',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    $requestsOnly = Fixtures::user($customerId, 'Viewer');
+    $requestsOnly->removeRole('Viewer');
+    $requestsOnly->givePermissionTo('view-requests');
+
+    $url = route('client.requests.reports.download', [hid($requestId), hid($versionId)]);
+
+    $this->actingAs($requestsOnly, 'customer_user')->get($url)->assertForbidden();
+
+    $this->flushSession();
+
+    // With view-reports the gate passes (the file itself is absent here, so 404).
+    $this->actingAs($owner, 'customer_user')->get($url)->assertNotFound();
 });

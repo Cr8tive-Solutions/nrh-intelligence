@@ -6,6 +6,7 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use Illuminate\Support\Facades\Cache;
 use PragmaRX\Google2FA\Google2FA;
 
 /**
@@ -27,10 +28,29 @@ class TwoFactorAuthenticator
     /**
      * Verify a 6-digit code against the secret, allowing a ±1 time-step window
      * to tolerate clock drift between the server and the user's device.
+     *
+     * With a $replayKey (the user id) a code is accepted only if its time-step
+     * is newer than the last one accepted for that key, so an observed code
+     * cannot be replayed within its window. The last step is kept in the cache
+     * (no column needed) for longer than the window lasts.
      */
-    public function verify(string $secret, string $code): bool
+    public function verify(string $secret, string $code, int|string|null $replayKey = null): bool
     {
-        return $this->engine->verifyKey($secret, $code, 1);
+        if ($replayKey === null) {
+            return $this->engine->verifyKey($secret, $code, 1);
+        }
+
+        $cacheKey = 'totp-last-timestep:'.$replayKey;
+
+        $timestep = $this->engine->verifyKeyNewer($secret, $code, (int) Cache::get($cacheKey, 0), 1);
+
+        if ($timestep === false) {
+            return false;
+        }
+
+        Cache::put($cacheKey, $timestep, now()->addMinutes(5));
+
+        return true;
     }
 
     /**

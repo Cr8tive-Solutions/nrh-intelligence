@@ -7,10 +7,14 @@ use App\Support\EncryptedFilesystemAdapter;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Hashids\Hashids;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Foundation\Console\ServeCommand;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use League\Flysystem\Filesystem as Flysystem;
 use League\Flysystem\Local\LocalFilesystemAdapter as LocalAdapter;
 use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
@@ -39,11 +43,37 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->registerLocalMountDriver();
         $this->registerDisplayTimezoneMacro();
+        $this->registerRateLimiters();
+
+        // Applies wherever a new password is chosen: invitation accept,
+        // password reset, security settings and registration. No
+        // uncompromised() check — it calls an external API.
+        Password::defaults(fn () => Password::min(12)->letters()->mixedCase()->numbers());
 
         // SST rate is set from the admin portal (app_settings); override the
         // static config default so every config('billing.sst_rate') call site
         // across the client portal uses the shared, admin-managed value.
         config(['billing.sst_rate' => Setting::sstRate((float) config('billing.sst_rate', 0.06))]);
+    }
+
+    /**
+     * Named limiters, one per auth flow. A bare `throttle:5,1` keys on the IP
+     * alone, so every route using it shared one counter — failed logins could
+     * lock the same visitor out of password reset or an invitation link.
+     */
+    private function registerRateLimiters(): void
+    {
+        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
+        RateLimiter::for('two-factor', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
+        RateLimiter::for('two-factor-resend', fn (Request $request) => Limit::perMinute(3)->by($request->ip()));
+        RateLimiter::for('password-reset', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
+        RateLimiter::for('invitation', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
+        RateLimiter::for('registration', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
+
+        // Settings forms that check the current password, keyed per user so a
+        // hijacked session cannot brute-force it.
+        RateLimiter::for('current-password', fn (Request $request) => Limit::perMinute(5)
+            ->by((string) ($request->user('customer_user')?->getAuthIdentifier() ?? $request->ip())));
     }
 
     /**

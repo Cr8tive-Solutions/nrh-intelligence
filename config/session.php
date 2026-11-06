@@ -38,6 +38,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Absolute Session Lifetime
+    |--------------------------------------------------------------------------
+    |
+    | Minutes after sign-in at which a portal session is ended however active
+    | it has been (enforced by App\Http\Middleware\ClientAuth). The idle
+    | 'lifetime' above alone would let a busy or hijacked session live forever.
+    |
+    */
+
+    'absolute_lifetime_minutes' => (int) env('SESSION_ABSOLUTE_LIFETIME', 720),
+
+    /*
+    |--------------------------------------------------------------------------
     | Session Encryption
     |--------------------------------------------------------------------------
     |

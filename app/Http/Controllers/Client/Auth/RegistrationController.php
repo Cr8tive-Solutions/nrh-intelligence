@@ -9,6 +9,7 @@ use App\Models\CustomerUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 /**
@@ -46,12 +47,14 @@ class RegistrationController extends Controller
             'company_name' => ['required', 'string', 'max:255'],
             'registration_no' => ['required', 'string', 'max:100'],
             'address' => ['required', 'string', 'max:2000'],
-            'country' => ['required', 'string', 'max:100'],
+            // Only a name from the form's dropdown — the value is shown to NRH
+            // staff in the admin portal, so free text is not accepted.
+            'country' => ['required', 'string', 'max:100', Rule::exists(Country::class, 'name')],
             'industry' => ['nullable', 'string', 'max:100'],
             'contact_name' => ['required', 'string', 'max:255'],
             'contact_designation' => ['nullable', 'string', 'max:100'],
             'contact_phone' => ['required', 'string', 'max:50'],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', Password::defaults()],
             'declaration' => ['accepted'],
         ], [
             'declaration.accepted' => 'Please confirm the details are accurate.',

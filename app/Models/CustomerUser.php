@@ -90,4 +90,26 @@ class CustomerUser extends Authenticatable
     {
         return $this->hasMany(ScreeningRequest::class);
     }
+
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(CustomerUserInvitation::class);
+    }
+
+    /**
+     * Whether the account has ever been switched on: it is active now, or it
+     * once accepted an invitation (and may since have been deactivated). A
+     * user with no invitation at all was created active outside the invite
+     * flow, so also counts. Only a never-activated invitee may have their
+     * email changed by a manager or their invitation resent.
+     */
+    public function hasBeenActivated(): bool
+    {
+        if ($this->status === 'active') {
+            return true;
+        }
+
+        return ! $this->invitations()->exists()
+            || $this->invitations()->whereNotNull('accepted_at')->exists();
+    }
 }

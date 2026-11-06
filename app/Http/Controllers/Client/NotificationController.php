@@ -9,12 +9,20 @@ use App\Models\InvoicePaymentReceipt;
 use App\Models\ReportVersion;
 use App\Models\ScreeningRequest;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
     public function index()
     {
         $customerId = session('client_customer_id');
+        $user = Auth::guard('customer_user')->user();
+
+        // Billing notifications follow the Billing section's gates: they only
+        // appear for view-billing (their links lead there), and amounts only
+        // for view-prices, the permission that hides money everywhere else.
+        $canViewBilling = $user->can('view-billing');
+        $canViewPrices = $user->can('view-prices');
 
         $notifications = collect();
 
@@ -31,21 +39,23 @@ class NotificationController extends Controller
             ]);
         }
 
-        // Unpaid / overdue invoices
-        Invoice::where('customer_id', $customerId)
-            ->whereIn('status', ['unpaid', 'overdue'])
-            ->latest('issued_at')
-            ->get()
-            ->each(function ($inv) use (&$notifications) {
-                $notifications->push([
-                    'type' => $inv->status === 'overdue' ? 'danger' : 'warning',
-                    'icon' => 'invoice',
-                    'title' => 'Invoice '.$inv->number.' is '.$inv->status,
-                    'body' => 'Amount due: MYR '.number_format($inv->total, 2).'. Due date: '.$inv->due_at->format('d M Y').'.',
-                    'time' => $inv->issued_at,
-                    'read' => false,
-                ]);
-            });
+        if ($canViewBilling) {
+            // Unpaid / overdue invoices
+            Invoice::where('customer_id', $customerId)
+                ->whereIn('status', ['unpaid', 'overdue'])
+                ->latest('issued_at')
+                ->get()
+                ->each(function ($inv) use (&$notifications, $canViewPrices) {
+                    $notifications->push([
+                        'type' => $inv->status === 'overdue' ? 'danger' : 'warning',
+                        'icon' => 'invoice',
+                        'title' => 'Invoice '.$inv->number.' is '.$inv->status,
+                        'body' => ($canViewPrices ? 'Amount due: MYR '.number_format($inv->total, 2).'. ' : '').'Due date: '.$inv->due_at->format('d M Y').'.',
+                        'time' => $inv->issued_at,
+                        'read' => false,
+                    ]);
+                });
+        }
 
         // Recent completed requests
         ScreeningRequest::where('customer_id', $customerId)
@@ -65,22 +75,24 @@ class NotificationController extends Controller
                 ]);
             });
 
-        // Recent transactions
-        Transaction::where('customer_id', $customerId)
-            ->latest()
-            ->limit(3)
-            ->get()
-            ->each(function ($txn) use (&$notifications) {
-                $notifications->push([
-                    'type' => 'info',
-                    'icon' => 'transaction',
-                    'title' => ucfirst($txn->type).' of MYR '.number_format($txn->amount, 2).' recorded',
-                    'body' => $txn->reference ? 'Reference: '.$txn->reference.'.' : 'Processed via '.$txn->method.'.',
-                    'time' => $txn->created_at,
-                    'read' => true,
-                    'link' => route('client.billing.transactions.receipt', hid($txn->id)),
-                ]);
-            });
+        if ($canViewBilling) {
+            // Recent transactions
+            Transaction::where('customer_id', $customerId)
+                ->latest()
+                ->limit(3)
+                ->get()
+                ->each(function ($txn) use (&$notifications, $canViewPrices) {
+                    $notifications->push([
+                        'type' => 'info',
+                        'icon' => 'transaction',
+                        'title' => ucfirst($txn->type).($canViewPrices ? ' of MYR '.number_format($txn->amount, 2) : '').' recorded',
+                        'body' => $txn->reference ? 'Reference: '.$txn->reference.'.' : 'Processed via '.$txn->method.'.',
+                        'time' => $txn->created_at,
+                        'read' => true,
+                        'link' => route('client.billing.transactions.receipt', hid($txn->id)),
+                    ]);
+                });
+        }
 
         // New / in-progress requests
         ScreeningRequest::where('customer_id', $customerId)
@@ -140,37 +152,41 @@ class NotificationController extends Controller
                 ]);
             });
 
-        // Payment slip status — verified or rejected in the last 30 days
-        InvoicePaymentReceipt::whereHas('invoice', fn ($q) => $q->where('customer_id', $customerId))
-            ->whereIn('status', ['verified', 'rejected'])
-            ->where('verified_at', '>=', now()->subDays(30))
-            ->latest('verified_at')
-            ->limit(5)
-            ->get()
-            ->each(function ($receipt) use (&$notifications) {
-                $invoice = $receipt->invoice;
-                if ($receipt->isVerified()) {
-                    $notifications->push([
-                        'type' => 'success',
-                        'icon' => 'invoice',
-                        'title' => 'Payment slip verified — '.($invoice?->number ?? ''),
-                        'body' => 'Your payment of MYR '.number_format($receipt->amount_claimed, 2).' has been verified. Your account has been updated.',
-                        'time' => $receipt->verified_at,
-                        'read' => false,
-                        'link' => $invoice ? route('client.billing.invoices.show', hid($invoice->id)) : null,
-                    ]);
-                } else {
-                    $notifications->push([
-                        'type' => 'danger',
-                        'icon' => 'invoice',
-                        'title' => 'Payment slip rejected — '.($invoice?->number ?? ''),
-                        'body' => 'Your payment slip could not be verified. Please upload a new slip or contact support.',
-                        'time' => $receipt->verified_at,
-                        'read' => false,
-                        'link' => $invoice ? route('client.billing.invoices.show', hid($invoice->id)) : null,
-                    ]);
-                }
-            });
+        if ($canViewBilling) {
+            // Payment slip status — verified or rejected in the last 30 days
+            InvoicePaymentReceipt::whereHas('invoice', fn ($q) => $q->where('customer_id', $customerId))
+                ->whereIn('status', ['verified', 'rejected'])
+                ->where('verified_at', '>=', now()->subDays(30))
+                ->latest('verified_at')
+                ->limit(5)
+                ->get()
+                ->each(function ($receipt) use (&$notifications, $canViewPrices) {
+                    $invoice = $receipt->invoice;
+                    if ($receipt->isVerified()) {
+                        $notifications->push([
+                            'type' => 'success',
+                            'icon' => 'invoice',
+                            'title' => 'Payment slip verified — '.($invoice?->number ?? ''),
+                            'body' => $canViewPrices
+                                ? 'Your payment of MYR '.number_format($receipt->amount_claimed, 2).' has been verified. Your account has been updated.'
+                                : 'Your payment has been verified. Your account has been updated.',
+                            'time' => $receipt->verified_at,
+                            'read' => false,
+                            'link' => $invoice ? route('client.billing.invoices.show', hid($invoice->id)) : null,
+                        ]);
+                    } else {
+                        $notifications->push([
+                            'type' => 'danger',
+                            'icon' => 'invoice',
+                            'title' => 'Payment slip rejected — '.($invoice?->number ?? ''),
+                            'body' => 'Your payment slip could not be verified. Please upload a new slip or contact support.',
+                            'time' => $receipt->verified_at,
+                            'read' => false,
+                            'link' => $invoice ? route('client.billing.invoices.show', hid($invoice->id)) : null,
+                        ]);
+                    }
+                });
+        }
 
         $notifications = $notifications->sortByDesc(fn ($n) => $n['time'])->values();
         $unreadCount = $notifications->where('read', false)->count();

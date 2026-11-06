@@ -30,7 +30,8 @@
         $currency        = config('billing.currency', 'MYR');
         $popEmail        = config('billing.proof_of_payment_email');
         $afterPaymentSla = config('billing.sla_after_payment', '1 business day');
-        $canUploadSlip   = auth()->user()?->canAny(['view-prices', 'manage-billing']);
+        $canViewSlip     = auth()->user()?->canAny(['view-prices', 'manage-billing']);
+        $canManageSlip   = auth()->user()?->can('manage-billing');
         $canViewPrices   = auth()->user()?->can('view-prices');
         $hasSlip         = $request->hasPaymentSlip();
         $paySubtotal     = $isCashBilled ? $request->cashSubtotal() : 0;
@@ -254,7 +255,7 @@
                 <div style="font-size:15px;font-weight:700;color:var(--ink-900);">Payment required</div>
             </div>
             <p style="font-size:14px;color:var(--ink-700);line-height:1.6;margin:0 0 16px;">
-                Invoice <b>{{ $invoice->number }}</b> ({{ $currency }} {{ number_format((float) $invoice->total, 2) }}, due immediately) has been generated for this request. Upload your payment proof against the invoice to begin processing.
+                Invoice <b>{{ $invoice->number }}</b> (@if ($canViewPrices){{ $currency }} {{ number_format((float) $invoice->total, 2) }}, @endif due immediately) has been generated for this request. Upload your payment proof against the invoice to begin processing.
             </p>
             @if ($canViewInvoice)
                 <a href="{{ route('client.billing.invoices.show', hid($invoice->id)) }}"
@@ -324,8 +325,10 @@
                             Uploaded {{ $request->payment_slip_uploaded_at?->inDisplayTz()->format('d M Y · H:i') }} — our finance team is verifying.
                         </div>
                     </div>
-                    @if ($canUploadSlip)
+                    @if ($canViewSlip)
                         <a href="{{ route('client.requests.payment-slip.download', hid($request->id)) }}" style="font-size:13px;color:var(--emerald-700);font-weight:600;text-decoration:none;">View</a>
+                    @endif
+                    @if ($canManageSlip)
                         <form method="POST" action="{{ route('client.requests.payment-slip.destroy', hid($request->id)) }}" style="margin:0;" onsubmit="return confirm('Remove the uploaded slip and re-upload?');">
                             @csrf
                             @method('DELETE')
@@ -333,7 +336,7 @@
                         </form>
                     @endif
                 </div>
-            @elseif ($canUploadSlip)
+            @elseif ($canManageSlip)
                 <div style="border-top:1px solid rgba(184,147,31,0.2);padding-top:16px;">
                     <div style="font-size:14px;font-weight:600;color:var(--ink-900);margin-bottom:6px;">Upload your payment slip</div>
                     <p style="font-size:13px;color:var(--ink-600);line-height:1.6;margin:0 0 12px;">

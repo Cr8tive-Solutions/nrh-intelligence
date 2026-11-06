@@ -47,8 +47,8 @@ function registrationForm(array $overrides = []): array
         'contact_name' => 'Aminah Yusof',
         'contact_designation' => 'HR Manager',
         'contact_phone' => '+60123456789',
-        'password' => 'chosen-password',
-        'password_confirmation' => 'chosen-password',
+        'password' => 'Chosen-Passw0rd',
+        'password_confirmation' => 'Chosen-Passw0rd',
         'declaration' => '1',
     ], $overrides);
 }
@@ -71,7 +71,7 @@ it('records the submission for review without creating a login', function () {
         ->and($r->company_name)->toBe('Maju Jaya Sdn Bhd')
         ->and($r->contact_phone)->toBe('+60123456789')
         ->and($r->submitted_at)->not->toBeNull()
-        ->and(Hash::check('chosen-password', $r->password_hash))->toBeTrue()
+        ->and(Hash::check('Chosen-Passw0rd', $r->password_hash))->toBeTrue()
         // No account until staff approve.
         ->and(CustomerUser::where('email', $this->email)->exists())->toBeFalse();
 
@@ -121,6 +121,23 @@ it('refuses to submit when the email already has a portal login', function () {
 
     $this->post(route('client.registration.submit', $this->token), registrationForm())
         ->assertSessionHasErrors('email');
+
+    expect(CustomerRegistration::findOrFail($this->registrationId)->status)->toBe('invited');
+});
+
+it('rejects a country that is not in the dropdown', function () {
+    $this->post(route('client.registration.submit', $this->token), registrationForm([
+        'country' => '<script>alert(1)</script>',
+    ]))->assertSessionHasErrors('country');
+
+    expect(CustomerRegistration::findOrFail($this->registrationId)->status)->toBe('invited');
+});
+
+it('rejects a password that does not meet the policy', function () {
+    $this->post(route('client.registration.submit', $this->token), registrationForm([
+        'password' => 'alllowercase-password',
+        'password_confirmation' => 'alllowercase-password',
+    ]))->assertSessionHasErrors('password');
 
     expect(CustomerRegistration::findOrFail($this->registrationId)->status)->toBe('invited');
 });

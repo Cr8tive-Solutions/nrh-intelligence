@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\ClientAuth;
 use App\Models\CustomerUser;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use Tests\Support\Fixtures;
@@ -60,13 +62,13 @@ it('changes the password and rotates the remember token', function () {
     $this->actingAs($user, 'customer_user')
         ->post('/settings/security', [
             'current_password' => 'secret-password',
-            'password' => 'a-brand-new-password',
-            'password_confirmation' => 'a-brand-new-password',
+            'password' => 'A-Brand-New-Passw0rd',
+            'password_confirmation' => 'A-Brand-New-Passw0rd',
         ])
         ->assertRedirect();
 
     $fresh = CustomerUser::find($user->id);
-    expect(Hash::check('a-brand-new-password', $fresh->password))->toBeTrue()
+    expect(Hash::check('A-Brand-New-Passw0rd', $fresh->password))->toBeTrue()
         ->and($fresh->remember_token)->not->toBe('stale-token')
         ->and($fresh->remember_token)->not->toBeNull();
 });
@@ -77,8 +79,8 @@ it('rejects a password change with the wrong current password', function () {
     $this->actingAs($user, 'customer_user')
         ->post('/settings/security', [
             'current_password' => 'wrong-password',
-            'password' => 'a-brand-new-password',
-            'password_confirmation' => 'a-brand-new-password',
+            'password' => 'A-Brand-New-Passw0rd',
+            'password_confirmation' => 'A-Brand-New-Passw0rd',
         ])
         ->assertSessionHasErrors('current_password');
 
@@ -201,4 +203,101 @@ it('keeps the pending login after a single wrong 2fa code', function () {
     ])->post('/verification', ['code' => '654321'])
         ->assertSessionHasErrors('code')
         ->assertSessionHas('2fa_pending_user_id', $user->id);
+});
+
+// ── Session lifetime & remember-me ───────────────────────────────────────────
+
+it('ends a session 12 hours after sign-in however active it is', function () {
+    $user = Fixtures::user($this->customerId, 'Owner');
+
+    $this->actingAs($user, 'customer_user')
+        ->withSession([ClientAuth::LOGIN_AT_SESSION_KEY => now()->subHours(12)->subMinute()->timestamp])
+        ->get('/dashboard')
+        ->assertRedirect(route('client.login'));
+});
+
+it('keeps a session that signed in under 12 hours ago', function () {
+    $user = Fixtures::user($this->customerId, 'Owner');
+
+    $this->actingAs($user, 'customer_user')
+        ->withSession([ClientAuth::LOGIN_AT_SESSION_KEY => now()->subHours(11)->timestamp])
+        ->get('/dashboard')
+        ->assertOk();
+});
+
+it('starts the absolute-lifetime clock for a session without a sign-in time', function () {
+    $user = Fixtures::user($this->customerId, 'Owner');
+
+    $this->actingAs($user, 'customer_user')
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertSessionHas(ClientAuth::LOGIN_AT_SESSION_KEY);
+});
+
+it('records the sign-in time when the login completes', function () {
+    $user = Fixtures::user($this->customerId, 'Owner');
+
+    $this->withSession([
+        '2fa_pending_user_id' => $user->id,
+        '2fa_pending_customer_id' => $user->customer_id,
+        '2fa_method' => 'email',
+        '2fa_code' => '123456',
+        '2fa_expires_at' => now()->addMinutes(5)->timestamp,
+        '2fa_email' => $user->email,
+        '2fa_attempts' => 0,
+    ])->post('/verification', ['code' => '123456'])
+        ->assertRedirect(route('client.dashboard'))
+        ->assertSessionHas(ClientAuth::LOGIN_AT_SESSION_KEY);
+});
+
+it('limits the remember-me cookie to 30 days by default', function () {
+    $user = Fixtures::user($this->customerId, 'Owner');
+
+    $response = $this->withSession([
+        '2fa_pending_user_id' => $user->id,
+        '2fa_pending_customer_id' => $user->customer_id,
+        '2fa_method' => 'email',
+        '2fa_code' => '123456',
+        '2fa_expires_at' => now()->addMinutes(5)->timestamp,
+        '2fa_email' => $user->email,
+        '2fa_remember' => true,
+        '2fa_attempts' => 0,
+    ])->post('/verification', ['code' => '123456']);
+
+    $cookie = $response->getCookie(Auth::guard('customer_user')->getRecallerName(), decrypt: false);
+
+    expect($cookie)->not->toBeNull()
+        ->and(abs($cookie->getExpiresTime() - now()->addDays(30)->timestamp))->toBeLessThan(60);
+});
+
+it('throttles current-password checks on the security settings', function () {
+    $user = Fixtures::user($this->customerId, 'Owner');
+
+    foreach (range(1, 5) as $i) {
+        $this->actingAs($user, 'customer_user')
+            ->post('/settings/security', [
+                'current_password' => 'wrong-password',
+                'password' => 'A-Brand-New-Passw0rd',
+                'password_confirmation' => 'A-Brand-New-Passw0rd',
+            ])
+            ->assertSessionHasErrors('current_password');
+    }
+
+    $this->actingAs($user, 'customer_user')
+        ->post('/settings/security/2fa/disable', ['current_password' => 'wrong-password'])
+        ->assertTooManyRequests();
+});
+
+it('rejects a new password that does not meet the policy', function () {
+    $user = Fixtures::user($this->customerId, 'Owner');
+
+    $this->actingAs($user, 'customer_user')
+        ->post('/settings/security', [
+            'current_password' => 'secret-password',
+            'password' => 'short-pass',
+            'password_confirmation' => 'short-pass',
+        ])
+        ->assertSessionHasErrors('password');
+
+    expect(Hash::check('secret-password', CustomerUser::find($user->id)->password))->toBeTrue();
 });

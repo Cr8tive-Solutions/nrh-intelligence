@@ -134,3 +134,59 @@ it('lets an HR role submit a request', function () {
 
     expect(ScreeningRequest::where('customer_id', $customerId)->count())->toBe(1);
 });
+
+// ── Payload validation ───────────────────────────────────────────────────────
+
+it('rejects malformed or invalid wizard payloads without creating anything', function (array $overrides, string $errorKey) {
+    $customerId = Fixtures::customer();
+    $user = Fixtures::user($customerId);
+    Fixtures::agreement($customerId, 'monthly');
+
+    $payload = submitPayload($this->scopeTypeId, $this->identityTypeId);
+    $candidate = json_decode($payload['candidates_data'], true)[0];
+
+    $overrides = array_map(
+        fn ($value) => is_callable($value) ? $value($candidate, $this->scopeTypeId) : $value,
+        $overrides,
+    );
+
+    $this->actingAs($user, 'customer_user')
+        ->post(route('client.request.submit'), array_merge($payload, $overrides))
+        ->assertSessionHasErrors($errorKey);
+
+    expect(ScreeningRequest::where('customer_id', $customerId)->exists())->toBeFalse();
+})->with([
+    'malformed candidates json' => [['candidates_data' => '{not json'], 'candidates_data'],
+    'malformed cart json' => [['cart_data' => 'nope'], 'cart_data'],
+    'no candidates' => [['candidates_data' => '[]'], 'candidates'],
+    'no checks' => [['cart_data' => '[]'], 'cart'],
+    'missing name' => [['candidates_data' => fn ($c) => json_encode([array_merge($c, ['name' => ''])])], 'candidates.0.name'],
+    'overlong identity number' => [['candidates_data' => fn ($c) => json_encode([array_merge($c, ['identity_number' => str_repeat('9', 51)])])], 'candidates.0.identity_number'],
+    'unknown identity type' => [['candidates_data' => fn ($c) => json_encode([array_merge($c, ['identity_type_id' => 999999999])])], 'candidates.0.identity_type_id'],
+    'future date of birth' => [['candidates_data' => fn ($c) => json_encode([array_merge($c, ['date_of_birth' => now()->addDay()->toDateString()])])], 'candidates.0.date_of_birth'],
+    'unknown scope' => [['cart_data' => json_encode([['id' => 999999999]])], 'cart.0.id'],
+    'disabled screening type' => [['screening_type' => 'kyc'], 'screening_type'],
+]);
+
+it('accepts a malaysia employment request with a date of birth', function () {
+    $customerId = Fixtures::customer();
+    $user = Fixtures::user($customerId);
+    Fixtures::agreement($customerId, 'monthly');
+
+    $this->actingAs($user, 'customer_user')
+        ->post(route('client.request.submit'), submitPayload($this->scopeTypeId, $this->identityTypeId, [
+            'screening_type' => 'employment_malaysia',
+            'candidates_data' => json_encode([[
+                'identity_type_id' => (string) $this->identityTypeId,
+                'name' => 'Ali bin Abu',
+                'identity_number' => '900101-01-1234',
+                'nationality' => '',
+                'date_of_birth' => '1990-01-01',
+                'mobile' => '',
+                'remarks' => '',
+            ]]),
+        ]))
+        ->assertRedirect(route('client.request.success'));
+
+    expect(ScreeningRequest::where('customer_id', $customerId)->value('type'))->toBe('employment_malaysia');
+});

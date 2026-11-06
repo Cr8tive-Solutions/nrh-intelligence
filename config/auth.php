@@ -59,9 +59,13 @@ return [
             'provider' => 'users',
         ],
 
+        // 'remember' is the remember-me cookie lifetime in minutes (the
+        // framework default is ~400 days). A remembered sign-in skips 2FA, so
+        // keep it short: 30 days unless AUTH_REMEMBER_MINUTES says otherwise.
         'customer_user' => [
             'driver' => 'session',
             'provider' => 'customer_users',
+            'remember' => (int) env('AUTH_REMEMBER_MINUTES', 60 * 24 * 30),
         ],
     ],
 

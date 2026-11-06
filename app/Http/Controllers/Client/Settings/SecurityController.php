@@ -34,7 +34,7 @@ class SecurityController extends Controller
     {
         $request->validate([
             'current_password' => ['required'],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
         // Operate on the guard's own user instance so that the password hash the

@@ -45,6 +45,12 @@ class InvoiceController extends Controller
             return back()->with('error', 'This invoice is already marked as paid.');
         }
 
+        // Allow-list rather than deny 'paid': a cancelled/void (or any future
+        // closed) invoice must not collect payment slips either.
+        if (! in_array($invoice->status, ['unpaid', 'overdue'], true)) {
+            return back()->with('error', 'This invoice is no longer open for payment.');
+        }
+
         $validated = $request->validate([
             'receipt_file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'amount_claimed' => ['nullable', 'numeric', 'min:0.01'],

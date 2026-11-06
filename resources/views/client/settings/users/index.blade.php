@@ -23,6 +23,14 @@
         </div>
     @endif
 
+    @if ($errors->any())
+        <div style="margin-bottom:16px;padding:10px 14px;background:rgba(196,69,58,0.08);border:1px solid rgba(196,69,58,0.25);border-left:3px solid #c4453a;border-radius:var(--radius);font-size:13px;color:#c4453a;">
+            @foreach ($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
+        </div>
+    @endif
+
     <div class="card">
         <div style="overflow-x:auto;">
             <table class="table">
@@ -68,7 +76,7 @@
                             <td style="font-size:12px;color:var(--ink-500);font-family:var(--font-mono);">{{ $user->created_at->inDisplayTz()->format('d M Y') }}</td>
                             <td style="text-align:right;">
                                 <div style="display:inline-flex;gap:6px;">
-                                    @if ($user->status !== 'active')
+                                    @if (in_array($user->id, $reinvitableIds, true))
                                         <form method="POST" action="{{ route('client.settings.users.resend-invitation', hid($user->id)) }}" style="display:inline;">
                                             @csrf
                                             <button type="submit" class="btn btn-ghost" style="padding:5px 12px;font-size:12px;">Resend invite</button>

@@ -12,6 +12,13 @@ class SecurityHeaders
     {
         $response = $next($request);
 
+        // Don't advertise the PHP version. PHP's expose_php adds the header at
+        // the SAPI level, outside the response object, so remove it there too.
+        $response->headers->remove('X-Powered-By');
+        if (! headers_sent()) {
+            header_remove('X-Powered-By');
+        }
+
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');

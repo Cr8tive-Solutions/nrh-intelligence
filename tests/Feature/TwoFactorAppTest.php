@@ -147,3 +147,28 @@ it('falls back to the email method for a user without the app', function () {
         ->assertSessionHas('2fa_method', 'email')
         ->assertSessionHas('2fa_code');
 });
+
+it('rejects an authenticator code that has already been used', function () {
+    $secret = $this->google2fa->generateSecretKey();
+    $user = enrolledAppUser($this->customerId, $secret);
+    $code = $this->google2fa->getCurrentOtp($secret);
+
+    $pending = [
+        '2fa_pending_user_id' => $user->id,
+        '2fa_pending_customer_id' => $user->customer_id,
+        '2fa_method' => 'app',
+        '2fa_email' => $user->email,
+        '2fa_remember' => false,
+        '2fa_attempts' => 0,
+    ];
+
+    $this->withSession($pending)->post('/verification', ['code' => $code])
+        ->assertRedirect(route('client.dashboard'));
+
+    auth('customer_user')->logout();
+
+    $this->withSession($pending)->post('/verification', ['code' => $code])
+        ->assertSessionHasErrors('code');
+
+    expect(auth('customer_user')->check())->toBeFalse();
+});

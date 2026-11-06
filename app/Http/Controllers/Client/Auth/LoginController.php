@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\ClientAuth;
 use App\Models\CustomerUser;
 use App\Services\TwoFactorAuthenticator;
 use Illuminate\Auth\Events\PasswordReset;
@@ -11,7 +12,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class LoginController extends Controller
 {
@@ -19,6 +22,21 @@ class LoginController extends Controller
      * Maximum wrong 2FA code entries before the pending login is discarded.
      */
     protected const MAX_2FA_ATTEMPTS = 5;
+
+    /**
+     * Failed password attempts allowed per account (any IP) within the decay
+     * window before sign-in for that email is refused.
+     */
+    protected const MAX_ACCOUNT_LOGIN_ATTEMPTS = 10;
+
+    protected const ACCOUNT_LOCKOUT_SECONDS = 15 * 60;
+
+    /**
+     * A bcrypt hash of a random, discarded string. Checked against when no
+     * account matches the email, so an unknown address costs the same hashing
+     * time as a known one and response timing does not reveal which exist.
+     */
+    protected const DUMMY_PASSWORD_HASH = '$2y$12$tB3V/Qg1trB1brXOxvKdIu5JCp7eJltUQAvbKbR2nD0SH9ssBfZv6';
 
     public function index()
     {
@@ -32,12 +50,31 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
 
+        // The per-IP route throttle cannot stop a password-spray spread across
+        // many IPs, so failures are also counted per account.
+        $accountKey = $this->accountThrottleKey($validated['email']);
+
+        if (RateLimiter::tooManyAttempts($accountKey, self::MAX_ACCOUNT_LOGIN_ATTEMPTS)) {
+            activity('auth')
+                ->withProperties($this->requestProperties($request) + ['email' => $validated['email']])
+                ->event('login.locked')
+                ->log('Login refused: too many failed attempts for this account');
+
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => 'Too many sign-in attempts. Please try again later.']);
+        }
+
         $user = CustomerUser::with('customer')
             ->where('email', $validated['email'])
             ->where('status', 'active')
             ->first();
 
-        if (! $user || ! Hash::check($validated['password'], $user->password)) {
+        $passwordMatches = Hash::check($validated['password'], $user?->password ?? self::DUMMY_PASSWORD_HASH);
+
+        if (! $user || ! $passwordMatches) {
+            RateLimiter::hit($accountKey, self::ACCOUNT_LOCKOUT_SECONDS);
+
             activity('auth')
                 ->withProperties($this->requestProperties($request) + ['email' => $validated['email']])
                 ->event('login.failed')
@@ -47,6 +84,8 @@ class LoginController extends Controller
                 ->withInput($request->only('email'))
                 ->withErrors(['email' => 'Invalid email address or password.']);
         }
+
+        RateLimiter::clear($accountKey);
 
         $remember = $request->boolean('remember');
 
@@ -86,6 +125,11 @@ class LoginController extends Controller
         $this->startEmailChallenge($request, $user, $remember);
 
         return redirect()->route('client.verification');
+    }
+
+    protected function accountThrottleKey(string $email): string
+    {
+        return 'login-account:'.sha1(Str::lower(trim($email)));
     }
 
     protected function startEmailChallenge(Request $request, CustomerUser $user, bool $remember): void
@@ -152,7 +196,7 @@ class LoginController extends Controller
         if ($method === 'app') {
             // TOTP codes are time-based, so there is no separate expiry to check.
             $valid = $user->two_factor_secret !== null
-                && $authenticator->verify($user->two_factor_secret, $code);
+                && $authenticator->verify($user->two_factor_secret, $code, $user->id);
         } else {
             $expiresAt = session('2fa_expires_at');
 
@@ -225,6 +269,7 @@ class LoginController extends Controller
             'client_user_avatar' => $user->avatar,
             'client_company' => $user->customer->name,
             'client_last_login' => now()->inDisplayTz()->format('d M Y, H:i'),
+            ClientAuth::LOGIN_AT_SESSION_KEY => now()->timestamp,
         ]);
     }
 
@@ -283,7 +328,7 @@ class LoginController extends Controller
         $request->validate([
             'token' => ['required'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', 'min:8'],
+            'password' => ['required', 'confirmed', PasswordRule::defaults()],
         ]);
 
         $status = Password::broker('customer_users')->reset(
@@ -310,10 +355,11 @@ class LoginController extends Controller
             return redirect()->route('client.login')->with('success', 'Password reset successfully. Please sign in with your new password.');
         }
 
-        // INVALID_TOKEN (wrong/expired link) or INVALID_USER (email changed).
+        // One message for every failure (unknown email, bad or expired token,
+        // throttled) so the form cannot be used to tell which emails exist.
         return back()
             ->withInput($request->only('email'))
-            ->withErrors(['email' => __($status)]);
+            ->withErrors(['email' => 'This password reset link is invalid or has expired. Please request a new one.']);
     }
 
     public function logout(Request $request)

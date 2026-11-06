@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -33,10 +34,15 @@ class UserController extends Controller
             ->pluck('customer_user_id')
             ->all();
 
+        // Only these may be re-invited; a deactivated user is reactivated instead.
+        $reinvitableIds = $users->reject(fn (CustomerUser $user) => $user->hasBeenActivated())
+            ->pluck('id')
+            ->all();
+
         $roles = Role::where('guard_name', 'customer_user')->orderBy('id')->pluck('name');
         $permissions = Permission::where('guard_name', 'customer_user')->orderBy('name')->pluck('name');
 
-        return view('client.settings.users.index', compact('users', 'roles', 'permissions', 'pendingInvitedIds'));
+        return view('client.settings.users.index', compact('users', 'roles', 'permissions', 'pendingInvitedIds', 'reinvitableIds'));
     }
 
     public function store(Request $request)
@@ -49,7 +55,9 @@ class UserController extends Controller
 
         $this->assertCanAssignRole($validated['role']);
 
-        $invitation = DB::transaction(function () use ($validated) {
+        $rawToken = CustomerUserInvitation::newRawToken();
+
+        $invitation = DB::transaction(function () use ($validated, $rawToken) {
             $user = CustomerUser::create([
                 'customer_id' => $this->customerId(),
                 'name' => $validated['name'],
@@ -63,14 +71,14 @@ class UserController extends Controller
 
             return CustomerUserInvitation::create([
                 'customer_user_id' => $user->id,
-                'token' => bin2hex(random_bytes(32)),
+                'token' => CustomerUserInvitation::hashToken($rawToken),
                 'expires_at' => now()->addDays(14),
                 'sent_count' => 1,
                 'last_sent_at' => now(),
             ]);
         });
 
-        $this->sendInvitationEmail($invitation);
+        $this->sendInvitationEmail($invitation, $rawToken);
 
         activity('access')
             ->performedOn($invitation->customerUser)
@@ -90,12 +98,16 @@ class UserController extends Controller
             ->with('status', "Invitation sent to {$invitation->customerUser->email}.");
     }
 
-    protected function sendInvitationEmail(CustomerUserInvitation $invitation): void
+    /**
+     * Email the invitation link. The raw token is passed in because only its
+     * hash is stored on the invitation.
+     */
+    protected function sendInvitationEmail(CustomerUserInvitation $invitation, string $rawToken): void
     {
         $user = $invitation->customerUser;
         $invitedBy = Auth::guard('customer_user')->user();
         $companyName = $invitedBy?->customer?->name ?? 'NRH Intelligence';
-        $url = route('client.invitation.show', $invitation->token);
+        $url = CustomerUserInvitation::acceptUrl($rawToken);
         $expiresIn = $invitation->expires_at->diffForHumans(null, true);
 
         $data = [
@@ -172,8 +184,24 @@ class UserController extends Controller
             'permissions.*' => ['string', Rule::exists('permissions', 'name')->where('guard_name', 'customer_user')],
         ]);
 
-        $this->assertCanAssignRole($validated['role']);
+        // Keeping a user's existing role is not assigning it (assertCanManage
+        // already covers rank), so it is only checked when it changes.
+        if ($validated['role'] !== $user->roles->first()?->name) {
+            $this->assertCanAssignRole($validated['role']);
+        }
         $this->assertCanAssignPermissions($validated['permissions'] ?? []);
+
+        // A manager-set email would let them take the account over through a
+        // password reset, so once a user has been activated only the user can
+        // change their email (Profile, with a confirmation link). A pending
+        // invitee's email may still be corrected here.
+        $changesEmail = strcasecmp($validated['email'], $user->email) !== 0;
+
+        if ($changesEmail && $user->hasBeenActivated()) {
+            throw ValidationException::withMessages([
+                'email' => 'This user has already activated their account. They must change their email themselves from their profile.',
+            ]);
+        }
 
         $currentRole = $user->roles->first()?->name;
         $currentStatus = $user->status;
@@ -215,6 +243,15 @@ class UserController extends Controller
         $user->syncRoles([$validated['role']]);
         $user->syncPermissions($validated['permissions'] ?? []);
 
+        // A link already sent to the old (possibly mistyped) address must not
+        // stay usable once the email is corrected; the manager resends.
+        if ($changesEmail) {
+            CustomerUserInvitation::where('customer_user_id', $user->id)
+                ->whereNull('accepted_at')
+                ->where('expires_at', '>', now())
+                ->update(['expires_at' => now()]);
+        }
+
         // Deactivating a user invalidates their long-lived remember-me cookie
         // immediately; active sessions are torn down by ClientAuth on their
         // next request.
@@ -239,17 +276,29 @@ class UserController extends Controller
 
         return redirect()
             ->route('client.settings.users')
-            ->with('status', 'User updated.');
+            ->with('status', $changesEmail
+                ? 'User updated. Their previous invitation link no longer works — resend the invitation to the new address.'
+                : 'User updated.');
     }
 
     public function resend(CustomerUser $user)
     {
         $this->authorizeSameCustomer($user);
+        $this->assertCanManage($user);
 
         if ($user->status === 'active') {
             return redirect()
                 ->route('client.settings.users')
                 ->with('error', 'This user is already active.');
+        }
+
+        // An invitation sets a password and activates the account, so it is
+        // only for users who never accepted one. A deactivated user is brought
+        // back through the status control, which has its own checks.
+        if ($user->hasBeenActivated()) {
+            return redirect()
+                ->route('client.settings.users')
+                ->with('error', 'This user has already activated their account. Reactivate them by changing their status instead.');
         }
 
         $invitation = CustomerUserInvitation::where('customer_user_id', $user->id)
@@ -263,9 +312,14 @@ class UserController extends Controller
                 ->with('error', 'Please wait a minute before resending.');
         }
 
-        $invitation = DB::transaction(function () use ($invitation, $user) {
+        // Only the token's hash is stored, so a resend always mints a new token
+        // (which also retires the previously emailed link).
+        $rawToken = CustomerUserInvitation::newRawToken();
+
+        $invitation = DB::transaction(function () use ($invitation, $user, $rawToken) {
             if ($invitation) {
                 $invitation->update([
+                    'token' => CustomerUserInvitation::hashToken($rawToken),
                     'expires_at' => now()->addDays(14),
                     'sent_count' => $invitation->sent_count + 1,
                     'last_sent_at' => now(),
@@ -276,14 +330,14 @@ class UserController extends Controller
 
             return CustomerUserInvitation::create([
                 'customer_user_id' => $user->id,
-                'token' => bin2hex(random_bytes(32)),
+                'token' => CustomerUserInvitation::hashToken($rawToken),
                 'expires_at' => now()->addDays(14),
                 'sent_count' => 1,
                 'last_sent_at' => now(),
             ]);
         });
 
-        $this->sendInvitationEmail($invitation->fresh('customerUser.customer'));
+        $this->sendInvitationEmail($invitation->fresh('customerUser.customer'), $rawToken);
 
         activity('access')
             ->performedOn($user)
@@ -375,12 +429,21 @@ class UserController extends Controller
     }
 
     /**
-     * Guard against assigning a role above the acting manager's own rank.
+     * Guard against assigning a role above the acting manager's own rank, or
+     * one that carries any permission the manager does not hold — rank alone
+     * would let an Admin hand out Accounts' manage-billing.
      */
-    protected function assertCanAssignRole(string $role): void
+    protected function assertCanAssignRole(string $roleName): void
     {
-        if ($this->roleRank($role) > $this->actingRank()) {
+        if ($this->roleRank($roleName) > $this->actingRank()) {
             abort(403, 'You cannot assign a role higher than your own.');
+        }
+
+        $rolePermissions = Role::findByName($roleName, 'customer_user')->permissions->pluck('name')->all();
+        $own = $this->actingUser()->getAllPermissions()->pluck('name')->all();
+
+        if (array_diff($rolePermissions, $own) !== []) {
+            abort(403, 'You cannot assign a role with permissions you do not hold yourself.');
         }
     }
 

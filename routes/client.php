@@ -31,14 +31,14 @@ Route::name('client.')->group(function () {
 
     // Auth (unauthenticated)
     Route::get('/login', [LoginController::class, 'index'])->name('login');
-    Route::post('/login', [LoginController::class, 'submit'])->name('login.submit')->middleware('throttle:5,1');
+    Route::post('/login', [LoginController::class, 'submit'])->name('login.submit')->middleware('throttle:login');
     Route::get('/verification', [LoginController::class, 'verification'])->name('verification');
-    Route::post('/verification', [LoginController::class, 'verifyCode'])->name('verification.submit')->middleware('throttle:5,1');
-    Route::post('/verification/resend', [LoginController::class, 'resend'])->name('verification.resend')->middleware('throttle:3,1');
+    Route::post('/verification', [LoginController::class, 'verifyCode'])->name('verification.submit')->middleware('throttle:two-factor');
+    Route::post('/verification/resend', [LoginController::class, 'resend'])->name('verification.resend')->middleware('throttle:two-factor-resend');
     Route::get('/forgot-password', [LoginController::class, 'forgot'])->name('forgot');
-    Route::post('/forgot-password', [LoginController::class, 'sendReset'])->name('forgot.submit')->middleware('throttle:5,1');
+    Route::post('/forgot-password', [LoginController::class, 'sendReset'])->name('forgot.submit')->middleware('throttle:password-reset');
     Route::get('/reset-password/{token}', [LoginController::class, 'reset'])->name('reset');
-    Route::post('/reset-password', [LoginController::class, 'processReset'])->name('reset.process')->middleware('throttle:5,1');
+    Route::post('/reset-password', [LoginController::class, 'processReset'])->name('reset.process')->middleware('throttle:password-reset');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     // Registration is invitation-only — see /invitation/{token}.
@@ -47,14 +47,14 @@ Route::name('client.')->group(function () {
     // Invitation acceptance (admin portal sends activation links here)
     Route::get('/invitation/{token}', [InvitationController::class, 'show'])->name('invitation.show');
     Route::post('/invitation/{token}', [InvitationController::class, 'accept'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:invitation')
         ->name('invitation.accept');
 
     // Invite-to-register: NRH staff email a link from the admin portal; the
     // invitee registers their company here and staff approve it there.
     Route::get('/register/{token}', [RegistrationController::class, 'show'])->name('registration.show');
     Route::post('/register/{token}', [RegistrationController::class, 'submit'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:registration')
         ->name('registration.submit');
 
     // Email-change confirmation. Opened from the link emailed to the NEW
@@ -113,15 +113,20 @@ Route::name('client.')->group(function () {
             Route::get('/track', [TrackRequestController::class, 'index'])->name('track');
             Route::get('/track/search', [TrackRequestController::class, 'search'])->name('track.search.get');
             Route::post('/track', [TrackRequestController::class, 'search'])->name('track.search');
-            Route::get('/{request}/reports/{version}/download', [ReportDownloadController::class, 'download'])->name('reports.download');
+            Route::get('/{request}/reports/{version}/download', [ReportDownloadController::class, 'download'])
+                ->middleware('permission:view-reports')
+                ->name('reports.download');
 
-            // Payment slip (cash-billed only — upload, replace, remove, download for verification).
-            // Gated by view-prices to match the visibility of the bank-details block on the request page.
-            Route::middleware('permission:view-prices|manage-billing')->group(function () {
+            // Payment slip (cash-billed only). Viewing it is gated by view-prices
+            // to match the bank-details block on the request page; uploading or
+            // removing one is a billing action and needs manage-billing.
+            Route::middleware('permission:manage-billing')->group(function () {
                 Route::post('/{id}/payment-slip', [PaymentSlipController::class, 'store'])->name('payment-slip.store');
                 Route::delete('/{id}/payment-slip', [PaymentSlipController::class, 'destroy'])->name('payment-slip.destroy');
-                Route::get('/{id}/payment-slip', [PaymentSlipController::class, 'download'])->name('payment-slip.download');
             });
+            Route::get('/{id}/payment-slip', [PaymentSlipController::class, 'download'])
+                ->middleware('permission:view-prices|manage-billing')
+                ->name('payment-slip.download');
 
             Route::get('/{id}', [ViewRequestController::class, 'details'])->name('details');
             Route::post('/{id}/candidates', [AddCandidateController::class, 'store'])->name('candidates.store')->middleware('permission:create-requests');
@@ -168,13 +173,13 @@ Route::name('client.')->group(function () {
             // must be able to rotate their own (possibly compromised) password,
             // so security is NOT gated behind manage-settings.
             Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
-            Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+            Route::post('/profile', [ProfileController::class, 'update'])->middleware('throttle:current-password')->name('profile.update');
             Route::delete('/profile/avatar', [ProfileController::class, 'removeAvatar'])->name('profile.avatar.remove');
             Route::get('/security', [SecurityController::class, 'index'])->name('security');
-            Route::post('/security', [SecurityController::class, 'update'])->name('security.update');
+            Route::post('/security', [SecurityController::class, 'update'])->middleware('throttle:current-password')->name('security.update');
             Route::post('/security/2fa/enable', [SecurityController::class, 'enableTwoFactor'])->name('security.2fa.enable');
             Route::post('/security/2fa/confirm', [SecurityController::class, 'confirmTwoFactor'])->name('security.2fa.confirm');
-            Route::post('/security/2fa/disable', [SecurityController::class, 'disableTwoFactor'])->name('security.2fa.disable');
+            Route::post('/security/2fa/disable', [SecurityController::class, 'disableTwoFactor'])->middleware('throttle:current-password')->name('security.2fa.disable');
 
             // Account / Agreement — manage-settings
             Route::middleware('permission:manage-settings')->group(function () {

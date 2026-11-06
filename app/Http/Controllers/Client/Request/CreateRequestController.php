@@ -19,7 +19,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -63,11 +65,7 @@ class CreateRequestController extends Controller
 
     public function submit(Request $request)
     {
-        $cart = json_decode($request->input('cart_data', '[]'), true) ?: [];
-        $candidates = json_decode($request->input('candidates_data', '[]'), true) ?: [];
-        $type = $request->input('screening_type', 'employment_global');
-
-        $scopeIds = collect($cart)->pluck('id')->filter()->values()->all();
+        ['candidates' => $candidates, 'scope_ids' => $scopeIds, 'type' => $type] = $this->validatedSubmission($request);
 
         // Per-scope required documents (set by admin). The union across all selected
         // scopes is what every candidate must upload. Falls back to the legacy
@@ -165,6 +163,66 @@ class CreateRequestController extends Controller
         });
 
         return $this->redirectAfterSubmit($createdRequest);
+    }
+
+    /**
+     * Decode and validate the wizard's JSON payload (candidates_data and
+     * cart_data). Malformed or tampered JSON is a validation error, never a
+     * 500 or a half-built request.
+     *
+     * @return array{candidates: array<int, array<string, mixed>>, scope_ids: array<int, int>, type: string}
+     */
+    protected function validatedSubmission(Request $request): array
+    {
+        $decoded = [];
+
+        foreach (['candidates_data', 'cart_data'] as $field) {
+            $decoded[$field] = json_decode((string) $request->input($field, ''), true);
+
+            if (! is_array($decoded[$field])) {
+                throw ValidationException::withMessages([
+                    $field => 'The submitted form data was malformed. Please reload the page and try again.',
+                ]);
+            }
+        }
+
+        $data = Validator::make([
+            'screening_type' => $request->input('screening_type'),
+            'candidates' => $decoded['candidates_data'],
+            'cart' => $decoded['cart_data'],
+        ], [
+            // Due-diligence types (kyc/kyb/kys) are disabled — see routes/client.php.
+            'screening_type' => ['required', 'string', Rule::in(['employment_malaysia', 'employment_global'])],
+            'candidates' => ['required', 'array', 'min:1'],
+            'candidates.*' => ['required', 'array'],
+            'candidates.*.name' => ['required', 'string', 'max:255'],
+            'candidates.*.identity_number' => ['required', 'string', 'max:50'],
+            'candidates.*.identity_type_id' => ['required', 'integer', Rule::exists(IdentityType::class, 'id')],
+            'candidates.*.date_of_birth' => ['nullable', 'date', 'before:today'],
+            'candidates.*.nationality' => ['nullable', 'string', 'max:255'],
+            'candidates.*.mobile' => ['nullable', 'string', 'max:255'],
+            'candidates.*.remarks' => ['nullable', 'string', 'max:255'],
+            'cart' => ['required', 'array', 'min:1'],
+            'cart.*' => ['required', 'array'],
+            'cart.*.id' => ['required', 'integer', 'distinct', Rule::exists(ScopeType::class, 'id')],
+        ], [], [
+            'candidates' => 'candidates',
+            'candidates.*.name' => 'candidate name',
+            'candidates.*.identity_number' => 'identity number',
+            'candidates.*.identity_type_id' => 'identity type',
+            'candidates.*.date_of_birth' => 'date of birth',
+            'candidates.*.nationality' => 'nationality',
+            'candidates.*.mobile' => 'mobile number',
+            'candidates.*.remarks' => 'remarks',
+            'cart' => 'selected checks',
+            'cart.*.id' => 'selected check',
+        ])->validate();
+
+        return [
+            'candidates' => array_values($data['candidates']),
+            'scope_ids' => array_map(intval(...), array_column($data['cart'], 'id')),
+            'type' => $data['screening_type'],
+        ];
     }
 
     /**

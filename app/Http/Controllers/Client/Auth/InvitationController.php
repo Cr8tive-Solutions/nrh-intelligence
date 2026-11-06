@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Client\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\ClientAuth;
 use App\Models\CustomerUser;
 use App\Models\CustomerUserInvitation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class InvitationController extends Controller
 {
     public function show(string $token)
     {
-        $invitation = CustomerUserInvitation::with('customerUser.customer')
-            ->where('token', $token)
-            ->first();
+        $invitation = CustomerUserInvitation::findByRawToken($token);
 
         if (! $invitation) {
             return view('client.invitation.invalid', ['reason' => 'not_found']);
@@ -26,6 +26,12 @@ class InvitationController extends Controller
             return redirect()
                 ->route('client.login')
                 ->with('info', 'This invitation has already been used. Please sign in.');
+        }
+
+        if ($invitation->customerUser->hasBeenActivated()) {
+            return redirect()
+                ->route('client.login')
+                ->with('info', 'This invitation is no longer valid. Please sign in.');
         }
 
         if ($invitation->isExpired()) {
@@ -44,18 +50,19 @@ class InvitationController extends Controller
 
     public function accept(Request $request, string $token)
     {
-        $invitation = CustomerUserInvitation::with('customerUser.customer')
-            ->where('token', $token)
-            ->first();
+        $invitation = CustomerUserInvitation::findByRawToken($token);
 
-        if (! $invitation || ! $invitation->isPending()) {
+        // An invitation only ever activates a brand-new account. Once a user
+        // has been active, a leftover link must not let whoever holds it set a
+        // new password — a deactivated user is reactivated by their manager.
+        if (! $invitation || ! $invitation->isPending() || $invitation->customerUser->hasBeenActivated()) {
             return redirect()
                 ->route('client.login')
                 ->with('error', 'This invitation link is no longer valid.');
         }
 
         $data = $request->validate([
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
 
         DB::transaction(function () use ($invitation, $data) {
@@ -109,6 +116,7 @@ class InvitationController extends Controller
             'client_user_avatar' => $user->avatar,
             'client_company' => $user->customer->name,
             'client_last_login' => now()->inDisplayTz()->format('d M Y, H:i'),
+            ClientAuth::LOGIN_AT_SESSION_KEY => now()->timestamp,
         ]);
     }
 }
