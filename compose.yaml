@@ -9,8 +9,10 @@ services:
         restart: unless-stopped
         extra_hosts:
             - 'host.docker.internal:host-gateway'
-        ports:
-            - '8002:80'
+        # No host port: Caddy reaches this app over the shared kyro-edge
+        # network, so the app is never exposed without TLS.
+        expose:
+            - '80'
         environment:
             WWWUSER: '${WWWUSER}'
             LARAVEL_SAIL: 1
@@ -29,7 +31,12 @@ services:
             # and must never write into the admin portal's storage.
             - '../stg-nrh-admin/storage/app/private:/mnt/admin-storage:ro'
         networks:
-            - sail
+            sail: {}
+            kyro-edge:
+                aliases:
+                    - stg-portal-app
 networks:
     sail:
         driver: bridge
+    kyro-edge:
+        external: true
