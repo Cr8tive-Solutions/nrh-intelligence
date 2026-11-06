@@ -117,7 +117,7 @@
                         $isRedacted = $candidate->isRedacted();
                         $displayName = $isRedacted ? 'Candidate erased' : $candidate->name;
                         $displayId = $isRedacted ? '—' : $candidate->identity_number;
-                        $initials = $isRedacted ? '··' : collect(explode(' ', $candidate->name))->map(fn($p) => strtoupper(substr($p, 0, 1)))->take(2)->implode('');
+                        $initials = $isRedacted ? '··' : initials($candidate->name);
                         $req = $candidate->screeningRequest;
 
                         $stageMap = [

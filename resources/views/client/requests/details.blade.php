@@ -426,7 +426,7 @@
                         <a href="{{ route('client.candidates.show', hid($candidate->id)) }}" class="cand-card {{ $candidate->status === 'flagged' ? 'is-flagged' : '' }}">
                             @php
                                 $isRedacted = $candidate->isRedacted();
-                                $avatarTxt  = $isRedacted ? '··' : strtoupper(substr($candidate->name, 0, 2));
+                                $avatarTxt  = $isRedacted ? '··' : initials($candidate->name);
                             @endphp
                             <div class="head">
                                 <div class="avatar" @if($isRedacted) style="background:var(--paper-2);color:var(--ink-400);" @endif>{{ $avatarTxt }}</div>

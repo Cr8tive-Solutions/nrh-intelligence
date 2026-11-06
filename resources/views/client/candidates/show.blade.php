@@ -5,7 +5,7 @@
         $isRedacted  = $candidate->isRedacted();
         $displayName = $isRedacted ? 'Candidate erased' : $candidate->name;
         $displayId   = $isRedacted ? '—' : $candidate->identity_number;
-        $initials = $isRedacted ? '··' : collect(explode(' ', $candidate->name))->map(fn ($p) => strtoupper(substr($p, 0, 1)))->take(2)->implode('');
+        $initials = $isRedacted ? '··' : initials($candidate->name);
         // Null for ad-hoc orders (scopes picked individually rather than from a package).
         $pkg = $req?->package?->name;
 

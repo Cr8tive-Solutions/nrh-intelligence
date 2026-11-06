@@ -215,7 +215,7 @@
                          alt="{{ session('client_user_name') }}">
                 @else
                     <div style="width:28px;height:28px;border-radius:50%;background:var(--emerald-700);color:var(--gold-400);display:grid;place-items:center;font-size:11px;font-weight:600;font-family:var(--font-mono);box-shadow:inset 0 0 0 1px rgba(212,175,55,0.4);flex-shrink:0;">
-                        {{ strtoupper(substr(session('client_user_name', 'U'), 0, 2)) }}
+                        {{ initials(session('client_user_name'), 'U') }}
                     </div>
                 @endif
                 <div class="sb-text" style="display:flex;flex-direction:column;line-height:1.2;min-width:0;">

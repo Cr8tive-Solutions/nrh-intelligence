@@ -97,7 +97,7 @@
                     $candScopes   = $candidate->scopeTypes;
                     $candFlagged  = $candScopes->where('pivot.status', 'flagged')->count();
                     $isRedacted   = $candidate->isRedacted();
-                    $initials     = $isRedacted ? '··' : strtoupper(substr($candidate->name, 0, 2));
+                    $initials     = $isRedacted ? '··' : initials($candidate->name);
                 @endphp
                 <div class="card">
                     {{-- Candidate header --}}

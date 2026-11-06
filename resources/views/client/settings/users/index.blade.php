@@ -53,7 +53,7 @@
                             <td>
                                 <div style="display:flex;align-items:center;gap:12px;">
                                     <div style="width:32px;height:32px;border-radius:50%;background:var(--emerald-700);color:var(--gold-400);display:grid;place-items:center;font-size:11px;font-weight:600;font-family:var(--font-mono);box-shadow:inset 0 0 0 1px rgba(212,175,55,0.4);flex-shrink:0;">
-                                        {{ strtoupper(substr($user->name, 0, 2)) }}
+                                        {{ initials($user->name) }}
                                     </div>
                                     <div>
                                         <p style="font-size:13px;font-weight:600;color:var(--ink-900);margin:0;">{{ $user->name }}</p>

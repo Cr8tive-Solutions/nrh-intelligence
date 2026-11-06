@@ -23,7 +23,7 @@
                                 <img src="{{ Storage::url($user->avatar) }}" style="width:100%;height:100%;object-fit:cover;" alt="Avatar">
                             @else
                                 <div style="width:100%;height:100%;background:var(--emerald-700);color:var(--gold-400);display:grid;place-items:center;font-size:20px;font-weight:600;font-family:var(--font-mono);">
-                                    {{ strtoupper(substr($user->name, 0, 2)) }}
+                                    {{ initials($user->name) }}
                                 </div>
                             @endif
                         </template>
@@ -84,7 +84,7 @@
                                     <img src="{{ Storage::url($user->avatar) }}" style="width:100%;height:100%;object-fit:cover;" alt="">
                                 @else
                                     <div style="width:100%;height:100%;background:var(--emerald-700);color:var(--gold-400);display:grid;place-items:center;font-size:16px;font-weight:700;font-family:var(--font-mono);">
-                                        {{ strtoupper(substr($user->name, 0, 2)) }}
+                                        {{ initials($user->name) }}
                                     </div>
                                 @endif
                             </template>
