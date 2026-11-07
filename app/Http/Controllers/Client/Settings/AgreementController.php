@@ -3,16 +3,20 @@
 namespace App\Http\Controllers\Client\Settings;
 
 use App\Http\Controllers\Controller;
-use App\Models\Agreement;
+use App\Models\Customer;
+use Illuminate\View\View;
 
 class AgreementController extends Controller
 {
-    public function index()
+    /**
+     * Show the customer's current agreement, or an empty state when none is on file.
+     */
+    public function index(): View
     {
-        $customerId = session('client_customer_id');
+        $customer = Customer::findOrFail(session('client_customer_id'));
 
-        $agreement = Agreement::where('customer_id', $customerId)->firstOrFail();
-
-        return view('client.settings.agreement', compact('agreement'));
+        return view('client.settings.agreement', [
+            'agreement' => $customer->currentAgreement(),
+        ]);
     }
 }
