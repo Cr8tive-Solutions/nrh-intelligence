@@ -124,15 +124,26 @@ return [
     |--------------------------------------------------------------------------
     |
     | Shown in the portal footer and on the sign-in screens. Privacy and terms
-    | point at the company website until dedicated pages are published.
+    | default to the portal's own /privacy and /terms pages.
     |
     */
 
     'company_url' => env('COMPANY_URL', 'https://nrhintelligence.com'),
 
-    'privacy_url' => env('PRIVACY_URL', env('COMPANY_URL', 'https://nrhintelligence.com')),
+    'privacy_url' => env('PRIVACY_URL', '/privacy'),
 
-    'terms_url' => env('TERMS_URL', env('COMPANY_URL', 'https://nrhintelligence.com')),
+    'terms_url' => env('TERMS_URL', '/terms'),
+
+    // Legal identity shown on the Terms and Privacy pages.
+    'company' => [
+        'name' => env('COMPANY_LEGAL_NAME', 'NRH Intelligence Sdn. Bhd.'),
+        'reg_no' => env('COMPANY_REG_NO', '202101036456 (1436756-D)'),
+        'address' => env('COMPANY_ADDRESS', 'No. B1-1, Jalan Selaman 1, Dataran Palma, 68000 Ampang, Selangor, Malaysia'),
+        'phone' => env('COMPANY_PHONE', '+60 12-439 5006'),
+    ],
+
+    // Effective date printed on the Terms and Privacy pages. Change it whenever either is revised.
+    'legal_effective_date' => env('LEGAL_EFFECTIVE_DATE', '7 November 2026'),
 
     'support_email' => env('SUPPORT_EMAIL', 'support@nrhintelligence.com'),
 

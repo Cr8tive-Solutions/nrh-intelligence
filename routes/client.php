@@ -41,6 +41,10 @@ Route::name('client.')->group(function () {
     Route::post('/reset-password', [LoginController::class, 'processReset'])->name('reset.process')->middleware('throttle:password-reset');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+    // Legal pages (public)
+    Route::view('/terms', 'client.legal.terms')->name('terms');
+    Route::view('/privacy', 'client.legal.privacy')->name('privacy');
+
     // Registration is invitation-only — see /invitation/{token}.
     Route::view('/register', 'client.auth.invitation-only')->name('register');
 

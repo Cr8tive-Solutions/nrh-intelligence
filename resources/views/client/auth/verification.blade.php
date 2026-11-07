@@ -19,65 +19,33 @@
 
     {{-- Custom left panel: trust chain --}}
     <x-slot name="leftPanel">
-
-        {{-- Seal --}}
-        <svg class="auth-seal" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="60" cy="60" r="58" stroke="#D4AF37" stroke-width="1" opacity="0.6"/>
-            <circle cx="60" cy="60" r="48" stroke="#D4AF37" stroke-width="0.5" opacity="0.5"/>
-            <rect x="42" y="50" width="36" height="28" rx="3" stroke="#D4AF37" stroke-width="1.2" fill="none"/>
-            <path d="M48 50 V42 a12 12 0 0 1 24 0 V50" stroke="#D4AF37" stroke-width="1.2" fill="none"/>
-            <circle cx="60" cy="63" r="2" fill="#D4AF37"/>
-            <path d="M60 65 v5" stroke="#D4AF37" stroke-width="1.4"/>
-            <text x="60" y="110" fill="#D4AF37" font-family="Fraunces, serif" font-size="6" text-anchor="middle" letter-spacing="2">SECOND · FACTOR</text>
-        </svg>
-
-        {{-- Brand --}}
-        <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:2;">
-            <img src="{{ asset('nrh-logo.png') }}" alt="NRH Intelligence" style="height:36px;width:auto;flex-shrink:0;">
-            <div style="font-family:var(--font-display);font-weight:600;font-size:17px;color:#f5ecd1;letter-spacing:0.01em;">
-                KYRO
+        <div class="al-brand">
+            <img src="{{ asset('nrh-logo.png') }}" alt="NRH Intelligence" class="al-logo">
+            <div>
+                <div class="al-brand-name">KYRO</div>
+                <div class="al-brand-sub">Client Portal</div>
             </div>
         </div>
 
-        {{-- Hero --}}
-        <div style="position:relative;z-index:2;max-width:460px;">
-            <div style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.22em;color:var(--gold-400);margin-bottom:20px;">
-                ◆ &nbsp;Zero-trust verification
-            </div>
-            <h2 style="font-family:var(--font-display);font-weight:400;font-size:40px;line-height:1.1;letter-spacing:-0.015em;color:#f5ecd1;margin:0 0 20px;">
-                One more step to protect <em style="font-style:italic;color:var(--gold-400);">every candidate's</em> record.
-            </h2>
-            <p style="font-size:14px;line-height:1.6;color:rgba(245,236,209,0.65);margin:0;">
-                KYRO holds sensitive personal data — identity numbers, employment histories, criminal records. A second factor keeps it safe for the people being screened.
-            </p>
-        </div>
+        <img src="{{ asset('nrh-logo.png') }}" alt="" class="al-seal">
 
-        {{-- Trust chain --}}
-        <div style="position:relative;z-index:2;display:flex;flex-direction:column;gap:10px;padding-top:28px;border-top:1px solid rgba(212,175,55,0.2);">
-            <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(245,236,209,0.7);">
-                <span style="width:6px;height:6px;border-radius:50%;background:var(--gold-400);flex-shrink:0;"></span>
-                <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.15em;color:rgba(245,236,209,0.5);width:80px;">LAYER 01</span>
-                Password · <span style="color:var(--emerald-500);margin-left:4px;">✓ verified</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#f5ecd1;">
-                <span style="width:8px;height:8px;border-radius:50%;background:var(--gold-400);box-shadow:0 0 0 4px rgba(212,175,55,0.2);flex-shrink:0;animation:pulse 2s ease-in-out infinite;"></span>
-                <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.15em;color:rgba(245,236,209,0.5);width:80px;">LAYER 02</span>
-                <b>Two-factor authentication</b>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(245,236,209,0.45);">
-                <span style="width:6px;height:6px;border-radius:50%;background:rgba(212,175,55,0.3);flex-shrink:0;"></span>
-                <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.15em;color:rgba(245,236,209,0.4);width:80px;">LAYER 03</span>
-                Workspace access
+        <div class="al-hero">
+            <div class="al-eyebrow">Zero-trust verification</div>
+            <h2>One more step to protect <em>every candidate's</em> record.</h2>
+            <p>KYRO holds sensitive personal data, such as identity numbers, employment histories and criminal records. A second factor keeps it safe for the people being screened.</p>
+            <div class="al-chain">
+                <div class="al-chain-row done"><span class="pip"></span><span class="n">LAYER 01</span>Password <span class="ok">✓ verified</span></div>
+                <div class="al-chain-row current"><span class="pip"></span><span class="n">LAYER 02</span>Two-factor authentication</div>
+                <div class="al-chain-row"><span class="pip"></span><span class="n">LAYER 03</span>Workspace access</div>
             </div>
         </div>
 
-        <style>
-            @keyframes pulse {
-                0%, 100% { box-shadow: 0 0 0 4px rgba(212,175,55,0.2); }
-                50%       { box-shadow: 0 0 0 8px rgba(212,175,55,0.08); }
-            }
-        </style>
-
+        <div class="al-foot">
+            <span>NRH Intelligence Sdn. Bhd.</span>
+            <div class="al-badges">
+                <span class="al-badge"><span class="dot"></span> System online</span>
+            </div>
+        </div>
     </x-slot>
 
     {{-- Status --}}

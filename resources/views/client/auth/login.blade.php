@@ -19,7 +19,7 @@
     @endif
 
     {{-- Form --}}
-    <form method="POST" action="{{ route('client.login.submit') }}" style="display:flex;flex-direction:column;gap:18px;">
+    <form method="POST" action="{{ route('client.login.submit') }}" style="display:flex;flex-direction:column;gap:16px;">
         @csrf
 
         {{-- Email --}}
