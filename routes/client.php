@@ -44,6 +44,7 @@ Route::name('client.')->group(function () {
     // Legal pages (public)
     Route::view('/terms', 'client.legal.terms')->name('terms');
     Route::view('/privacy', 'client.legal.privacy')->name('privacy');
+    Route::view('/privacy/ms', 'client.legal.privacy-ms')->name('privacy.ms');
 
     // Registration is invitation-only — see /invitation/{token}.
     Route::view('/register', 'client.auth.invitation-only')->name('register');

@@ -2,9 +2,18 @@
     'title',
     'heading',
     'intro' => null,
+    'locale' => 'en',
+    'languages' => [],
 ])
+@php
+    $labels = [
+        'en' => ['legal' => 'Legal', 'effective' => 'Effective', 'issued' => 'Issued by', 'signin' => 'Sign in →', 'terms' => 'Terms', 'privacy' => 'Privacy'],
+        'ms' => ['legal' => 'Perundangan', 'effective' => 'Berkuat kuasa', 'issued' => 'Dikeluarkan oleh', 'signin' => 'Log masuk →', 'terms' => 'Terma', 'privacy' => 'Privasi'],
+    ][$locale];
+    $effectiveDate = \Illuminate\Support\Carbon::parse(config('app.legal_effective_date'))->locale($locale)->translatedFormat('j F Y');
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<html lang="{{ $locale }}" data-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -97,6 +106,12 @@
             font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-500);
         }
         .lg-meta b { color: var(--ink-900); font-weight: 600; }
+        .lg-lang { margin-left: auto; display: inline-flex; gap: 4px; }
+        .lg-lang a {
+            padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line);
+            color: var(--ink-500); text-decoration: none; font-weight: 600;
+        }
+        .lg-lang a.active { background: var(--emerald-700); border-color: var(--emerald-700); color: #fff; }
         .lg-toc {
             margin: 24px 0 0; padding: 18px 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--card);
         }
@@ -144,16 +159,16 @@
                     </div>
                 </a>
                 <nav class="lg-nav">
-                    <a href="{{ route('client.terms') }}" class="{{ request()->routeIs('client.terms') ? 'active' : '' }}">Terms</a>
-                    <a href="{{ route('client.privacy') }}" class="{{ request()->routeIs('client.privacy') ? 'active' : '' }}">Privacy</a>
-                    <a href="{{ route('client.login') }}" class="hide-sm">Sign in →</a>
+                    <a href="{{ route('client.terms') }}" class="{{ request()->routeIs('client.terms') ? 'active' : '' }}">{{ $labels['terms'] }}</a>
+                    <a href="{{ route('client.privacy') }}" class="{{ request()->routeIs('client.privacy*') ? 'active' : '' }}">{{ $labels['privacy'] }}</a>
+                    <a href="{{ route('client.login') }}" class="hide-sm">{{ $labels['signin'] }}</a>
                     <button type="button" class="lg-toggle" @click="toggleDark()" :aria-label="dark ? 'Switch to light mode' : 'Switch to dark mode'">
                         <svg x-show="!dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
                         <svg x-show="dark" x-cloak viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                     </button>
                 </nav>
             </div>
-            <div class="lg-eyebrow">Legal</div>
+            <div class="lg-eyebrow">{{ $labels['legal'] }}</div>
             <h1>{!! $heading !!}</h1>
             @if ($intro)
                 <p>{{ $intro }}</p>
@@ -164,8 +179,15 @@
     <main class="lg-body">
         <div class="lg-wrap">
             <div class="lg-meta">
-                <span>Effective · <b>{{ config('app.legal_effective_date') }}</b></span>
-                <span>Issued by · <b>{{ config('app.company.name') }}</b></span>
+                <span>{{ $labels['effective'] }} · <b>{{ $effectiveDate }}</b></span>
+                <span>{{ $labels['issued'] }} · <b>{{ config('app.company.name') }}</b></span>
+                @if ($languages)
+                    <span class="lg-lang">
+                        @foreach ($languages as $language)
+                            <a href="{{ $language['url'] }}" hreflang="{{ $language['locale'] }}" class="{{ $language['locale'] === $locale ? 'active' : '' }}">{{ $language['label'] }}</a>
+                        @endforeach
+                    </span>
+                @endif
             </div>
 
             {{ $slot }}
@@ -175,7 +197,7 @@
     <footer class="lg-foot">
         <div class="lg-wrap">
             <span>© {{ now()->year }} {{ config('app.company.name') }} · {{ config('app.company.reg_no') }}</span>
-            <span><a href="{{ route('client.terms') }}">Terms</a> · <a href="{{ route('client.privacy') }}">Privacy</a></span>
+            <span><a href="{{ route('client.terms') }}">{{ $labels['terms'] }}</a> · <a href="{{ route('client.privacy') }}">{{ $labels['privacy'] }}</a></span>
         </div>
     </footer>
 

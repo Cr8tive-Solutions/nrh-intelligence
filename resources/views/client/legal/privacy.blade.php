@@ -2,6 +2,10 @@
     title="Privacy Notice"
     heading="Privacy <em>Notice</em>"
     intro="How NRH Intelligence collects, uses and protects personal data in KYRO, under Malaysia's Personal Data Protection Act 2010."
+    :languages="[
+        ['locale' => 'en', 'label' => 'English', 'url' => route('client.privacy')],
+        ['locale' => 'ms', 'label' => 'Bahasa Malaysia', 'url' => route('client.privacy.ms')],
+    ]"
 >
 
     <nav class="lg-toc" aria-label="Contents">
@@ -22,6 +26,8 @@
             <li><a href="#contact">Contact us</a></li>
         </ol>
     </nav>
+
+    <p style="margin-top:20px;">This notice is also available in <a href="{{ route('client.privacy.ms') }}" hreflang="ms">Bahasa Malaysia</a>. If the two versions differ, the English version prevails.</p>
 
     <h2 id="who"><span class="num">01</span>Who we are</h2>
     <p>KYRO is operated by <b>{{ config('app.company.name') }}</b> (Company No. {{ config('app.company.reg_no') }}), {{ config('app.company.address') }} ("<b>NRH Intelligence</b>", "<b>we</b>", "<b>us</b>"). We provide background screening services to companies ("<b>Customers</b>").</p>
